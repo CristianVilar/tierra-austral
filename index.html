@@ -176,11 +176,11 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
   #msg{padding-right:0;padding-top:52px;min-height:62px;font-size:14px}
   .zoomc{right:12px;top:8px}
   #mbar:not(:empty){display:flex;position:fixed;left:0;right:0;bottom:0;z-index:8;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:#0d1a23f0;border-top:1px solid var(--line)}
-  #mbar{flex-wrap:wrap}
+  #mbar{flex-wrap:wrap;background:#0d1a23!important}
   #mbar .btn{flex:1;min-height:50px;font-size:16px}
   #mbar .mres{flex:1 0 100%;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-  #mbar .mr{display:flex;align-items:center;justify-content:center;gap:5px;padding:5px 2px;border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 40%,#10222f),#10222f 85%);border:1px solid color-mix(in srgb,var(--rc) 60%,#10222f)}
-  #mbar .mr b{font:800 20px var(--font-display);font-variant-numeric:tabular-nums}
+  #mbar .mr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:5px 2px 4px;border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 40%,#10222f),#10222f 85%);border:1px solid color-mix(in srgb,var(--rc) 60%,#10222f)}
+  #mbar .mr b{font:800 19px/1 var(--font-display);font-variant-numeric:tabular-nums;text-align:center}
   #mbar .mr.z{opacity:.5}
   #mbar .mr svg{flex:none}#mbar .mr b{flex:none}
   #mbar .btn{white-space:nowrap;padding:8px 6px;font-size:15px}
@@ -188,8 +188,14 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
   .side #sec-players{order:-2}
   .side .clock{order:-1;padding:8px 14px}
   .side .clock b{font-size:20px}
-  body{padding-bottom:136px}
-  #tut{bottom:128px}
+  body{padding-bottom:156px}
+  #tut{bottom:148px}
+  /* dados siempre visibles arriba a la derecha, junto al título */
+  .side .dicecard{position:fixed;top:calc(8px + env(safe-area-inset-top));right:10px;z-index:9;margin:0;padding:6px 12px;background:#0d1a23f2;border-radius:14px;box-shadow:0 6px 18px #000a}
+  .side .dicecard .dice{gap:6px}
+  .side .dicecard .dice svg{width:34px;height:34px}
+  .side .dicecard .dice .sum{font-size:26px;margin-left:4px}
+  .side .dicecard .dwho{display:none}
   /* título compacto arriba; sonido, música y demás botones al final de la página */
   header.top{display:contents}
   header.top .logo{order:-1}
@@ -2004,7 +2010,7 @@ function sideHTML(){
   }
   h+=`</div></section>`;
   // dados
-  if(G.dice)h+=`<section class="card"><div class="dice">${dieSVG(G.dice[0],0)}${dieSVG(G.dice[1],1)}<span class="sum${G.rollAt&&Date.now()-G.rollAt<1100&&!RM()?' roll':''}">${G.dice[0]+G.dice[1]}</span><span style="color:var(--muted);font-size:13px;margin-left:auto">${G.phase!=='idle'?'Turno de '+pn(G.cur):''}</span></div></section>`;
+  if(G.dice)h+=`<section class="card dicecard"><div class="dice">${dieSVG(G.dice[0],0)}${dieSVG(G.dice[1],1)}<span class="sum${G.rollAt&&Date.now()-G.rollAt<1100&&!RM()?' roll':''}">${G.dice[0]+G.dice[1]}</span><span class="dwho" style="color:var(--muted);font-size:13px;margin-left:auto">${G.phase!=='idle'?'Turno de '+pn(G.cur):''}</span></div></section>`;
   if(hu){
     h+=`<section class="card" id="sec-res"><h3>Tus recursos</h3><div class="hand">${RES.map(r=>`<div class="chip" data-r="${r}" style="--rc:${RCOL[r]}" title="${RFULL[r]}">${icon(r,32)}<b>${hu.res[r]}</b><span>${RNAME[r]}</span></div>`).join('')}</div></section>`;
     const ht=humanTurn(),main=canMain();
