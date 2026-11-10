@@ -346,7 +346,7 @@ function getCtx(){
       const len=c.sampleRate,b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);
       for(let i=0;i<len;i++)d[i]=Math.random()*2-1;SND.noise=b;
     }
-    if(SND.ctx.state==='suspended')SND.ctx.resume();
+    if(SND.ctx.state!=='running'){try{SND.ctx.resume();}catch(e){}}
     return SND.ctx;
   }catch(e){return null;}
 }
@@ -424,7 +424,26 @@ function setMVol(x){
   try{localStorage.setItem('ta-mvol',String(MUS.vol));}catch(e){}
   if(MUS.g)try{MUS.g.gain.value=MUS.vol*.55;}catch(e){}
 }
+/* iPhone/iPad: el audio solo se activa dentro de un toque real (touchend/click, no pointerdown), y el interruptor de silencio
+   lo calla a menos que la página reproduzca un audio HTML (aunque sea mudo) o declare la sesión como «playback». */
+const SILENT_WAV='data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let SILENT_EL=null;
+function audioUnlock(){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  try{
+    if(!SILENT_EL){SILENT_EL=new Audio(SILENT_WAV);SILENT_EL.loop=true;SILENT_EL.setAttribute('playsinline','');SILENT_EL.volume=1;}
+    if(SILENT_EL.paused){const pr=SILENT_EL.play();if(pr&&pr.catch)pr.catch(()=>{});}
+  }catch(e){}
+  const c=getCtx();
+  if(c){try{const b=c.createBuffer(1,1,22050),sr=c.createBufferSource();sr.buffer=b;sr.connect(c.destination);sr.start(0);}catch(e){}}
+  if(MUS.on&&(!MUS.timer||!MUS.g))musicStart();
+}
+['touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,audioUnlock,{passive:true}));
 document.addEventListener('pointerdown',()=>{if(MUS.on&&!MUS.timer)musicStart();});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){const c=SND.ctx;if(c&&c.state!=='running'){try{c.resume();}catch(e){}}if(MUS.on&&!MUS.timer)musicStart();}
+  else if(SILENT_EL&&!MUS.on){try{SILENT_EL.pause();}catch(e){}}
+});
 function setPalette(on,quiet){
   CBP.on=!!on;PCOL.splice(0,4,...PAL[CBP.on?'cb':'std']);
   try{localStorage.setItem('ta-cb',CBP.on?'on':'off');}catch(e){}
