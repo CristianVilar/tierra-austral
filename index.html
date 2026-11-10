@@ -2,7 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1a23">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tierra Austral">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>Tierra Austral</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -177,7 +185,8 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
   #msg{padding-right:0;padding-top:52px;min-height:62px;font-size:14px}
   .zoomc{right:12px;top:8px}
   #mbar:not(:empty){display:flex;position:fixed;left:0;right:0;bottom:0;z-index:8;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:#0d1a23f0;border-top:1px solid var(--line)}
-  #mbar{flex-wrap:wrap;background:#0d1a23!important}
+  #mbar{flex-wrap:wrap;background:#0d1a23!important;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  body{padding-top:env(safe-area-inset-top)}
   #mbar .btn{flex:1;min-height:50px;font-size:16px}
   #mbar .mres{flex:1 0 100%;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
   #mbar .mr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:5px 2px 4px;border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 40%,#10222f),#10222f 85%);border:1px solid color-mix(in srgb,var(--rc) 60%,#10222f)}
@@ -424,6 +433,7 @@ function setMVol(x){
   try{localStorage.setItem('ta-mvol',String(MUS.vol));}catch(e){}
   if(MUS.g)try{MUS.g.gain.value=MUS.vol*.55;}catch(e){}
 }
+if('serviceWorker' in navigator&&/^https:|^http:\/\/localhost/.test(location.protocol+'//'+location.host)&&location.protocol!=='file:'){window.addEventListener('load',()=>{try{navigator.serviceWorker.register('/sw.js').catch(()=>{});}catch(e){}});}
 /* iPhone/iPad: el audio solo se activa dentro de un toque real (touchend/click, no pointerdown), y el interruptor de silencio
    lo calla a menos que la página reproduzca un audio HTML (aunque sea mudo) o declare la sesión como «playback». */
 const SILENT_WAV='data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAGAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
@@ -2747,7 +2757,17 @@ const MI={
  plus:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
  door:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>'};
 const mi=n=>`<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">${MI[n]||''}</svg>`;
-let PNAME='';
+let PNAME='',DEFER_INSTALL=null;
+const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DEFER_INSTALL=e;});
+window.addEventListener('appinstalled',()=>{DEFER_INSTALL=null;});
+function installApp(){
+  if(DEFER_INSTALL){const d=DEFER_INSTALL;DEFER_INSTALL=null;d.prompt();return;}
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  openModal(`<h2>Instalar Tierra Austral</h2><p>Instálalo como una app: con su propio ícono y en pantalla completa, sin la barra del navegador.</p>
+   ${ios?'<ol style="line-height:1.7"><li>Abre esta página en <b>Safari</b>.</li><li>Toca el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba).</li><li>Elige <b>Añadir a pantalla de inicio</b> y luego <b>Añadir</b>.</li></ol>':'<ol style="line-height:1.7"><li>Abre el menú del navegador (⋮ o ⋯).</li><li>Elige <b>Instalar app</b> o <b>Añadir a pantalla de inicio</b>.</li></ol>'}
+   <div class="mact"><button class="btn" onclick="showMenu()">Volver</button></div>`);
+}
 try{PNAME=localStorage.getItem('ta-name')||'';}catch(e){}
 function showWelcome(){
   const lg=document.querySelector('header.top .logo svg');
@@ -2772,7 +2792,7 @@ function showMenu(){
    <button class="mcard" onclick="playTutorial()"><b>${mi('book')}Tutorial guiado</b><small>Una partida corta contra rivales fáciles, acompañada paso a paso.</small></button>
    <button class="mcard" onclick="showRules()"><b>${mi('list')}Reglas y costos</b><small>Cómo se juega y cuánto cuesta cada construcción.</small></button>
    <button class="mcard" onclick="showNetMenu()"><b>${mi('users')}Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.</small></button>
-  </div><div class="mact"><button class="btn" onclick="closeModal()">Cerrar</button></div>`,true);
+  </div><div class="mact">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('door')} Instalar app</button>`}<button class="btn" onclick="closeModal()">Cerrar</button></div>`,true);
 }
 
 /* ===================== Multijugador en línea ===================== */
