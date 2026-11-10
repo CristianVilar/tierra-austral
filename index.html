@@ -3990,7 +3990,7 @@ function showMenu(){
    ventanas) y reenvía sus clics al anfitrión, que los valida y ejecuta como ese asiento.
    Así no hay dos motores que se desincronicen y nadie recibe las cartas de los demás. */
 const NET={role:null,code:null,id:null,name:'',roster:[],remote:{},modalSeat:null,lobby:false,started:false,
-  beatMs:3000,offMs:20000,staleMs:6000,votes:{},ban:{},pub:false,lpt:0,stale:[],pingMs:4000,lostMs:25000,seq:0,gseq:0,ords:{},gord:null,tp:null,tm:null,busy:false,dirty:false,last:{},lastModal:'',seen:{},back:{},hostSeen:0,ended:false,seat:-1,bye:false,ask:null,hs:0,snap:null,keys:{},pks:{},dq:{},hpriv:null,hpub:'',cx:null,key:null,hk:''};
+  beatMs:3000,offMs:20000,staleMs:6000,votes:{},ban:{},pub:false,lpt:0,stale:[],pingMs:4000,lostMs:25000,seq:0,gseq:0,ords:{},gord:null,tp:null,tm:null,busy:false,dirty:false,last:{},lastModal:'',seen:{},back:{},hostSeen:0,ended:false,seat:-1,bye:false,ask:null,hs:0,snap:null,gb:null,gs:null,rsAt:0,keys:{},pks:{},dq:{},hpriv:null,hpub:'',cx:null,key:null,hk:''};
 NET.ask=o=>humanTradeModal(o);
 const NETALLOW=['uiRoll','uiEnd','uiUndo','uiPlayDev','uiBuyUpg','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg','openAuction','closeModal','bkPick','bkGo','propose','dscAdj','dscOk','aucAdj','aucOk','plPick','pickVictim','monoPick'];
 const NETMODAL=['closeModal','bkPick','bkGo','propose','dscAdj','dscOk','aucAdj','aucOk','plPick','pickVictim','monoPick'];
@@ -4486,8 +4486,8 @@ async function netPush(force){
         if(r.seat===NET.hs||!r.online)continue;
         const v=netView(r.seat),l=NET.last[r.seat]||(NET.last[r.seat]={});
         const msg={t:'view',to:r.seat,my:(G.cur===r.seat&&!G.over)?1:0};
-        if(force||v.b!==l.b){const z=await netGz(v.b);if(z)msg.bz=z;else msg.b=v.b;msg.vb=VB;l.b=v.b;}
-        if(force||v.s!==l.s){msg.s=v.s;l.s=v.s;}
+        if(force||v.b!==l.b){await netPackField(msg,'b',l.b,v.b,force);msg.vb=VB;l.b=v.b;}
+        if(force||v.s!==l.s){await netPackField(msg,'s',l.s,v.s,force);l.s=v.s;}
         if(force||v.mb!==l.mb){msg.mb=v.mb;l.mb=v.mb;}
         if(force||v.m!==l.m){msg.m=v.m;l.m=v.m;}
         if(Object.keys(msg).length>3)netSend(msg);
@@ -4498,6 +4498,33 @@ async function netPush(force){
   }catch(e){console.error(e);}
   NET.busy=false;
 }
+async function netPackField(msg,k,old,nw,force){
+  const d=(!force&&old)?netDiff(old,nw):null;
+  msg[k+'n']=netHash(nw);
+  if(d&&d[2].length<nw.length*0.4&&d[2].length<30000){ // parche: solo lo que cambió respecto a lo último enviado
+    msg[k+'h']=netHash(old);msg[k+'p']=d[0];msg[k+'s']=d[1];
+    if(d[2].length>500){const z=await netGz(d[2]);if(z)msg[k+'dz']=z;else msg[k+'i']=d[2];}else msg[k+'i']=d[2];
+  }else if(nw.length>600){const z=await netGz(nw);if(z)msg[k+'z']=z;else msg[k]=nw;}
+  else msg[k]=nw;
+}
+async function netUnpackField(m,k){ // devuelve el texto completo, o null si no se puede aplicar el parche
+  if(m[k+'p']!=null){
+    const g=NET['g'+k];
+    if(typeof g!=='string'||netHash(g)!==m[k+'h']||!Number.isInteger(m[k+'p'])||!Number.isInteger(m[k+'s'])||m[k+'p']+m[k+'s']>g.length)return null;
+    const ins=m[k+'dz']?await netGunz(m[k+'dz']):String(m[k+'i']||'');
+    const h=g.slice(0,m[k+'p'])+ins+g.slice(g.length-m[k+'s']);
+    return netHash(h)===m[k+'n']?h:null;
+  }
+  if(m[k+'z'])return await netGunz(m[k+'z']);
+  return typeof m[k]==='string'?m[k]:undefined; // undefined: este campo no vino
+}
+function netHash(t){let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return h>>>0;}
+function netDiff(a,b){
+  const n=Math.min(a.length,b.length);let p=0;while(p<n&&a.charCodeAt(p)===b.charCodeAt(p))p++;
+  let s=0;const m=n-p;while(s<m&&a.charCodeAt(a.length-1-s)===b.charCodeAt(b.length-1-s))s++;
+  return [p,s,b.slice(p,b.length-s)];
+}
+function netResync(){const t=Date.now();if(t-(NET.rsAt||0)<2000)return;NET.rsAt=t;netSend({t:'hello',id:NET.id,name:NET.name});}
 function netEndHTML(seat){
   const ws=G.winners||[G.winner],names=ws.map(i=>G.players[i].name),me=ws.includes(seat);
   const tw=G.teams&&ws.length===2&&ws[0]%2===ws[1]%2;
@@ -4564,8 +4591,10 @@ async function netGuestHandle(m){
   }
   if(!NET.started)return;
   if(m.t==='view'){
-    if(m.bz||m.b!=null){const h=m.bz?await netGunz(m.bz):m.b;if(m.vb)VB=m.vb;const b=$('#board');b.innerHTML=netNeut(h);try{applyView();}catch(e){}}
-    if(m.s!=null){const sd=$('#side'),sc=sd.scrollTop;sd.innerHTML=netNeut(m.s);sd.scrollTop=sc;placeDice();}
+    const hb=await netUnpackField(m,'b'),hs=await netUnpackField(m,'s');
+    if(hb===null||hs===null){if(hb===null)NET.gb=null;if(hs===null)NET.gs=null;netResync();}
+    if(typeof hb==='string'){NET.gb=hb;if(m.vb)VB=m.vb;const b=$('#board');b.innerHTML=netNeut(hb);try{applyView();}catch(e){}}
+    if(typeof hs==='string'){NET.gs=hs;const sd=$('#side'),sc=sd.scrollTop;sd.innerHTML=netNeut(hs);sd.scrollTop=sc;placeDice();}
     if(m.mb!=null)$('#mbar').innerHTML=netNeut(m.mb);
     if(m.m!=null)$('#msg').textContent=m.m||' ';
     if(m.my!=null)turnAlert(!!m.my);
