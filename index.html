@@ -138,6 +138,7 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
 #tut .tw{font-size:12.5px;color:var(--accent);margin-bottom:8px}
 @media(max-width:920px){#tut{position:fixed;left:8px;right:8px;bottom:8px;top:auto}}
 .zoomc{position:absolute;right:20px;top:8px;display:flex;gap:6px;z-index:2}
+#dicepos{display:none}
 .zoomc .btn{width:40px;height:40px;padding:0;font-size:20px;line-height:1}
 #msg{padding-right:150px}
 #board{touch-action:pan-y}
@@ -190,12 +191,14 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
   .side .clock b{font-size:20px}
   body{padding-bottom:156px}
   #tut{bottom:148px}
-  /* dados siempre visibles arriba a la derecha, junto al título */
-  .side .dicecard{position:fixed;top:calc(8px + env(safe-area-inset-top));right:10px;z-index:9;margin:0;padding:6px 12px;background:#0d1a23f2;border-radius:14px;box-shadow:0 6px 18px #000a}
-  .side .dicecard .dice{gap:6px}
-  .side .dicecard .dice svg{width:34px;height:34px}
-  .side .dicecard .dice .sum{font-size:26px;margin-left:4px}
-  .side .dicecard .dwho{display:none}
+  /* dados dentro del tablero, arriba a la izquierda (a la altura de los botones de zoom) */
+  .side .dicecard{display:none}
+  #dicepos{position:absolute;left:12px;top:8px;z-index:2;display:flex;align-items:center;min-height:46px}
+  #dicepos .dicecard{margin:0;padding:3px 12px;background:#0d1a23cc;border:1px solid var(--line);border-radius:14px}
+  #dicepos .dice{display:flex;align-items:center;gap:6px}
+  #dicepos .dice svg{width:34px;height:34px}
+  #dicepos .dice .sum{font-size:28px;margin-left:4px}
+  #dicepos .dwho{display:none}
   /* título compacto arriba; sonido, música y demás botones al final de la página */
   header.top{display:contents}
   header.top .logo{order:-1}
@@ -277,6 +280,7 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
 
   <main class="boardwrap">
     <div id="msg" role="status" aria-live="polite"></div>
+    <div id="dicepos" aria-live="polite"></div>
     <div class="zoomc" role="group" aria-label="Zoom del tablero"><button class="btn" onclick="zoomBy(1.35)" aria-label="Acercar">+</button><button class="btn" onclick="zoomBy(1/1.35)" aria-label="Alejar">−</button><button class="btn" onclick="zoomReset()" aria-label="Ajustar tablero a la pantalla">⤢</button></div>
     <div id="board"></div>
   </main>
@@ -2041,7 +2045,8 @@ function sideHTML(){
   h+=`<section class="card"><h3>Registro</h3><div class="log">${G.log.slice(0,25).map(l=>`<div>${l}</div>`).join('')||'<div>Aún no ocurre nada.</div>'}</div></section>`;
   return h;
 }
-function render(){if(NET.role==='guest')return;NETH.touch();musicRefresh();renderBoard();$('#side').innerHTML=sideHTML();$('#msg').textContent=G.msg||' ';updateClocks();tutHL();renderMbar();}
+function placeDice(){const d=document.querySelector('#side .dicecard'),t=$('#dicepos');if(t)t.innerHTML=d?d.outerHTML:'';}
+function render(){if(NET.role==='guest')return;NETH.touch();musicRefresh();renderBoard();$('#side').innerHTML=sideHTML();placeDice();$('#msg').textContent=G.msg||' ';updateClocks();tutHL();renderMbar();}
 
 /* ===================== Modales ===================== */
 function openModal(html,wide){const m=$('#modal');m.innerHTML=`<div class="mbox${wide?' wide':''}">${html}</div>`;m.classList.add('open');NETH.modalOpen();}
@@ -3079,7 +3084,7 @@ async function netGuestHandle(m){
   if(!NET.started)return;
   if(m.t==='view'){
     if(m.bz||m.b!=null){const h=m.bz?await netGunz(m.bz):m.b;if(m.vb)VB=m.vb;const b=$('#board');b.innerHTML=netNeut(h);try{applyView();}catch(e){}}
-    if(m.s!=null){const sd=$('#side'),sc=sd.scrollTop;sd.innerHTML=netNeut(m.s);sd.scrollTop=sc;}
+    if(m.s!=null){const sd=$('#side'),sc=sd.scrollTop;sd.innerHTML=netNeut(m.s);sd.scrollTop=sc;placeDice();}
     if(m.mb!=null)$('#mbar').innerHTML=netNeut(m.mb);
     if(m.m!=null)$('#msg').textContent=m.m||' ';
     NET.bye=false;
