@@ -87,6 +87,10 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 @media(prefers-reduced-motion:reduce){.hl,.flash{animation:none}}
 #modal{position:fixed;inset:0;background:#02080cb8;display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 #modal.open{display:flex}
+#modal.kb{align-items:flex-start;padding-top:8px}
+#modal.kb .mbox{max-height:calc(var(--vvh,100vh) - 16px)}
+#modal.kb .welcome .wl,#modal.kb .welcome>p{display:none}
+#modal.kb .welcome h2{font-size:22px;margin:4px 0 10px}
 #modal.open.remote{display:none!important}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
 .mbox h2{font-size:24px;margin-bottom:10px}
@@ -101,8 +105,10 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
 .rfx span{font-size:56px;line-height:1;filter:drop-shadow(0 4px 10px #0008)}
 .rfx small{font:700 12px/1 system-ui;background:#0d1a23dd;padding:3px 7px;border-radius:8px;margin-top:4px}
 @keyframes rfx{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:1;transform:translateY(-20px) scale(1.15)}100%{transform:translateY(-260px) scale(1);opacity:0}}
-#reactbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));z-index:8;display:none;gap:6px;padding:4px 8px;border-radius:26px;background:#0d1a23cc;border:1px solid var(--line)}
-#reactbar.on{display:flex}
+#reactbar{position:fixed;right:12px;top:calc(64px + env(safe-area-inset-top));z-index:9;display:none;gap:6px;padding:4px 8px;border-radius:26px;background:#0d1a23f2;border:1px solid var(--line);box-shadow:0 8px 22px #0008}
+#reactbar.on.open{display:flex}
+#reactbtn{position:fixed;right:66px;top:calc(10px + env(safe-area-inset-top));z-index:8;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:#0d1a23ee;font-size:21px;line-height:1;padding:0;display:none;align-items:center;justify-content:center}
+#reactbtn.on{display:flex}
 #reactbar .rb{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#0d1a23ee;font-size:20px;line-height:1;padding:0}
 @media (prefers-reduced-motion:reduce){.rfx{animation-duration:.01s}}
 .aw{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:6px 0 10px}
@@ -2224,7 +2230,7 @@ function render(){if(NET.role==='guest')return;NETH.touch();musicRefresh();rende
 
 /* ===================== Modales ===================== */
 function openModal(html,wide){const m=$('#modal');m.innerHTML=`<div class="mbox${wide?' wide':''}">${html}</div>`;m.classList.add('open');NETH.modalOpen();}
-function closeModal(){const m=$('#modal');m.classList.remove('open','remote');m.innerHTML='';NETH.modalClose();}
+function closeModal(){const m=$('#modal');m.classList.remove('open','remote','kb');m.style.top=m.style.bottom=m.style.height='';m.innerHTML='';NETH.modalClose();}
 function costRow(label,c){return `<span>${label}</span><span class="c">${Object.keys(c).map(r=>`${c[r]}×${icon(r,16)}`).join(' ')}</span>`;}
 function showRules(){
   const T=G.rules.target;
@@ -4702,8 +4708,9 @@ function chatInit(){
   const btn=mk('button','chatbtn');btn.type='button';btn.setAttribute('aria-label','Chat de la sala');btn.append('💬');const bd=mk('span',null,'bd');bd.id='chatbd';btn.append(bd);
   btn.onclick=()=>chatToggle();document.body.append(btn);
   const rb=mk('div','reactbar');rb.setAttribute('role','group');rb.setAttribute('aria-label','Reacciones');
-  REACT.slice(0,4).forEach(w=>{const b=mk('button',null,'rb');b.type='button';b.textContent=w;b.setAttribute('aria-label','Reacción '+w);b.onclick=()=>netChatSend(w);rb.append(b);});
+  REACT.slice(0,4).forEach(w=>{const b=mk('button',null,'rb');b.type='button';b.textContent=w;b.setAttribute('aria-label','Reacción '+w);b.onclick=()=>{netChatSend(w);reactOpen(false);};rb.append(b);});
   document.body.append(rb);
+  const rt=mk('button','reactbtn');rt.type='button';rt.setAttribute('aria-label','Reacciones rápidas');rt.textContent='😊';rt.onclick=()=>reactOpen();document.body.append(rt);
   document.body.append(mk('div','chatfeed'));
   const pn=mk('div','chatpanel');pn.setAttribute('role','dialog');pn.setAttribute('aria-label','Chat de la sala');
   const h=mk('div',null,'ch');const t=mk('h3');t.textContent='Chat de la sala';const x=mk('button',null,'btn');x.type='button';x.textContent='Cerrar';x.onclick=()=>chatToggle(false);h.append(t,x);
@@ -4718,9 +4725,12 @@ function chatSync(){
   const on=!!NET.role&&OPT.chat;
   if(on)chatInit();
   const b=$('#chatbtn');if(b)b.classList.toggle('on',on);
-  const rbar=$('#reactbar');if(rbar)rbar.classList.toggle('on',on);
+  const rbar=$('#reactbar');if(rbar){rbar.classList.toggle('on',on);if(!on)rbar.classList.remove('open');}
+  const rbt=$('#reactbtn');if(rbt)rbt.classList.toggle('on',on);
   if(!on){const p=$('#chatpanel');if(p)p.classList.remove('on');const f=$('#chatfeed');if(f)f.textContent='';CHAT.log=[];CHAT.unread=0;CHAT.wasMine=false;}
 }
+let REACTT=0;
+function reactOpen(f){const r=$('#reactbar');if(!r)return;const on=f==null?!r.classList.contains('open'):f;r.classList.toggle('open',on);clearTimeout(REACTT);if(on)REACTT=setTimeout(()=>r.classList.remove('open'),5000);}
 function chatToggle(f){
   const p=$('#chatpanel');if(!p)return;
   const on=f==null?!p.classList.contains('on'):f;p.classList.toggle('on',on);
@@ -4789,6 +4799,16 @@ render();
 setInterval(tick,250);
 if(LANG!=='es'){TR.dirty=true;trAll();}
 if(!NETH.autoJoin())showWelcome();
+
+/* teclado en pantalla: el cuadro sube y el campo se queda a la vista (no se mueve ni se corta) */
+(function(){
+  const vv=window.visualViewport;
+  const fit=()=>{const m=document.getElementById('modal');if(!m)return;document.documentElement.style.setProperty('--vvh',(vv?vv.height:innerHeight)+'px');if(vv&&m.classList.contains('kb')){m.style.top=vv.offsetTop+'px';m.style.bottom='auto';m.style.height=vv.height+'px';}};
+  const isF=e=>e&&e.matches&&e.matches('input,textarea,select');
+  document.addEventListener('focusin',e=>{const m=document.getElementById('modal');if(!m||!m.classList.contains('open')||!isF(e.target)||!m.contains(e.target))return;m.classList.add('kb');fit();setTimeout(()=>{fit();try{e.target.scrollIntoView({block:'center'});}catch(_){}},250);});
+  document.addEventListener('focusout',e=>{const m=document.getElementById('modal');if(!m||!isF(e.target))return;setTimeout(()=>{if(isF(document.activeElement)&&m.contains(document.activeElement))return;m.classList.remove('kb');m.style.top=m.style.bottom=m.style.height='';},120);});
+  if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);}
+})();
 </script>
 </body>
 </html>
