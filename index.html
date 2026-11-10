@@ -97,6 +97,14 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 select,input[type=text],input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:600 14px var(--font-body)}
 .stalebar,#stalebar{position:fixed;left:8px;right:8px;top:8px;z-index:60;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 #stalebar .sb{pointer-events:auto;background:var(--panel,#222);color:var(--ink,#fff);border:1px solid var(--bad,#c33);border-radius:12px;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;box-shadow:0 4px 16px #0006}
+.rfx{position:fixed;bottom:22%;z-index:70;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:rfx 2.1s ease-out forwards}
+.rfx span{font-size:56px;line-height:1;filter:drop-shadow(0 4px 10px #0008)}
+.rfx small{font:700 12px/1 system-ui;background:#0d1a23dd;padding:3px 7px;border-radius:8px;margin-top:4px}
+@keyframes rfx{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:1;transform:translateY(-20px) scale(1.15)}100%{transform:translateY(-260px) scale(1);opacity:0}}
+#reactbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));z-index:8;display:none;gap:6px;padding:4px 8px;border-radius:26px;background:#0d1a23cc;border:1px solid var(--line)}
+#reactbar.on{display:flex}
+#reactbar .rb{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#0d1a23ee;font-size:20px;line-height:1;padding:0}
+@media (prefers-reduced-motion:reduce){.rfx{animation-duration:.01s}}
 .aw{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:6px 0 10px}
 .mact{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .mact .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 16px;line-height:1}
@@ -2955,7 +2963,7 @@ const MI={
 const mi=n=>`<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">${MI[n]||''}</svg>`;
 const THEMES=[['coast','Costa','linear-gradient(135deg,#2a7893,#0c2c3d)'],['forest','Bosque','linear-gradient(135deg,#3f9a78,#0d3327)'],['snow','Nevado','linear-gradient(135deg,#a6d4ee,#27536f)'],['dusk','Atardecer','linear-gradient(135deg,#cf7d63,#2e2040)']];
 let THEME='coast';try{THEME=localStorage.getItem('ta-theme')||'coast';}catch(e){}
-const OPT={chat:true,alert:true,vib:true,big:false,hc:false};
+const OPT={chat:true,alert:true,vib:true,notif:false,big:false,hc:false};
 try{for(const k in OPT){const v=localStorage.getItem('ta-o-'+k);if(v!==null)OPT[k]=v==='1';}}catch(e){}
 function applyA11y(){document.body.classList.toggle('a-big',OPT.big);document.body.classList.toggle('a-hc',OPT.hc);}
 applyA11y();
@@ -3826,7 +3834,15 @@ Trigal|Wheat field|Trigal
 Cordillera|Mountains|Cordilheira
 Pampa|Pampa|Pampa
 Bosque|Forest|Floresta
-Pradera|Meadow|Pradaria`;
+Pradera|Meadow|Pradaria
+Invitar|Invite|Convidar
+Notificación del sistema|System notification|Notificação do sistema
+Muestra una notificación cuando te toca y la pestaña está en segundo plano.|Shows a notification when it is your turn and the tab is in the background.|Mostra uma notificação quando é a sua vez e a aba está em segundo plano.
+Tu navegador no admite notificaciones|Your browser does not support notifications|Seu navegador não suporta notificações
+Las notificaciones están bloqueadas|Notifications are blocked|As notificações estão bloqueadas
+Actívalas en los permisos del sitio|Turn them on in the site permissions|Ative-as nas permissões do site
+Reacciones|Reactions|Reações
+Reacción|Reaction|Reação`;
 /*I18N_END*/
 function trBuild(){
   if(TR.ready)return;TR.ready=true;
@@ -3902,7 +3918,13 @@ function setLang(l){
 TROBS.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:TRATTR});
 document.documentElement.lang=LANG;
 const langChips=()=>`<div class="thm" role="group" aria-label="Language">${Object.keys(LANGS).map(k=>`<button class="btn${k===LANG?' on':''}" onclick="setLang('${k}');showPersonalize()" aria-pressed="${k===LANG}">${LANGS[k]}</button>`).join('')}</div>`;
-function setOpt(k,v){OPT[k]=!!v;try{localStorage.setItem('ta-o-'+k,v?'1':'0');}catch(e){}if(k==='chat')try{chatSync();}catch(e){}applyA11y();showPersonalize();}
+function setOpt(k,v){
+  if(k==='notif'&&v){
+    if(!('Notification' in window)){showToast('Tu navegador no admite notificaciones');v=false;}
+    else if(Notification.permission==='denied'){showToast('Las notificaciones están bloqueadas','Actívalas en los permisos del sitio');v=false;}
+    else if(Notification.permission!=='granted'){try{Notification.requestPermission().then(r=>{if(r!=='granted'){OPT.notif=false;try{localStorage.setItem('ta-o-notif','0');}catch(e){}}showPersonalize();});}catch(e){v=false;}}
+  }
+  OPT[k]=!!v;try{localStorage.setItem('ta-o-'+k,v?'1':'0');}catch(e){}if(k==='chat')try{chatSync();}catch(e){}applyA11y();showPersonalize();}
 function applyTheme(){THEMES.forEach(t=>document.body.classList.toggle('th-'+t[0],t[0]===THEME&&t[0]!=='coast'));}
 applyTheme();
 function setTheme(id){THEME=id;try{localStorage.setItem('ta-theme',id);}catch(e){}applyTheme();showPersonalize();}
@@ -3917,7 +3939,7 @@ function showPersonalize(){
    <h3>Tu color</h3><div class="cols" role="group" aria-label="Tu color">${MYCOLS.map((c,i)=>`<button class="btn${i===MYCOL?' on':''}" style="background:${c[1]}" onclick="setMyColor(${i})" aria-label="${c[0]}" aria-pressed="${i===MYCOL}"></button>`).join('')}</div>
    <h3>Accesibilidad</h3><div class="optl">${[['big','Letra grande','Agranda textos y botones de los paneles.'],['hc','Alto contraste','Fondo negro, textos blancos y bordes marcados.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
    <label class="chk"><input type="checkbox" ${CBP.on?'checked':''} onchange="setPalette(this.checked);showPersonalize()"><span><b>Modo daltonismo</b><small>Colores y símbolos pensados para distinguirse sin depender del color.</small></span></label>
-   <h3>Partidas en línea</h3><div class="optl">${[['chat','Chat y reacciones','Muestra el botón 💬 y los mensajes de la sala.'],['alert','Aviso de turno','Suena y cambia el título de la pestaña cuando te toca.'],['vib','Vibración','Vibra el teléfono al empezar tu turno (si el aviso está activo).']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
+   <h3>Partidas en línea</h3><div class="optl">${[['chat','Chat y reacciones','Muestra el botón 💬 y los mensajes de la sala.'],['alert','Aviso de turno','Suena y cambia el título de la pestaña cuando te toca.'],['vib','Vibración','Vibra el teléfono al empezar tu turno (si el aviso está activo).'],['notif','Notificación del sistema','Muestra una notificación cuando te toca y la pestaña está en segundo plano.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
    <p style="color:var(--muted);font-size:13px">${CBP.on?'Con el modo daltonismo activado se usan colores especiales y esta elección no se aplica. ':''}En una sala en línea, los colores de los jugadores los define el anfitrión; el tema del tablero lo eliges cada uno.</p>
    <div class="mact"><button class="btn primary" onclick="showMenu()">Listo</button></div>`);
 }
@@ -4580,6 +4602,11 @@ function showNetMenu(code,saved,err){
   if(saved&&code&&!err){netJoin(code,nm,saved);}
 }
 const netLink=()=>{try{return location.origin+location.pathname+'?sala='+NET.code;}catch(e){return NET.code;}};
+function netShare(){
+  const url=netLink(),text='Juega conmigo a Tierra Austral. Sala '+NET.code+':';
+  if(navigator.share){navigator.share({title:'Tierra Austral',text,url}).catch(()=>{});return;}
+  try{window.open('https://wa.me/?text='+encodeURIComponent(text+' '+url),'_blank','noopener');}catch(e){netCopy(url);}
+}
 function netCopy(t){try{navigator.clipboard.writeText(t).then(()=>showToast('Copiado',t),()=>showToast('Copia el texto manualmente',t));}catch(e){showToast('Copia el texto manualmente',t);}}
 function rosterHTML(){
   return `<div class="players" style="margin:8px 0">${NET.roster.map(r=>`<div class="pl" style="grid-template-columns:30px 1fr auto"><span class="av" style="background:${PCOL[r.seat]||'#888'}">${netEsc((r.name||'?')[0].toUpperCase())}</span><span class="nm"><b>${netEsc(r.name)}${(r.tag?r.tag===netTag(NET.id,NET.code):r.id===NET.id)?' (tú)':''}</b></span><span class="vpb" style="font-size:12px">${r.seat===0?'Anfitrión':(r.online?'Conectado':'Sin conexión')}${NET.role==='host'&&r.id&&r.id!==NET.id?` <button class="btn" style="padding:4px 10px;min-height:32px" onclick="netKick('${netEsc(r.id)}')">Expulsar</button>`:''}</span></div>`).join('')}</div>`;
@@ -4590,7 +4617,7 @@ function showLobby(){
   const link=netLink();
   openModal(`<h2>Sala ${NET.code}</h2><p>Comparte este código o el enlace con tus amigos. Pueden entrar desde el computador o el teléfono.</p>
    <div style="font:800 34px/1 var(--display,inherit);letter-spacing:.18em;text-align:center;padding:10px 0">${NET.code}</div>
-   <div class="mact" style="justify-content:center"><button class="btn" onclick="netCopy('${NET.code}')">Copiar código</button><button class="btn" onclick="netCopy('${link}')">Copiar enlace</button></div>
+   <div class="mact" style="justify-content:center"><button class="btn" onclick="netCopy('${NET.code}')">Copiar código</button><button class="btn" onclick="netCopy('${link}')">Copiar enlace</button><button class="btn primary" onclick="netShare()">Invitar</button></div>
    <label class="chk" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" ${NET.pub?'checked':''} onchange="netSetPub(this.checked)"> Sala pública: aparece en «Salas abiertas» para unirse sin código</label>
    <h3 class="rh">Jugadores (${NET.roster.length} de ${NETMAX})</h3>${rosterHTML()}
    <p style="color:var(--muted);font-size:13px">Los asientos libres los ocupan rivales de la IA. Cuando estén todos, configura y empieza.</p>
@@ -4645,6 +4672,9 @@ function chatInit(){
   const mk=(t,id,c)=>{const e=document.createElement(t);if(id)e.id=id;if(c)e.className=c;return e;};
   const btn=mk('button','chatbtn');btn.type='button';btn.setAttribute('aria-label','Chat de la sala');btn.append('💬');const bd=mk('span',null,'bd');bd.id='chatbd';btn.append(bd);
   btn.onclick=()=>chatToggle();document.body.append(btn);
+  const rb=mk('div','reactbar');rb.setAttribute('role','group');rb.setAttribute('aria-label','Reacciones');
+  REACT.slice(0,4).forEach(w=>{const b=mk('button',null,'rb');b.type='button';b.textContent=w;b.setAttribute('aria-label','Reacción '+w);b.onclick=()=>netChatSend(w);rb.append(b);});
+  document.body.append(rb);
   document.body.append(mk('div','chatfeed'));
   const pn=mk('div','chatpanel');pn.setAttribute('role','dialog');pn.setAttribute('aria-label','Chat de la sala');
   const h=mk('div',null,'ch');const t=mk('h3');t.textContent='Chat de la sala';const x=mk('button',null,'btn');x.type='button';x.textContent='Cerrar';x.onclick=()=>chatToggle(false);h.append(t,x);
@@ -4659,6 +4689,7 @@ function chatSync(){
   const on=!!NET.role&&OPT.chat;
   if(on)chatInit();
   const b=$('#chatbtn');if(b)b.classList.toggle('on',on);
+  const rbar=$('#reactbar');if(rbar)rbar.classList.toggle('on',on);
   if(!on){const p=$('#chatpanel');if(p)p.classList.remove('on');const f=$('#chatfeed');if(f)f.textContent='';CHAT.log=[];CHAT.unread=0;CHAT.wasMine=false;}
 }
 function chatToggle(f){
@@ -4672,8 +4703,16 @@ function chatRender(){
   for(const m of CHAT.log){const d=document.createElement('div');d.className='cm';const b=document.createElement('b');b.textContent=m.name;b.style.color=PCOL[m.seat]||'#ccc';d.append(b,document.createTextNode(m.text));l.append(d);}
   l.scrollTop=l.scrollHeight;
 }
+const REACT=['👍','🙌','😮','😂','😡'];
+function reactFx(seat,name,emoji){
+  const d=document.createElement('div');d.className='rfx';d.setAttribute('aria-hidden','true');
+  d.style.left=(18+Math.random()*64)+'%';
+  const e=document.createElement('span');e.textContent=emoji;const n=document.createElement('small');n.textContent=name;n.style.color=PCOL[seat]||'#ddd';
+  d.append(e,n);document.body.append(d);setTimeout(()=>{try{d.remove();}catch(x){}},2200);
+}
 function chatShow(seat,name,text){
   if(!OPT.chat)return;
+  if(REACT.includes(text)){reactFx(seat,name,text);return;}
   chatInit();
   CHAT.log.push({seat,name,text});if(CHAT.log.length>50)CHAT.log.shift();
   const open=$('#chatpanel').classList.contains('on');
@@ -4691,11 +4730,19 @@ function netChatSend(text){
 }
 function netChatCast(seat,name,text){netSend({t:'chatmsg',seat,name,text});chatShow(seat,name,text);}
 /* aviso cuando llega tu turno: vibración, sonido breve y título de la pestaña */
+function sysNotify(title,body){
+  try{
+    if(!OPT.notif||!('Notification' in window)||Notification.permission!=='granted')return;
+    const o={body:trStr(body),tag:'ta-turn',renotify:true,icon:'/icon-192.png',badge:'/icon-192.png'};
+    if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(r=>r.showNotification(trStr(title),o)).catch(()=>{try{new Notification(trStr(title),o);}catch(e){}});
+    else new Notification(trStr(title),o);
+  }catch(e){}
+}
 function turnAlert(mine){
   if(mine&&!CHAT.wasMine&&OPT.alert){
     try{if(OPT.vib&&navigator.vibrate)navigator.vibrate([140,70,140]);}catch(e){}
     try{const c=audio();if(c&&SFX.coin){SND.v=.6;SFX.coin(c,c.currentTime+.01);}}catch(e){}
-    if(document.hidden)document.title='🔔 ¡Tu turno! · Tierra Austral';
+    if(document.hidden){document.title='🔔 ¡Tu turno! · Tierra Austral';sysNotify('¡Tu turno!','Tierra Austral · sala '+(NET.code||''));}
   }
   CHAT.wasMine=!!mine;
 }

@@ -1,0 +1,68 @@
+// Escenarios del multijugador: ventanas de invitados, tratos entre humanos, 7, desconexión, permisos
+const {JSDOM}=require('jsdom');const fs=require('fs');const {CompressionStream,DecompressionStream}=require('stream/web');
+const HTML=fs.readFileSync('/home/claude/game/index.html','utf8');
+const errs=[];let fails=0;
+process.on('unhandledRejection',e=>{errs.push('UN '+(e&&e.stack||e));console.log('UNHANDLED',String(e&&e.stack||e).slice(0,500));});
+const ok=(c,m)=>{if(!c)fails++;console.log(c?'OK  ':'FALLA',m);};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const rooms={};
+function transport(){return{
+  async create(c){if(rooms[c])return false;rooms[c]={cl:[],status:'lobby'};return true;},
+  async exists(c){return !!rooms[c]&&rooms[c].status!=='ended';},
+  setStatus(c,s){if(rooms[c])rooms[c].status=s;},
+  setList(c,o){if(rooms[c])Object.assign(rooms[c],o);},
+  async list(){return Object.entries(rooms).filter(([c,r])=>r.pub&&r.status==='lobby').map(([c,r])=>({code:c,host_name:r.host_name,n:r.n,mx:r.mx}));},
+  async open(code,onMsg){const me={onMsg,dead:false};rooms[code].cl.push(me);
+    return{send:m=>{if(me.dead)return;const j=JSON.stringify(m);for(const o of rooms[code].cl)if(o!==me&&!o.dead)setTimeout(()=>{if(!o.dead)o.onMsg(JSON.parse(j));},1);},close:()=>{me.dead=true;}};}};}
+function mk(name){
+  const dom=new JSDOM(HTML,{runScripts:'dangerously',pretendToBeVisual:true,url:'https://test.local/',beforeParse(w){
+    w.AudioContext=undefined;w.CompressionStream=CompressionStream;w.DecompressionStream=DecompressionStream;w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;Object.defineProperty(w,'crypto',{value:require('crypto').webcrypto,configurable:true});w.Response=Response;w.__T=transport();}});
+  const w=dom.window,ev=w.eval;
+  w.addEventListener('error',e=>errs.push(name+': '+e.message));w.onerror=m=>errs.push(name+': '+String(m));
+  ev("NETT=__T;NET.beatMs=60;NET.pingMs=60;NET.offMs=6000;NET.staleMs=500;NET.lostMs=600;");
+  return{name,dom,w,ev,$:s=>w.document.querySelector(s),$$:s=>[...w.document.querySelectorAll(s)]};
+}
+async function until(f,ms=3000,step=12){const t=Date.now();while(Date.now()-t<ms){try{if(f())return true;}catch(e){}await sleep(step);}return false;}
+const click=el=>el&&el.dispatchEvent(new el.ownerDocument.defaultView.MouseEvent('click',{bubbles:true,cancelable:true}));
+const cons=c=>c.ev("RES.every(r=>G.bank[r]+G.players.reduce((s,p)=>s+p.res[r],0)===19)");
+const J=x=>JSON.stringify(x);
+const give=(A,pid,o)=>A.ev(`(function(){const p=G.players[${pid}],o=${J(o)};for(const r in o){p.res[r]+=o[r];G.bank[r]-=o[r];}})()`);
+const clear=A=>A.ev("(function(){for(const p of G.players)for(const r of RES){G.bank[r]+=p.res[r];p.res[r]=0;}})()");
+const res=(A,pid)=>J(A.ev(`G.players[${pid}].res`));
+// crea sala con 3 humanos + 1 IA, coloca el inicio por API y deja a todos en el turno 0 en fase roll
+async function room(rules){
+  const A=mk('Ana'),B=mk('Beto'),C=mk('Caro');
+  await A.ev("netCreate('Ana')");const code=A.ev("NET.code");
+  await B.ev(`netJoin('${code}','Beto')`);await C.ev(`netJoin('${code}','Caro')`);
+  await until(()=>A.ev("NET.roster.length")===3&&C.ev("NET.seat")===2);
+  A.ev("NET.inLobby=false;showStart();document.getElementById('c-speed').value='0';");
+  A.ev("startFromForm()");
+  await until(()=>B.ev("NET.started")&&C.ev("NET.started"));
+  // colocar a todos rápido (API del motor)
+  A.ev(`(function(){G.rules={...G.rules,...${J(rules||{})}};G.phase='setupBot';G.busy=false;
+    G.setupSeq.forEach((pid,idx)=>{G.cur=pid;const l=legalSettle(pid,true),v=l[(idx*7)%l.length];placeSettle(pid,v,true);if(idx>=G.n)grantStart(pid,v);const rl=legalRoads(pid,v);placeRoad(pid,rl[0],true);});
+    G.setupIdx=G.setupSeq.length;beginPlay();G.fresh=null;})()`);
+  await until(()=>A.ev("G.phase")==='roll'&&A.ev("G.cur")===0);
+  return{A,B,C,code,P:[A,B,C]};
+}
+// pone el turno en un asiento, en fase main, con el motor en reposo
+const turn=async(R,seat,ph)=>{R.A.ev(`(function(){G.cur=${seat};G.phase='${ph||'main'}';G.mode=null;G.busy=false;G.devPlayed=false;G.undo=null;G.msg='';render();})()`);await sleep(120);};
+const btn=(P,oc)=>P.$$(`[data-oc="${oc}"]`).find(b=>!b.disabled);
+
+(async()=>{
+  const A=mk('Ana'),B=mk('Beto'),C=mk('Caro');
+  await A.ev("netCreate('Ana')");const code=A.ev("NET.code");
+  await B.ev(`netJoin('${code}','Beto')`);await C.ev(`netJoin('${code}','Caro')`);
+  await until(()=>A.ev("NET.roster.length")===3);
+  await sleep(1600);
+  ok(!!B.$('#reactbar')&&B.$('#reactbar').classList.contains('on'),'la barra de reacciones aparece en línea');
+  B.ev("netChatSend('😂')");
+  ok(await until(()=>!!A.$('.rfx')&&!!C.$('.rfx')),'la reacción flota en la pantalla de los demás');
+  ok(A.ev("CHAT.log.length")===0,'una reacción no ensucia el chat');
+  await sleep(800);B.ev("netChatSend('Hola')");
+  ok(await until(()=>A.ev("CHAT.log.length")===1),'el texto normal sí va al chat');
+  let shared=null;A.w.navigator.share=(o)=>{shared=o;return Promise.resolve();};
+  A.ev("netShare()");ok(shared&&shared.url.includes(code)&&/Tierra Austral/.test(shared.text),'Invitar usa el menú de compartir con el enlace');
+  A.ev("setOpt('notif',true)");A.ev("sysNotify('x','y')");ok(true,'sysNotify no falla sin permiso');
+  console.log('errores',errs.length,errs.slice(0,5),'FALLAS',fails);process.exit(0);
+})();
