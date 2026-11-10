@@ -95,6 +95,7 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .field{display:flex;flex-direction:column;gap:4px;margin:10px 0}
 .field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
 select,input[type=text],input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:600 14px var(--font-body)}
+.aw{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:6px 0 10px}
 .mact{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 .mact .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 16px;line-height:1}
 .mact .btn .mi{width:20px;height:20px;margin:0}
@@ -314,6 +315,18 @@ body.th-dusk #sea stop:nth-child(1){stop-color:#cf7d63}body.th-dusk #sea stop:nt
 .bfl{animation:bfl .9s ease-out both}
 @media(prefers-reduced-motion:reduce){.bpop,.bring,.bfl{animation:none}}
 @media(max-width:560px){.menu,.ach{grid-template-columns:1fr}.cmp{grid-template-columns:30px 1fr}.cmp>div:last-child{grid-column:1/-1;flex-direction:row;justify-content:flex-end}}
+
+/* accesibilidad: letra grande y alto contraste */
+body.a-big header.top,body.a-big .side,body.a-big #modal .mbox,body.a-big #mbar,body.a-big #chatpanel,body.a-big #tut{zoom:1.22}
+body.a-big #mbar{zoom:1.12}
+@media(max-width:920px){body.a-big{padding-bottom:250px}}
+body.a-big .btn{min-height:44px}
+body.a-hc{--bg:#000;--panel:#0a1218;--panel2:#16232d;--line:#cfe0ea;--ink:#fff;--muted:#e3edf3;--accent:#ffd34d;--good:#8dff9d;--bad:#ff9a8c}
+body.a-hc,html:has(body.a-hc){background:#000!important}
+body.a-hc .card,body.a-hc .mbox,body.a-hc .btn,body.a-hc #mbar,body.a-hc .mres,body.a-hc .mr,body.a-hc .pl{border-width:2px!important}
+body.a-hc .btn:focus-visible,body.a-hc button:focus-visible,body.a-hc input:focus-visible,body.a-hc select:focus-visible{outline:3px solid #fff;outline-offset:2px}
+body.a-hc #board svg polygon{stroke:#fff;stroke-width:3}
+body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
 </style>
 </head>
 <body>
@@ -869,7 +882,7 @@ function newGame(cfg){
   for(let i=0;i<nBots;i++)names.push(BOTNAMES[i%6]);
   if(cfg.spectate){G.cfg.humanSeat=-1;}else{G.cfg.humanSeat=0;if(hn>1){G.cfg.humans=[...Array(hn).keys()];G.cfg.net=true;}}
   G.players=names.map((name,i)=>({id:i,name,color:PCOL[i],res:{wood:0,brick:0,wool:0,grain:0,ore:0},dev:[],knights:0,left:{road:15,settle:5,city:4,ship:10}}));
-  G.prodStat=G.players.map(()=>({wood:0,brick:0,wool:0,grain:0,ore:0}));ZOOM.s=1;ZOOM.cx=null;ZOOM.cy=null;
+  G.prodStat=G.players.map(()=>({wood:0,brick:0,wool:0,grain:0,ore:0}));G.thief=G.players.map(()=>({stole:0,robbed:0}));ZOOM.s=1;ZOOM.cx=null;ZOOM.cy=null;
   G.limits=(cfg.limits&&cfg.limits.length===G.n)?cfg.limits.slice():Array(G.n).fill(60);
   const BK=G.big?24:19;G.bank={wood:BK,brick:BK,wool:BK,grain:BK,ore:BK};
   G.deck=G.big?shuffle([...Array(20).fill('knight'),...Array(5).fill('vp'),...Array(3).fill('road'),...Array(3).fill('plenty'),...Array(3).fill('monopoly')]):shuffle([...Array(14).fill('knight'),...Array(5).fill('vp'),...Array(2).fill('road'),...Array(2).fill('plenty'),...Array(2).fill('monopoly')]);
@@ -1301,6 +1314,7 @@ function steal(pid,vic){
   const pool=[];RES.forEach(r=>{for(let i=0;i<v.res[r];i++)pool.push(r);});
   if(!pool.length)return;
   const r=pool[rnd(pool.length)];v.res[r]--;p.res[r]++;sfx('steal',isBot(pid)?.55:1);
+  if(G.thief){G.thief[pid].stole++;G.thief[vic].robbed++;}
   say(!isBot(pid)||!isBot(vic)?`${p.name} le roba 1 ${RNAME[r]} a ${v.name}.`:`${p.name} le roba una carta a ${v.name}.`);
 }
 
@@ -2394,6 +2408,21 @@ function chartSVG(){
   G.players.forEach(p=>{s+=marker(X(last.t),Y(last.vp[p.id]),p.id);});
   return s+'</svg>';
 }
+/* premios y cifras por jugador al terminar */
+function awardsHTML(){
+  if(!G.thief)return '';
+  const tot=G.prodStat.map(x=>RES.reduce((a,r)=>a+x[r],0)),n=G.players.length;
+  const top=(arr,min)=>{const m=Math.max(...arr);if(m<min)return null;const w=arr.map((v,i)=>v===m?i:-1).filter(i=>i>=0);return w.length===1?{i:w[0],v:m}:null;};
+  const aw=[
+    ['⛏️ Más productivo',top(tot,1),v=>v+' cartas con los dados'],
+    ['🦊 El ladrón',top(G.thief.map(x=>x.stole),1),v=>v+' robos'],
+    ['😵 El más robado',top(G.thief.map(x=>x.robbed),1),v=>v+' cartas perdidas'],
+    ['🛡️ Más guardias',top(G.players.map(q=>q.knights),1),v=>v+' guardias jugados'],
+    ['🏗️ Más constructor',top(G.players.map(q=>(15-q.left.road)+(5-q.left.settle)*2+(4-q.left.city)*3),1),v=>'la mayor obra levantada']
+  ].filter(a=>a[1]);
+  const rows=G.players.map(q=>`<div class="prow"><span>${SYM[q.id]} ${q.name}</span><span class="pdet" style="margin:0">Producción ${tot[q.id]} · Robó ${G.thief[q.id].stole} · Le robaron ${G.thief[q.id].robbed} · Guardias ${q.knights}</span></div>`).join('');
+  return `<h3 class="rh">Premios y cifras</h3>${aw.length?`<div class="aw">${aw.map(a=>`<div class="evchip"><b>${a[0]}</b><small>${G.players[a[1].i].name}: ${a[2](a[1].v)}</small></div>`).join('')}</div>`:''}${rows}`;
+}
 function prodHTML(){
   const tot=G.prodStat.map(x=>RES.reduce((a,r)=>a+x[r],0)),mx=Math.max(1,...tot);
   return G.players.map(p=>{
@@ -2433,6 +2462,7 @@ function showWin(limit){
    <h3 class="rh">Puntos por turno</h3>${chartSVG()}
    <div class="legend">${G.players.map(p=>`<span><span style="color:${PCOL[p.id]};font-weight:800">${SYM[p.id]}</span> ${p.name} · ${lastRow?lastRow.vp[p.id]:vp(p.id)} pts</span>`).join('')}</div>
    <h3 class="rh">Recursos producidos con los dados</h3>${prodHTML()}
+   ${awardsHTML()}
    ${extra}<div class="mact"><button class="btn primary" onclick="showMenu()">Jugar otra vez</button><button class="btn" onclick="replayStart()">Ver repetición</button><button class="btn" onclick="closeModal()">Ver tablero</button></div>`,true);
 }
 let dragMoved=false;
@@ -2923,9 +2953,11 @@ const MI={
 const mi=n=>`<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">${MI[n]||''}</svg>`;
 const THEMES=[['coast','Costa','linear-gradient(135deg,#2a7893,#0c2c3d)'],['forest','Bosque','linear-gradient(135deg,#3f9a78,#0d3327)'],['snow','Nevado','linear-gradient(135deg,#a6d4ee,#27536f)'],['dusk','Atardecer','linear-gradient(135deg,#cf7d63,#2e2040)']];
 let THEME='coast';try{THEME=localStorage.getItem('ta-theme')||'coast';}catch(e){}
-const OPT={chat:true,alert:true,vib:true};
+const OPT={chat:true,alert:true,vib:true,big:false,hc:false};
 try{for(const k in OPT){const v=localStorage.getItem('ta-o-'+k);if(v!==null)OPT[k]=v==='1';}}catch(e){}
-function setOpt(k,v){OPT[k]=!!v;try{localStorage.setItem('ta-o-'+k,v?'1':'0');}catch(e){}if(k==='chat')try{chatSync();}catch(e){}showPersonalize();}
+function applyA11y(){document.body.classList.toggle('a-big',OPT.big);document.body.classList.toggle('a-hc',OPT.hc);}
+applyA11y();
+function setOpt(k,v){OPT[k]=!!v;try{localStorage.setItem('ta-o-'+k,v?'1':'0');}catch(e){}if(k==='chat')try{chatSync();}catch(e){}applyA11y();showPersonalize();}
 function applyTheme(){THEMES.forEach(t=>document.body.classList.toggle('th-'+t[0],t[0]===THEME&&t[0]!=='coast'));}
 applyTheme();
 function setTheme(id){THEME=id;try{localStorage.setItem('ta-theme',id);}catch(e){}applyTheme();showPersonalize();}
@@ -2937,6 +2969,8 @@ function showPersonalize(){
   openModal(`<h2>Personalizar</h2><p>Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.</p>
    <h3>Tema del tablero</h3><div class="thm" role="group" aria-label="Tema del tablero">${THEMES.map(t=>`<button class="btn${t[0]===THEME?' on':''}" onclick="setTheme('${t[0]}')" aria-pressed="${t[0]===THEME}"><span class="sw" style="background:${t[2]}"></span>${t[1]}</button>`).join('')}</div>
    <h3>Tu color</h3><div class="cols" role="group" aria-label="Tu color">${MYCOLS.map((c,i)=>`<button class="btn${i===MYCOL?' on':''}" style="background:${c[1]}" onclick="setMyColor(${i})" aria-label="${c[0]}" aria-pressed="${i===MYCOL}"></button>`).join('')}</div>
+   <h3>Accesibilidad</h3><div class="optl">${[['big','Letra grande','Agranda textos y botones de los paneles.'],['hc','Alto contraste','Fondo negro, textos blancos y bordes marcados.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
+   <label class="chk"><input type="checkbox" ${CBP.on?'checked':''} onchange="setPalette(this.checked);showPersonalize()"><span><b>Modo daltonismo</b><small>Colores y símbolos pensados para distinguirse sin depender del color.</small></span></label>
    <h3>Partidas en línea</h3><div class="optl">${[['chat','Chat y reacciones','Muestra el botón 💬 y los mensajes de la sala.'],['alert','Aviso de turno','Suena y cambia el título de la pestaña cuando te toca.'],['vib','Vibración','Vibra el teléfono al empezar tu turno (si el aviso está activo).']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
    <p style="color:var(--muted);font-size:13px">${CBP.on?'Con el modo daltonismo activado se usan colores especiales y esta elección no se aplica. ':''}En una sala en línea, los colores de los jugadores los define el anfitrión; el tema del tablero lo eliges cada uno.</p>
    <div class="mact"><button class="btn primary" onclick="showMenu()">Listo</button></div>`);
@@ -3416,7 +3450,7 @@ function netEndHTML(seat){
   const tw=G.teams&&ws.length===2&&ws[0]%2===ws[1]%2;
   const title=tw?(me?'¡Ganó tu equipo!':`Ganó el ${TEAMN[ws[0]%2]}`):ws.length>1?`Empate entre ${names.join(' y ')}`:(me?'¡Ganaste la costa!':`${names[0]} fundó la colonia`);
   const rows=G.players.slice().sort((a,b)=>vp(b.id)-vp(a.id)).map(q=>`<div class="pl" style="grid-template-columns:30px 1fr auto"><span class="av" style="background:${q.color}">${q.name[0].toUpperCase()}</span><span class="nm"><b>${q.name}${q.id===seat?' (tú)':''}</b></span><span class="vpb"><b>${vp(q.id)}</b> pts</span></div>`).join('');
-  return `<div class="mbox"><h2>${title}</h2><p>Turno ${G.turn} · duración ${fmt(gameMs())}.</p><div class="players" style="margin-top:8px">${rows}</div><div class="mact"><button class="btn primary" data-local="netLeave()">Salir de la sala</button></div></div>`;
+  return `<div class="mbox"><h2>${title}</h2><p>Turno ${G.turn} · duración ${fmt(gameMs())}.</p><div class="players" style="margin-top:8px">${rows}</div>${(()=>{try{const d=decisive();return d?`<div class="evchip" style="margin-top:12px">${d.html}</div>`:'';}catch(e){return '';}})()}${awardsHTML()}<div class="mact"><button class="btn primary" data-local="netLeave()">Salir de la sala</button></div></div>`;
 }
 function netEnd(){
   if(NET.ended)return;NET.ended=true;try{localStorage.removeItem(NETSAVE);}catch(e){}
