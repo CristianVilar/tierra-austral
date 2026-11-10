@@ -192,14 +192,18 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
   #mbar .mr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:5px 2px 4px;border-radius:10px;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 40%,#10222f),#10222f 85%);border:1px solid color-mix(in srgb,var(--rc) 60%,#10222f)}
   #mbar .mr b{font:800 19px/1 var(--font-display);font-variant-numeric:tabular-nums;text-align:center}
   #mbar .mr.z{opacity:.5}
+  #mbar .mbuild{flex:1 0 100%;display:flex;align-items:center;gap:6px;overflow-x:auto}
+  #mbar .mbuild .ml{font-size:12px;color:var(--muted);white-space:nowrap;margin-right:2px}
+  #mbar .mbuild .bl{flex:1;min-height:38px;font-size:14px;padding:4px 8px;border-color:var(--ok,#5bbf7a);box-shadow:0 0 0 1px #5bbf7a66,0 0 12px #5bbf7a40}
+  #mbar .mbuild .bl.on{background:#2b6b44;border-color:#8fe0a8}
   #mbar .mr svg{flex:none}#mbar .mr b{flex:none}
   #mbar .btn{white-space:nowrap;padding:8px 6px;font-size:15px}
   #mbar .btn.primary{flex:1.3}
   .side #sec-players{order:-2}
   .side .clock{order:-1;padding:8px 14px}
   .side .clock b{font-size:20px}
-  body{padding-bottom:156px}
-  #tut{bottom:148px}
+  body{padding-bottom:204px}
+  #tut{bottom:196px}
   /* dados dentro del tablero, arriba a la izquierda (a la altura de los botones de zoom) */
   .side .dicecard{display:none}
   #dicepos{position:absolute;left:12px;top:8px;z-index:2;display:flex;align-items:center;min-height:46px}
@@ -1990,7 +1994,17 @@ function mbarHTML(){
   if(G.cfg.humanSeat<0||G.phase==='idle'||G.over||!G.players.length)return '';
   const hu=G.players[HS()];
   const mres=hu?`<div class="mres" role="group" aria-label="Tus recursos">${RES.map(r=>`<span class="mr${hu.res[r]?'':' z'}" style="--rc:${RCOL[r]}" title="${RFULL[r]}">${icon(r,20)}<b>${hu.res[r]}</b></span>`).join('')}</div>`:'';
-  return mres+`<button class="btn primary" ${humanTurn()&&G.phase==='roll'?'':'disabled'} onclick="uiRoll()">Tirar dados</button><button class="btn" onclick="document.querySelector('#sec-build').scrollIntoView({behavior:'smooth',block:'center'})">Construir</button><button class="btn" ${canMain()?'':'disabled'} onclick="uiEnd()">Terminar</button>`;
+  let mbld='';
+  if(hu&&humanTurn()&&canMain()){
+    const pid=HS(),o=[];
+    if(hu.left.road>=1&&canPay(hu,costOf('road',pid))&&legalRoads(pid).length)o.push(['build-road','Sendero']);
+    if(hu.left.settle>=1&&canPay(hu,COST.settle)&&legalSettle(pid,false).length)o.push(['build-settle','Pueblo']);
+    if(hu.left.city>=1&&canPay(hu,COST.city)&&myVerts(pid,'s').length)o.push(['build-city','Castillo']);
+    if(G.rules.expansion&&hu.left.ship>=1&&canPay(hu,COST.ship)&&legalRoads(pid,undefined,'ship').length)o.push(['build-ship','Barco']);
+    const dev=G.rules.dev&&G.deck.length&&canPay(hu,COST.dev);
+    if(o.length||dev)mbld=`<div class="mbuild" role="group" aria-label="Puedes construir"><span class="ml">Puedes:</span>${o.map(([m,l])=>`<button class="btn bl${G.mode===m?' on':''}" onclick="setMode('${m}')">${l}</button>`).join('')}${dev?'<button class="btn bl" onclick="uiBuyDev()">Carta</button>':''}</div>`;
+  }
+  return mres+mbld+`<button class="btn primary" ${humanTurn()&&G.phase==='roll'?'':'disabled'} onclick="uiRoll()">Tirar dados</button><button class="btn" onclick="document.querySelector('#sec-build').scrollIntoView({behavior:'smooth',block:'center'})">Construir</button><button class="btn" ${canMain()?'':'disabled'} onclick="uiEnd()">Terminar</button>`;
 }
 /* ¿qué me falta para construir? */
 function needFor(kind){
