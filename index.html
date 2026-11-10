@@ -2959,6 +2959,949 @@ const OPT={chat:true,alert:true,vib:true,big:false,hc:false};
 try{for(const k in OPT){const v=localStorage.getItem('ta-o-'+k);if(v!==null)OPT[k]=v==='1';}}catch(e){}
 function applyA11y(){document.body.classList.toggle('a-big',OPT.big);document.body.classList.toggle('a-hc',OPT.hc);}
 applyA11y();
+
+/* ---------- idiomas (es / en / pt): traducción en el DOM con un glosario de frases ---------- */
+const LANGS={es:'Español',en:'English',pt:'Português'};
+let LANG=(()=>{try{const v=localStorage.getItem('ta-lang');if(v&&LANGS[v])return v;if(v===null&&!/jsdom/i.test(navigator.userAgent||'')){const n=String(navigator.language||'es').slice(0,2).toLowerCase();if(n==='en'||n==='pt')return n;}}catch(e){}return 'es';})();
+const TR={ex:{en:{},pt:{}},map:{en:{},pt:{}},re:{en:null,pt:null},cache:{en:new Map(),pt:new Map()},ready:false};
+/*I18N_BEGIN*/
+const I18N_RAW=`(Cosechadores) recibe 1 Trigo de consuelo.|(Harvesters) receive 1 consolation Grain.|(Colhedores) recebe 1 Trigo de consolo.
+(Guardianes) recibe 1 carta del banco por su Guardia.|(Guardians) get 1 bank card for their Guard.|(Guardiões) recebe 1 carta do banco pela sua Guarda.
+(desempate por menos puntos)|(tiebreak: fewer points)|(desempate por menos pontos)
+(hexágonos con terreno)|(hexes with terrain)|(hexágonos com terreno)
+(puerto|(port|(porto
+. El lote se pierde.|. The lot is lost.|. O lote se perde.
+. Un pueblo rival en medio la corta.|. A rival village in the middle cuts it.|. Um povoado rival no meio a corta.
+Números|Numbers|Números
+1 carta de desarrollo|1 development card|1 carta de desenvolvimento
+2 puntos cada uno.|2 points each.|2 pontos cada um.
+2 rivales|2 rivals|2 rivais
+3 rivales|3 rivals|3 rivais
+4 rivales (mapa grande)|4 rivals (big map)|4 rivais (mapa grande)
+5 rivales (mapa grande)|5 rivals (big map)|5 rivais (mapa grande)
+4:1 por defecto, 3:1 con un puerto general y 2:1 con el puerto del recurso, si tienes un pueblo o castillo en él.|4:1 by default, 3:1 with a general port and 2:1 with the resource's port, if you have a village or castle on it.|4:1 por padrão, 3:1 com um porto geral e 2:1 com o porto do recurso, se tiver um povoado ou castelo nele.
+: nadie recibe.|: nobody receives.|: ninguém recebe.
+: recibe|: receives|: recebe
+: su turno termina solo.|: their turn ends on its own.|: o turno termina sozinho.
+: termina la partida.|: the game ends.|: a partida termina.
+: un bot juega por su asiento.|: a bot plays their seat.|: um bot joga pelo assento.
+Abre el Menú para empezar.|Open the Menu to start.|Abra o Menu para começar.
+Acaparador|Hoarder|Acumulador
+Accesibilidad|Accessibility|Acessibilidade
+Aceptar|Accept|Aceitar
+Acercar|Zoom in|Aproximar
+Actualiza la página para entrar a esta sala.|Refresh the page to join this room.|Atualize a página para entrar nesta sala.
+Actualizar|Refresh|Atualizar
+Agranda textos y botones de los paneles.|Enlarges texts and buttons in the panels.|Aumenta textos e botões dos painéis.
+Agrega al menos un rival o espera a otro jugador.|Add at least one rival or wait for another player.|Adicione pelo menos um rival ou espere outro jogador.
+Ahora coloca un sendero junto a ese pueblo.|Now place a trail next to that village.|Agora coloque uma trilha ao lado desse povoado.
+Ahora tira los dados.|Now roll the dice.|Agora jogue os dados.
+Ahora un sendero|Now a trail|Agora uma trilha
+Ajustar tablero a la pantalla|Fit board to screen|Ajustar tabuleiro à tela
+Al azar|Random|Aleatório
+Al final|At the end|No final
+Al inicio|At the start|No início
+Al inicio de tu turno tiras los dados. Los hexágonos con ese número producen para quien tenga pueblos o castillos pegados a ellos.|At the start of your turn you roll the dice. Hexes with that number produce for whoever has villages or castles next to them.|No início do seu turno você joga os dados. Os hexágonos com esse número produzem para quem tiver povoados ou castelos ao lado.
+Al terminar el turno|At the end of the turn|Ao terminar o turno
+Aleatorio con revelación tardía|Random with late reveal|Aleatório com revelação tardia
+Alejar|Zoom out|Afastar
+Alto contraste|High contrast|Alto contraste
+Aparece al terminar tu primera partida.|Appears after you finish your first game.|Aparece ao terminar sua primeira partida.
+Aquí están tus cartas: Barraca, Adobe, Lana, Trigo y Metal. Las recibes cuando los hexágonos vecinos a tus pueblos producen.|Here are your cards: Lumber, Clay, Wool, Grain and Ore. You get them when the hexes next to your villages produce.|Aqui estão suas cartas: Madeira, Argila, Lã, Trigo e Minério. Você as recebe quando os hexágonos vizinhos aos seus povoados produzem.
+Archipiélago (islas de un mismo recurso)|Archipelago (islands of one resource)|Arquipélago (ilhas de um mesmo recurso)
+Arista de mar para barco|Sea edge for a ship|Aresta de mar para barco
+Aviso de turno|Turn alert|Aviso de turno
+Ayuda comunal|Community aid|Ajuda comunitária
+Aún no hay partidas en línea. Cuando juegues con amigos, aquí verás quién va ganando.|No online games yet. When you play with friends, you will see who is winning here.|Ainda não há partidas online. Quando jogar com amigos, aqui você verá quem está ganhando.
+Aún no la juegas.|You haven't played it yet.|Você ainda não jogou.
+Aún no ocurre nada.|Nothing has happened yet.|Ainda não aconteceu nada.
+Aún no tienes ninguno.|You don't have any yet.|Você ainda não tem nenhum.
+Bajo cada botón ves qué te falta para construir (por ejemplo «Te falta: 1 Adobe»), y a veces cómo cubrirlo con el banco. Cuando dice «Listo para construir», púlsalo y toca el tablero.|Under each button you see what you still need to build (for example "Missing: 1 Clay"), and sometimes how to cover it with the bank. When it says "Ready to build", press it and tap the board.|Sob cada botão você vê o que falta para construir (por exemplo «Falta: 1 Argila») e às vezes como cobrir com o banco. Quando diz «Pronto para construir», toque nele e depois no tabuleiro.
+Banco y puertos|Bank and ports|Banco e portos
+Banco:|Bank:|Banco:
+Barraca de madera|Wooden lumber|Madeira
+Bienvenida a Tierra Austral|Welcome to Tierra Austral|Boas-vindas a Tierra Austral
+Bonos de Sendero más largo y Guardia mayor|Longest Trail and Largest Guard bonuses|Bônus de Trilha mais longa e Maior Guarda
+Bonos de Sendero más largo y Guardia mayor activados.|Longest Trail and Largest Guard bonuses enabled.|Bônus de Trilha mais longa e Maior Guarda ativados.
+Borrar estadísticas y progreso|Erase stats and progress|Apagar estatísticas e progresso
+Borrar hexágono|Erase hex|Apagar hexágono
+Borrar marcador|Erase scoreboard|Apagar placar
+Buena suerte|Good luck|Boa sorte
+Buscando salas…|Looking for rooms…|Procurando salas…
+Cada Guardia que juegas te da además 1 carta del banco.|Each Guard you play also gives you 1 card from the bank.|Cada Guarda que você joga também lhe dá 1 carta do banco.
+Cada jugador es un pueblo con una habilidad única. Tu pueblo:|Each player is a people with a unique ability. Your people:|Cada jogador é um povo com uma habilidade única. Seu povo:
+Cada jugador tiene una misión oculta. Cumplirla da|Each player has a hidden mission. Completing it gives|Cada jogador tem uma missão oculta. Cumpri-la dá
+Cada pueblo (y castillo) de un hexágono de|Each village (and castle) on a hex of|Cada povoado (e castelo) em um hexágono de
+Cambia cartas con el banco|Trade cards with the bank|Troque cartas com o banco
+Campaña|Campaign|Campanha
+Campaña · misión|Campaign · mission|Campanha · missão
+Campeón de la campaña|Campaign champion|Campeão da campanha
+Cancelar|Cancel|Cancelar
+Cargar equilibrado|Load balanced|Carregar equilibrado
+Carrera relámpago|Lightning race|Corrida relâmpago
+Cartas de desarrollo|Development cards|Cartas de desenvolvimento
+Cartas de desarrollo activadas.|Development cards enabled.|Cartas de desenvolvimento ativadas.
+Cerrar|Close|Fechar
+Cerrar sala|Close room|Fechar sala
+Chat de la sala|Room chat|Chat da sala
+Clima extendido (activa los eventos)|Extended weather (enables events)|Clima estendido (ativa os eventos)
+Clima: además de los eventos, pueden ocurrir Helada (2 rondas), Crecida y Ventisca.|Weather: besides events, Frost (2 rounds), Flood and Blizzard can occur.|Clima: além dos eventos, podem ocorrer Geada (2 rodadas), Cheia e Nevasca.
+Clima|Weather|Clima
+Helada: un recurso no produce durante 2 rondas. Crecida: un recurso produce el doble una ronda. Ventisca: los puertos no valen una ronda.|Frost: a resource does not produce for 2 rounds. Flood: a resource produces double for one round. Blizzard: ports are worthless for one round.|Geada: um recurso não produz por 2 rodadas. Cheia: um recurso produz o dobro por uma rodada. Nevasca: os portos não valem por uma rodada.
+Clásico aleatorio|Random classic|Clássico aleatório
+Coloca otro sendero gratis.|Place another free trail.|Coloque outra trilha grátis.
+Coloca tu primer pueblo en una intersección resaltada.|Place your first village on a highlighted intersection.|Coloque seu primeiro povoado em uma interseção destacada.
+Coloca un sendero gratis (quedan|Place a free trail (remaining|Coloque uma trilha grátis (restam
+Coloca un sendero junto a tu pueblo. Los senderos te permiten expandirte hacia nuevas intersecciones.|Place a trail next to your village. Trails let you expand toward new intersections.|Coloque uma trilha ao lado do seu povoado. As trilhas permitem expandir para novas interseções.
+Colonia una costa remota. Gana quien logre llegar primero a 10 puntos.|Colonize a remote coast. The first to reach 10 points wins.|Colonize uma costa remota. Vence quem chegar primeiro a 10 pontos.
+Colonia una costa remota. Gana quien logre|Colonize a remote coast. Whoever manages to|Colonize uma costa remota. Vence quem conseguir
+Coloniza una costa remota y gana quien llegue primero a los puntos de victoria. Juega solo, contra la IA o con amigos en línea.|Colonize a remote coast; whoever reaches the victory points first wins. Play solo, against the AI or with friends online.|Colonize uma costa remota; vence quem chegar primeiro aos pontos de vitória. Jogue sozinho, contra a IA ou com amigos online.
+Colores y símbolos pensados para daltonismo|Colors and symbols designed for color blindness|Cores e símbolos pensados para daltonismo
+Colores y símbolos pensados para distinguirse sin depender del color.|Colors and symbols designed to be told apart without relying on color.|Cores e símbolos pensados para distinguir sem depender da cor.
+Comercio con el banco|Trading with the bank|Comércio com o banco
+Comercio entre jugadores|Trading between players|Comércio entre jogadores
+Comienza la partida.|The game begins.|A partida começa.
+Comparte este código o el enlace con tus amigos. Pueden entrar desde el computador o el teléfono.|Share this code or the link with your friends. They can join from a computer or a phone.|Compartilhe este código ou o link com seus amigos. Eles podem entrar pelo computador ou pelo celular.
+Completa las 6 misiones.|Complete all 6 missions.|Complete as 6 missões.
+Compra cartas de desarrollo, cambia con el banco o propón un trato a los rivales. Ellos también te harán ofertas: tendrás unos segundos para aceptar o rechazar.|Buy development cards, trade with the bank or propose a deal to rivals. They will also make you offers: you will have a few seconds to accept or decline.|Compre cartas de desenvolvimento, troque com o banco ou proponha um acordo aos rivais. Eles também farão ofertas: você terá alguns segundos para aceitar ou recusar.
+Compra las 3 mejoras de ciudad en una partida.|Buy all 3 city upgrades in one game.|Compre as 3 melhorias de cidade em uma partida.
+Comprar|Buy|Comprar
+Comprar y jugar Guardias, Cosecha, Acaparador, Senderos libres e Hitos.|Buy and play Guards, Harvest, Hoarder, Free Trails and Milestones.|Comprar e jogar Guardas, Colheita, Acumulador, Trilhas livres e Marcos.
+Compraste:|You bought:|Você comprou:
+Con el modo daltonismo activado se usan colores especiales y esta elección no se aplica.|With color blind mode on, special colors are used and this choice does not apply.|Com o modo daltonismo ativado são usadas cores especiais e esta escolha não se aplica.
+Con un 7 nadie descarta cartas.|On a 7 nobody discards cards.|Com um 7 ninguém descarta cartas.
+Con un 7 nadie produce. Quien tenga más de 7 cartas descarta la mitad. Luego mueves el puma a otro hexágono (lo bloquea) y robas una carta a un jugador vecino.|On a 7 nobody produces. Anyone with more than 7 cards discards half. Then you move the puma to another hex (it blocks it) and steal a card from a neighboring player.|Com um 7 ninguém produz. Quem tiver mais de 7 cartas descarta metade. Depois você move o puma para outro hexágono (ele o bloqueia) e rouba uma carta de um jogador vizinho.
+Con un 7 solo descartas si tienes más de 11 cartas.|On a 7 you only discard if you have more than 11 cards.|Com um 7 você só descarta se tiver mais de 11 cartas.
+Con un 7, quien tenga 8 o más cartas descarta la mitad y elige cuáles.|On a 7, anyone with 8 or more cards discards half and chooses which.|Com um 7, quem tiver 8 ou mais cartas descarta metade e escolhe quais.
+Configurar e iniciar|Set up and start|Configurar e iniciar
+Confirmar oferta|Confirm offer|Confirmar oferta
+Construcción|Building|Construção
+Constructores del Cerro|Hill Builders|Construtores do Morro
+Construir|Build|Construir
+Construir y qué te falta|Building and what you lack|Construir e o que falta
+Construye 2 senderos gratis.|Build 2 free trails.|Construa 2 trilhas grátis.
+Construye y compra cartas. Luego termina el turno. Bajo cada botón de construcción ves qué te falta.|Build and buy cards. Then end your turn. Under each build button you see what you lack.|Construa e compre cartas. Depois termine o turno. Sob cada botão de construção você vê o que falta.
+Construye, comercia o termina tu turno.|Build, trade or end your turn.|Construa, negocie ou termine o turno.
+Copia el texto manualmente|Copy the text manually|Copie o texto manualmente
+Copiar código|Copy code|Copiar código
+Copiar enlace|Copy link|Copiar link
+Copiar resultado|Copy result|Copiar resultado
+Cordillera (franja de minas)|Mountain range (strip of mines)|Cordilheira (faixa de minas)
+Cosecha abundante|Bountiful harvest|Colheita abundante
+Cosecha|Harvest|Colheita
+Cosechadores del Valle|Valley Harvesters|Colhedores do Vale
+Costa rica en minas y arcilla, y un centro fértil de lana y trigo. Los mejores terrenos de piedra y arcilla están en la orilla, junto a los puertos.|A coast rich in mines and clay, and a fertile center of wool and grain. The best stone and clay land is on the shore, next to the ports.|Costa rica em minas e argila, e um centro fértil de lã e trigo. Os melhores terrenos de pedra e argila ficam na orla, junto aos portos.
+Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.|Create a room with a code and play remotely with friends, on the web or on your phone.|Crie uma sala com código e jogue à distância com amigos, na web ou no celular.
+Creador de mapa|Map maker|Criador de mapa
+Crear / editar mapa|Create / edit map|Criar / editar mapa
+Crear sala|Create room|Criar sala
+Cualquier rival|Any rival|Qualquer rival
+Cuando no quieras hacer más, pulsa «Terminar turno».|When you don't want to do more, press "End turn".|Quando não quiser fazer mais nada, toque em «Terminar turno».
+Cuando termine la colocación se revela el mapa y recibes recursos del segundo pueblo.|When placement ends the map is revealed and you receive resources from your second village.|Quando a colocação terminar o mapa é revelado e você recebe recursos do segundo povoado.
+Cumple tu misión secreta y gana.|Complete your secret mission and win.|Cumpra sua missão secreta e vença.
+Código de una sala|Room code|Código de uma sala
+Cómo se juega y cuánto cuesta cada construcción.|How to play and what each building costs.|Como se joga e quanto custa cada construção.
+Daltonismo: no|Color blind mode: off|Daltonismo: não
+Das varias cartas iguales y recibes 1 de tu elección. La tasa depende de tus puertos.|You give several identical cards and receive 1 of your choice. The rate depends on your ports.|Você entrega várias cartas iguais e recebe 1 à sua escolha. A taxa depende dos seus portos.
+Debes descartar cartas: elige cuáles.|You must discard cards: choose which.|Você deve descartar cartas: escolha quais.
+Descartar con un 7|Discard on a 7|Descartar com um 7
+Descartar|Discard|Descartar
+Desde ese turno no volvió a ir por detrás.|From that turn on they never fell behind again.|A partir desse turno nunca mais ficou atrás.
+Deshace tu última construcción, mientras no hayas comerciado, comprado cartas ni movido al puma|Undo your last build, as long as you haven't traded, bought cards or moved the puma|Desfaz sua última construção, desde que não tenha negociado, comprado cartas nem movido o puma
+Deshacer|Undo|Desfazer
+Deshaces tu última construcción.|You undo your last build.|Você desfaz sua última construção.
+Deshiciste tu última construcción.|You undid your last build.|Você desfez sua última construção.
+Dificultad de los rivales|Rival difficulty|Dificuldade dos rivais
+Disposición fija y amable, igual en todas las partidas: buena producción cerca del centro y recursos variados. Ideal para aprender.|A fixed, friendly layout, the same in every game: good production near the center and varied resources. Great for learning.|Disposição fixa e amigável, igual em todas as partidas: boa produção perto do centro e recursos variados. Ideal para aprender.
+Doble vida|Double life|Vida dupla
+Domador de rivales|Rival tamer|Domador de rivais
+Duración|Duration|Duração
+El 7 y el puma|The 7 and the puma|O 7 e o puma
+El anfitrión no responde. Revisa el código.|The host is not responding. Check the code.|O anfitrião não responde. Verifique o código.
+El anfitrión te sacó de esta sala.|The host removed you from this room.|O anfitrião tirou você desta sala.
+El anfitrión te sacó de la sala.|The host removed you from the room.|O anfitrião tirou você da sala.
+El banco no tiene suficiente|The bank does not have enough|O banco não tem o suficiente
+El mapa de hoy es el mismo para todos.|Today's map is the same for everyone.|O mapa de hoje é o mesmo para todos.
+El mapa está oculto: elige una intersección resaltada a ciegas. Cuando todos hayan colocado, se revelará.|The map is hidden: pick a highlighted intersection blindly. When everyone has placed, it will be revealed.|O mapa está oculto: escolha uma interseção destacada às cegas. Quando todos tiverem colocado, será revelado.
+El mar no tiene puertos: el banco cobra siempre 4:1.|The sea has no ports: the bank always charges 4:1.|O mar não tem portos: o banco cobra sempre 4:1.
+El mazo está vacío|The deck is empty|O baralho está vazio
+El mismo mapa para todos hoy (|The same map for everyone today (|O mesmo mapa para todos hoje (
+El primer asentamiento|The first settlement|O primeiro assentamento
+El puma deambula|The puma roams|O puma vagueia
+El puma se muda a|The puma moves to|O puma se muda para
+El puma se mueve solo a otro hexágono.|The puma moves on its own to another hex.|O puma se move sozinho para outro hexágono.
+Elige 2 recursos del banco (|Choose 2 resources from the bank (|Escolha 2 recursos do banco (
+Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.|Choose how the board looks and your color. Saved on this device.|Escolha a aparência do tabuleiro e sua cor. Fica salvo neste dispositivo.
+Elige dónde colocar el sendero.|Choose where to place the trail.|Escolha onde colocar a trilha.
+Elige dónde fundar el pueblo.|Choose where to found the village.|Escolha onde fundar o povoado.
+Elige recursos distintos.|Choose different resources.|Escolha recursos diferentes.
+Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.|Choose rivals, map, rules and variants: secret missions, factions, auction, upgrades, wildlands and more.|Escolha rivais, mapa, regras e variantes: missões secretas, facções, leilão, melhorias, terras selvagens e mais.
+Elige un pincel a la derecha y toca los hexágonos. Los puertos se reparten al azar en la costa.|Pick a brush on the right and tap the hexes. Ports are placed at random on the coast.|Escolha um pincel à direita e toque nos hexágonos. Os portos são distribuídos ao acaso na costa.
+Elige un pueblo para ampliar a castillo.|Choose a village to upgrade to a castle.|Escolha um povoado para ampliar a castelo.
+Elige un recurso. Todos los demás te entregan los que tengan.|Choose a resource. Everyone else gives you what they have.|Escolha um recurso. Todos os outros entregam o que tiverem.
+Elige un recurso: todos te entregan los que tengan.|Choose a resource: everyone gives you what they have.|Escolha um recurso: todos entregam o que tiverem.
+Elige una arista de mar para el barco.|Choose a sea edge for the ship.|Escolha uma aresta de mar para o barco.
+Empate entre|Tie between|Empate entre
+Empezar|Start|Começar
+Entendido|Got it|Entendi
+Entrando a la sala|Joining the room|Entrando na sala
+Entrar|Enter|Entrar
+Equilibrar números|Balance numbers|Equilibrar números
+Equipo Cóndor|Condor Team|Equipe Condor
+Equipo Puma|Puma Team|Equipe Puma
+Equipos 2 contra 2|2 vs 2 teams|Equipes 2 contra 2
+Escribe el código de la sala.|Enter the room code.|Digite o código da sala.
+Escribe un mensaje…|Write a message…|Escreva uma mensagem…
+Esperando al anfitrión.|Waiting for the host.|Esperando o anfitrião.
+Esperando respuestas…|Waiting for replies…|Esperando respostas…
+Estadísticas y logros|Stats and achievements|Estatísticas e conquistas
+Este navegador no permite guardar aquí.|This browser does not allow saving here.|Este navegador não permite salvar aqui.
+Estás dentro. Esperando a que el anfitrión inicie la partida.|You're in. Waiting for the host to start the game.|Você está dentro. Esperando o anfitrião iniciar a partida.
+Evento:|Event:|Evento:
+Eventos (opcional)|Events (optional)|Eventos (opcional)
+Eventos: cada|Events: every|Eventos: a cada
+Eventos|Events|Eventos
+Expansión «Islas lejanas»|"Distant Islands" expansion|Expansão «Ilhas distantes»
+Expulsar a alguien|Remove someone|Expulsar alguém
+Expulsar|Remove|Expulsar
+Facciones: cada jugador es un pueblo con una habilidad única (|Factions: each player is a people with a unique ability (|Facções: cada jogador é um povo com uma habilidade única (
+Facciones|Factions|Facções
+Faltan terrenos o números por asignar.|Some terrains or numbers are still unassigned.|Faltam terrenos ou números por atribuir.
+Fiordos (costa rica, centro fértil)|Fjords (rich coast, fertile center)|Fiordes (costa rica, centro fértil)
+Fondo negro, textos blancos y bordes marcados.|Black background, white text and bold borders.|Fundo preto, textos brancos e bordas marcadas.
+Frecuencia de eventos|Event frequency|Frequência de eventos
+Funciona igual en computador y teléfono.|Works the same on computer and phone.|Funciona igual no computador e no celular.
+Funda tu primer pueblo|Found your first village|Funde seu primeiro povoado
+Gana 3 partidas seguidas.|Win 3 games in a row.|Vença 3 partidas seguidas.
+Gana 3 subastas en una partida.|Win 3 auctions in one game.|Vença 3 leilões em uma partida.
+Gana contra rivales difíciles.|Win against hard rivals.|Vença contra rivais difíceis.
+Gana en 12 rondas o menos.|Win in 12 rounds or fewer.|Vença em 12 rodadas ou menos.
+Gana la partida diaria.|Win the daily game.|Vença a partida diária.
+Gana quien llegue primero a la meta de puntos|The first to reach the points goal wins|Vence quem chegar primeiro à meta de pontos
+Gana quien llegue primero a|The first to reach|Vence quem chegar primeiro a
+Gana sin comerciar con jugadores ni con el banco.|Win without trading with players or the bank.|Vença sem negociar com jogadores nem com o banco.
+Gana una partida.|Win a game.|Vença uma partida.
+Ganó el|The winner is the|Venceu o
+Gráfico de puntos por turno de cada jugador|Chart of each player's points per turn|Gráfico de pontos por turno de cada jogador
+Guarda la partida en este navegador|Save the game in this browser|Salva a partida neste navegador
+Guardar partida|Save game|Salvar partida
+Guardar|Save|Salvar
+Guardianes de la Pampa|Pampa Guardians|Guardiões do Pampa
+Hace más ofertas y busca puertos.|Makes more offers and seeks ports.|Faz mais ofertas e busca portos.
+Hay 6/8 contiguos (|There are adjacent 6/8s (|Há 6/8 contíguos (
+Hay tormenta: nadie puede construir barcos esta ronda.|There is a storm: nobody can build ships this round.|Há tempestade: ninguém pode construir barcos nesta rodada.
+Hexágonos del mapa|Map hexes|Hexágonos do mapa
+Igualar a…|Match…|Igualar a…
+Igualar dificultad|Match difficulty|Igualar dificuldade
+Igualar tiempos|Match times|Igualar tempos
+Impuesto del gremio|Guild tax|Imposto da guilda
+Inicio (colocación de pueblos)|Start (village placement)|Início (colocação de povoados)
+Instalar Tierra Austral|Install Tierra Austral|Instalar Tierra Austral
+Instálalo como una app: con su propio ícono y en pantalla completa, sin la barra del navegador.|Install it like an app: with its own icon and full screen, without the browser bar.|Instale como um app: com seu próprio ícone e em tela cheia, sem a barra do navegador.
+Islas lejanas, mejoras de ciudad y tierras salvajes. Llega a 9 puntos.|Distant islands, city upgrades and wildlands. Reach 9 points.|Ilhas distantes, melhorias de cidade e terras selvagens. Chegue a 9 pontos.
+Jugadores (|Players (|Jogadores (
+Jugadores|Players|Jogadores
+Jugar otra vez|Play again|Jogar de novo
+Jugar|Play|Jogar
+La Pampa no lleva número.|The Pampa has no number.|O Pampa não leva número.
+La copia de la partida está dañada.|The game copy is damaged.|A cópia da partida está danificada.
+La gran final|The grand finale|A grande final
+La partida guardada está dañada.|The saved game is damaged.|A partida salva está danificada.
+La repetición está dañada.|The replay is damaged.|A repetição está danificada.
+La sala continúa con un nuevo anfitrión. Puedes volver a entrar con el mismo código desde «Multijugador en línea».|The room continues with a new host. You can rejoin with the same code from "Online multiplayer".|A sala continua com um novo anfitrião. Você pode voltar a entrar com o mesmo código em «Multijogador online».
+La sala está llena.|The room is full.|A sala está cheia.
+La sala ya tiene demasiados espectadores.|The room already has too many spectators.|A sala já tem espectadores demais.
+Las aguas fertilizan: los hexágonos de|The waters fertilize: hexes of|As águas fertilizam: os hexágonos de
+Las fieras de las tierras salvajes se llevan 1|The beasts of the wildlands take 1|As feras das terras selvagens levam 1
+Letra grande|Large text|Letra grande
+Limpiar|Clear|Limpar
+Listo para construir|Ready to build|Pronto para construir
+Listo|Done|Pronto
+Lo que sigue|What comes next|O que vem a seguir
+Logro desbloqueado|Achievement unlocked|Conquista desbloqueada
+Logros desbloqueados|Achievements unlocked|Conquistas desbloqueadas
+Logros (|Achievements (|Conquistas (
+Logros|Achievements|Conquistas
+Los asientos libres los ocupan rivales de la IA. Cuando estén todos, configura y empieza.|Free seats are taken by AI rivals. When everyone is in, set up and start.|Os assentos livres são ocupados por rivais da IA. Quando todos estiverem, configure e comece.
+Los barcos te llevan a la isla lejana: el primero en fundar allí gana 1 punto.|Ships take you to the distant island: the first to found a village there gets 1 point.|Os barcos levam você à ilha distante: o primeiro a fundar lá ganha 1 ponto.
+Los hexágonos con marco dorado rinden el doble, pero las fieras se llevan 1 carta a quien cosecha allí.|Hexes with a golden frame yield double, but the beasts take 1 card from whoever harvests there.|Os hexágonos com moldura dourada rendem o dobro, mas as feras levam 1 carta de quem colhe ali.
+Los hexágonos de|The hexes of|Os hexágonos de
+Los rivales responden según lo que necesiten. Pueden aceptar o rechazar.|Rivals reply depending on what they need. They may accept or decline.|Os rivais respondem conforme o que precisam. Podem aceitar ou recusar.
+Los rivales ya colocaron. Pon tu segundo pueblo: recibirás una carta por cada terreno que lo rodea.|The rivals have placed. Put down your second village: you will receive a card for each terrain around it.|Os rivais já colocaram. Coloque seu segundo povoado: você receberá uma carta por cada terreno ao redor.
+Los senderos cuestan solo 1 Barraca esta ronda.|Trails cost only 1 Lumber this round.|As trilhas custam só 1 Madeira nesta rodada.
+Los terrenos se agrupan en «islas» del mismo recurso, separadas por estrechos desérticos. Cada isla tiene mucho de una cosa: los puertos y el comercio mandan.|Terrain is grouped into "islands" of the same resource, separated by desert straits. Each island has plenty of one thing: ports and trade rule.|Os terrenos se agrupam em «ilhas» do mesmo recurso, separadas por estreitos desérticos. Cada ilha tem muito de uma coisa: portos e comércio mandam.
+Lote:|Lot:|Lote:
+Límite de tiempo por turno|Time limit per turn|Limite de tempo por turno
+Límite de turnos|Turn limit|Limite de turnos
+Límite de|Limit of|Limite de
+Mapa de principiante y dos rivales fáciles. Llega a 6 puntos.|Beginner map and two easy rivals. Reach 6 points.|Mapa de iniciante e dois rivais fáceis. Chegue a 6 pontos.
+Mapa guardado: listo para usar.|Map saved: ready to use.|Mapa salvo: pronto para usar.
+Mapa revelado. Los segundos pueblos reciben sus recursos.|Map revealed. The second villages receive their resources.|Mapa revelado. Os segundos povoados recebem seus recursos.
+Mapa:|Map:|Mapa:
+Mapa|Map|Mapa
+Mar sin puertos|Sea without ports|Mar sem portos
+Marcador entre amigos|Scoreboard among friends|Placar entre amigos
+Mejoras de ciudad: con un castillo puedes comprar Murallas, Almacén y Mercado.|City upgrades: with a castle you can buy Walls, Warehouse and Market.|Melhorias de cidade: com um castelo você pode comprar Muralhas, Armazém e Mercado.
+Mejoras de la ciudad|City upgrades|Melhorias da cidade
+Mejoras de ciudad|City upgrades|Melhorias de cidade
+Mejoras|Upgrades|Melhorias
+Menos|Less|Menos
+Menú|Menu|Menu
+Mercaderes del Estrecho|Strait Merchants|Mercadores do Estreito
+Mercado favorable|Favorable market|Mercado favorável
+Meta de solo 5 puntos, misiones secretas y un rival difícil.|A goal of only 5 points, secret missions and one hard rival.|Meta de apenas 5 pontos, missões secretas e um rival difícil.
+Mira las partidas públicas en espera y únete sin código.|See the public games waiting and join without a code.|Veja as partidas públicas em espera e entre sem código.
+Mira turno a turno la última partida terminada.|Watch the last finished game turn by turn.|Veja turno a turno a última partida terminada.
+Misiones secretas: cada jugador tiene una misión oculta que da +2 puntos secretos al cumplirla.|Secret missions: each player has a hidden mission that gives +2 secret points when completed.|Missões secretas: cada jogador tem uma missão oculta que dá +2 pontos secretos ao cumpri-la.
+Misiones secretas|Secret missions|Missões secretas
+Misión cumplida|Mission complete|Missão cumprida
+Misión secreta|Secret mission|Missão secreta
+Modo daltonismo|Color blind mode|Modo daltonismo
+Modo espectador|Spectator mode|Modo espectador
+Momento decisivo · turno|Decisive moment · turn|Momento decisivo · turno
+Mover el puma a|Move the puma to|Mover o puma para
+Muestra el botón 💬 y los mensajes de la sala.|Shows the 💬 button and the room messages.|Mostra o botão 💬 e as mensagens da sala.
+Mueve el puma y roba una carta. Suma a Guardia mayor.|Move the puma and steal a card. Counts toward Largest Guard.|Mova o puma e roube uma carta. Conta para a Maior Guarda.
+Mueve el puma: toca un hexágono.|Move the puma: tap a hex.|Mova o puma: toque em um hexágono.
+Multijugador en línea|Online multiplayer|Multijogador online
+Más allá del estrecho|Beyond the strait|Além do estreito
+Música: no|Music: off|Música: não
+Música: sí|Music: on|Música: sim
+Nadie acepta tu propuesta.|Nobody accepts your proposal.|Ninguém aceita sua proposta.
+Nadie aceptó. Prueba ofrecer más.|Nobody accepted. Try offering more.|Ninguém aceitou. Tente oferecer mais.
+Nadie produce con este número.|Nobody produces with this number.|Ninguém produz com este número.
+Nadie tiene puertos: el banco siempre cobra 4:1. Llega a 8 puntos.|Nobody has ports: the bank always charges 4:1. Reach 8 points.|Ninguém tem portos: o banco sempre cobra 4:1. Chegue a 8 pontos.
+Necesitas al menos un castillo.|You need at least one castle.|Você precisa de pelo menos um castelo.
+Necesitas un pueblo costero o un barco|You need a coastal village or a ship|Você precisa de um povoado costeiro ou um barco
+Necesitas un sendero que llegue a una intersección libre|You need a trail reaching a free intersection|Você precisa de uma trilha que chegue a uma interseção livre
+Negocios|Business|Negócios
+Ningún evento activo.|No active event.|Nenhum evento ativo.
+No existe una sala abierta con ese código.|There is no open room with that code.|Não existe sala aberta com esse código.
+No hay dónde construir|There is nowhere to build|Não há onde construir
+No hay suficientes turnos para reproducir.|Not enough turns to replay.|Não há turnos suficientes para reproduzir.
+No hay una sala guardada.|There is no saved room.|Não há sala salva.
+No puedes construir senderos.|You cannot build trails.|Você não pode construir trilhas.
+No se pudo abrir la sala en tiempo real.|The room could not be opened in real time.|Não foi possível abrir a sala em tempo real.
+No se pudo cargar|Could not load|Não foi possível carregar
+No se pudo conectar con el servidor de salas.|Could not connect to the room server.|Não foi possível conectar ao servidor de salas.
+No se pudo crear la sala. Intenta de nuevo.|Could not create the room. Try again.|Não foi possível criar a sala. Tente de novo.
+No se pudo entrar.|Could not join.|Não foi possível entrar.
+No se pudo guardar|Could not save|Não foi possível salvar
+No se pudo leer la copia de la partida.|Could not read the game copy.|Não foi possível ler a cópia da partida.
+No termina por puntos: solo por el límite de turnos.|It does not end by points: only by the turn limit.|Não termina por pontos: apenas pelo limite de turnos.
+No tienes cartas|You have no cards|Você não tem cartas
+No tienes|You don't have|Você não tem
+Nombre guardado|Name saved|Nome salvo
+Normal|Normal|Normal
+Nueva partida|New game|Nova partida
+Número|Number|Número
+Números repetidos contiguos:|Adjacent repeated numbers:|Números repetidos contíguos:
+Objetivo|Goal|Objetivo
+Obras públicas|Public works|Obras públicas
+Observas una partida entre rivales controlados por la IA.|You are watching a game between AI-controlled rivals.|Você observa uma partida entre rivais controlados pela IA.
+Ofertas de la subasta:|Auction offers:|Ofertas do leilão:
+Otro jugador tomó el mando|Another player took over|Outro jogador assumiu o comando
+Otro sendero|Another trail|Outra trilha
+Pampa (mucho trigo y lana)|Pampa (lots of grain and wool)|Pampa (muito trigo e lã)
+Partida demasiado corta para graficar.|Game too short to chart.|Partida curta demais para o gráfico.
+Partida diaria ·|Daily game ·|Partida diária ·
+Partida diaria|Daily game|Partida diária
+Partida guardada|Saved game|Partida salva
+Partida retomada: construye, comercia o termina tu turno.|Game resumed: build, trade or end your turn.|Partida retomada: construa, negocie ou termine o turno.
+Partida retomada: es tu turno.|Game resumed: it is your turn.|Partida retomada: é a sua vez.
+Partida retomada: los jugadores que vuelvan se reincorporan solos.|Game resumed: players who come back rejoin on their own.|Partida retomada: os jogadores que voltarem se reintegram sozinhos.
+Partida retomada: tira los dados.|Game resumed: roll the dice.|Partida retomada: jogue os dados.
+Partida rápida|Quick game|Partida rápida
+Partidas en espera que sus anfitriones dejaron públicas. Entra sin necesitar el código.|Games waiting that their hosts made public. Join without needing the code.|Partidas em espera que os anfitriões deixaram públicas. Entre sem precisar do código.
+Partidas en línea ·|Online games ·|Partidas online ·
+Partidas en línea|Online games|Partidas online
+Partidas en total|Games in total|Partidas no total
+Partidas jugadas|Games played|Partidas jogadas
+Pausa|Pause|Pausa
+Perfil y marcador|Profile and scoreboard|Perfil e placar
+Personalizar|Customize|Personalizar
+Podrás retomarla desde el menú.|You can resume it from the menu.|Você poderá retomá-la pelo menu.
+Por dificultad de los rivales|By rival difficulty|Por dificuldade dos rivais
+Premios y cifras|Awards and figures|Prêmios e números
+Primera victoria|First victory|Primeira vitória
+Primero elige el terreno de ese hexágono.|First choose the terrain for that hex.|Primeiro escolha o terreno desse hexágono.
+Prioriza senderos y el Sendero más largo.|Prioritizes trails and the Longest Trail.|Prioriza trilhas e a Trilha mais longa.
+Producción|Production|Produção
+Produce los 5 recursos distintos con tus edificios.|Produce all 5 different resources with your buildings.|Produza os 5 recursos diferentes com suas construções.
+Proponer a|Propose to|Propor a
+Proponer un trato|Propose a deal|Propor um acordo
+Proponer|Propose|Propor
+Propuesta de trato|Deal proposal|Proposta de acordo
+Propón un trato a los rivales|Propose a deal to the rivals|Proponha um acordo aos rivais
+Próximo evento: en|Next event: in|Próximo evento: em
+Pueblo para ampliar|Village to upgrade|Povoado para ampliar
+Puedes construir|You can build|Você pode construir
+Puedes:|You can:|Você pode:
+Puntos de victoria|Victory points|Pontos de vitória
+Puntos necesarios:|Points needed:|Pontos necessários:
+Puntos para ganar|Points to win|Pontos para vencer
+Puntos por turno|Points per turn|Pontos por turno
+Pégalo donde quieras compartirlo.|Paste it wherever you want to share it.|Cole onde quiser compartilhar.
+Quien tenga 8 o más cartas entrega la mitad al banco, y elige cuáles.|Anyone with 8 or more cards gives half to the bank, and chooses which.|Quem tiver 8 ou mais cartas entrega metade ao banco e escolhe quais.
+Quien tenga más de 5 cartas entrega 1 al banco.|Anyone with more than 5 cards gives 1 to the bank.|Quem tiver mais de 5 cartas entrega 1 ao banco.
+Quien va último en puntos recibe 2 cartas del banco.|Whoever is last in points receives 2 cards from the bank.|Quem está em último em pontos recebe 2 cartas do banco.
+Racha actual · mejor|Current streak · best|Sequência atual · melhor
+Racha de 3|Streak of 3|Sequência de 3
+Rechazar|Decline|Recusar
+Rechazas el trato de|You decline the deal from|Você recusa o acordo de
+Recibes|You receive|Você recebe
+Recursos producidos con los dados|Resources produced with the dice|Recursos produzidos com os dados
+Reemplazar por bot (|Replace with a bot (|Substituir por bot (
+Registro|Log|Registro
+Reglas de esta partida|Rules of this game|Regras desta partida
+Reglas de la partida|Game rules|Regras da partida
+Reglas y costos|Rules and costs|Regras e custos
+Rellenar al azar|Fill randomly|Preencher ao acaso
+Repetición de la partida|Game replay|Repetição da partida
+Repetición|Replay|Repetição
+Rey del camino|King of the road|Rei da estrada
+Ritmo de los rivales|Rival pace|Ritmo dos rivais
+Rivales con personalidad:|Rivals with personality:|Rivais com personalidade:
+Rivales con personalidad|Rivals with personality|Rivais com personalidade
+Rivales|Rivals|Rivais
+Ruta continua de 5 o más senderos|Continuous route of 5 or more trails|Rota contínua de 5 ou mais trilhas
+Rápido|Fast|Rápido
+Sala pública: aparece en «Salas abiertas» para unirse sin código|Public room: appears in "Open rooms" so people can join without a code|Sala pública: aparece em «Salas abertas» para entrar sem código
+Salas abiertas|Open rooms|Salas abertas
+Sala de|Room of|Sala de
+Sala|Room|Sala
+Salir de la guía|Leave the guide|Sair do guia
+Salir de la sala|Leave the room|Sair da sala
+Se acabó el tiempo de|Time is up for|O tempo acabou para
+Se acabó el tiempo:|Time is up:|O tempo acabou:
+Se desbloquean al tener al menos un castillo.|They unlock once you have at least one castle.|Desbloqueiam quando você tiver pelo menos um castelo.
+Se guarda solo en este dispositivo: cada amigo ve su propio marcador contra ti. No hay cuentas ni datos en ningún servidor.|Saved only on this device: each friend sees their own scoreboard against you. There are no accounts or data on any server.|Fica salvo apenas neste dispositivo: cada amigo vê seu próprio placar contra você. Não há contas nem dados em nenhum servidor.
+Se llegó al límite de|The limit of|O limite de
+Se llegó al turno|Turn reached:|Chegou-se ao turno
+Se perdió la comunicación. Si el anfitrión vuelve, la partida seguirá sola.|Communication was lost. If the host returns, the game will carry on by itself.|A comunicação foi perdida. Se o anfitrião voltar, a partida seguirá sozinha.
+Se revela el mapa: aparecen terrenos y números.|The map is revealed: terrains and numbers appear.|O mapa é revelado: aparecem terrenos e números.
+Seis misiones con condiciones especiales. Completadas:|Six missions with special conditions. Completed:|Seis missões com condições especiais. Concluídas:
+Seis misiones con condiciones especiales. Gana cada una para desbloquear la siguiente.|Six missions with special conditions. Win each one to unlock the next.|Seis missões com condições especiais. Vença cada uma para desbloquear a próxima.
+Sendero más largo|Longest Trail|Trilha mais longa
+Senderos libres|Free Trails|Trilhas livres
+Sequía (tres desiertos, recursos escasos)|Drought (three deserts, scarce resources)|Seca (três desertos, recursos escassos)
+Sequía|Drought|Seca
+Serás el anfitrión: eliges reglas y rivales, y recibes un código.|You will be the host: you choose rules and rivals, and get a code.|Você será o anfitrião: escolhe regras e rivais e recebe um código.
+Si el jugador no termina a tiempo, su turno acaba solo. Si ni siquiera había tirado los dados, se tiran por él, y si sale 7 el puma cae al azar.|If the player does not finish in time, their turn ends by itself. If they had not even rolled, the dice are rolled for them, and on a 7 the puma lands at random.|Se o jogador não terminar a tempo, o turno acaba sozinho. Se nem tinha jogado os dados, eles são jogados por ele, e se sair 7 o puma cai ao acaso.
+Si sales, un rival de la IA jugará por tu asiento.|If you leave, an AI rival will play your seat.|Se você sair, um rival da IA jogará pelo seu assento.
+Si una tirada no te da nada, recibes 1 Trigo del banco.|If a roll gives you nothing, you get 1 Grain from the bank.|Se uma jogada não lhe der nada, você recebe 1 Trigo do banco.
+Sin bonos de Sendero más largo ni Guardia mayor.|No Longest Trail or Largest Guard bonuses.|Sem bônus de Trilha mais longa nem Maior Guarda.
+Sin cartas de desarrollo.|No development cards.|Sem cartas de desenvolvimento.
+Sin conexión con el anfitrión|No connection with the host|Sem conexão com o anfitrião
+Sin conexión|Offline|Sem conexão
+Sin puertos: el banco siempre cobra 4:1.|No ports: the bank always charges 4:1.|Sem portos: o banco sempre cobra 4:1.
+Sin puertos|No ports|Sem portos
+Sin respuesta: se rechaza el trato de|No reply: the deal from|Sem resposta: recusa-se o acordo de
+Sin rivales de la IA|No AI rivals|Sem rivais da IA
+Sin victoria|No victory|Sem vitória
+Solo con 4 jugadores: te juntas con quien juega frente a ti. Sus puntos se suman y ganan al llegar a 1,6 veces la meta. No se puede robar al compañero.|Only with 4 players: you team up with the one sitting across from you. Your points add up and you win at 1.6 times the goal. You cannot steal from your partner.|Só com 4 jogadores: você faz dupla com quem joga à sua frente. Os pontos se somam e vencem ao chegar a 1,6 vez a meta. Não se pode roubar do parceiro.
+Solo mirar|Watch only|Só observar
+Solo puedes guardar durante tu turno, antes o después de tirar los dados.|You can only save during your turn, before or after rolling the dice.|Você só pode salvar durante o seu turno, antes ou depois de jogar os dados.
+Solo se comercia con el banco.|You can only trade with the bank.|Só se negocia com o banco.
+Sonido: sí|Sound: on|Som: sim
+Sonido: no|Sound: off|Som: não
+Subasta de la ronda|Round auction|Leilão da rodada
+Subasta por ronda|Auction each round|Leilão por rodada
+Subasta: nadie ofrece por|Auction: nobody bids on|Leilão: ninguém oferece por
+Subasta:|Auction:|Leilão:
+Subasta|Auction|Leilão
+Suena y cambia el título de la pestaña cuando te toca.|Plays a sound and changes the tab title when it is your turn.|Toca um som e muda o título da aba quando é a sua vez.
+Suma Helada (un recurso no produce 2 rondas), Crecida (un recurso produce el doble) y Ventisca (sin puertos por una ronda) al conjunto de eventos.|Adds Frost (a resource does not produce for 2 rounds), Flood (a resource produces double) and Blizzard (no ports for a round) to the set of events.|Soma Geada (um recurso não produz por 2 rodadas), Cheia (um recurso produz o dobro) e Nevasca (sem portos por uma rodada) ao conjunto de eventos.
+Suma puntos con pueblos (1), castillos (2), Sendero más largo (2), Guardia mayor (2) y cartas Hito (1) hasta llegar a|Earn points with villages (1), castles (2), Longest Trail (2), Largest Guard (2) and Milestone cards (1) until you reach|Some pontos com povoados (1), castelos (2), Trilha mais longa (2), Maior Guarda (2) e cartas Marco (1) até chegar a
+Sé el Explorador de la isla lejana y gana.|Be the Explorer of the distant island and win.|Seja o Explorador da ilha distante e vença.
+Tablero de Tierra Austral|Tierra Austral board|Tabuleiro de Tierra Austral
+Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.|Board theme (coast, forest, snow, sunset) and your player color.|Tema do tabuleiro (costa, floresta, nevado, entardecer) e sua cor de jogador.
+Tema del tablero|Board theme|Tema do tabuleiro
+Temporada de tormentas|Storm season|Temporada de tempestades
+Temporal: sin barcos esta ronda|Storm: no ships this round|Temporal: sem barcos nesta rodada
+Ten 7 senderos o barcos en el tablero.|Have 7 trails or ships on the board.|Tenha 7 trilhas ou barcos no tabuleiro.
+Ten edificios en dos puertos distintos.|Have buildings on two different ports.|Tenha construções em dois portos diferentes.
+Ten edificios junto a 3 hexágonos con número 6 u 8.|Have buildings next to 3 hexes numbered 6 or 8.|Tenha construções ao lado de 3 hexágonos com número 6 ou 8.
+Ten un puerto y un Sendero de largo 4 o más.|Have a port and a Trail of length 4 or more.|Tenha um porto e uma Trilha de comprimento 4 ou mais.
+Termina con un Sendero de 8 o más.|Finish with a Trail of 8 or more.|Termine com uma Trilha de 8 ou mais.
+Termina la acción en curso|Finish the current action|Termine a ação em andamento
+Termina tu turno|End your turn|Termine seu turno
+Terminar turno|End turn|Terminar turno
+Terminar|Finish|Terminar
+Terrenos repartidos con equilibrio: sin 6 y 8 contiguos, sin números repetidos pegados, sin tres terrenos iguales juntos y con producción pareja entre recursos.|Terrain laid out in balance: no adjacent 6s and 8s, no repeated numbers side by side, no three equal terrains together and even production among resources.|Terrenos distribuídos com equilíbrio: sem 6 e 8 contíguos, sem números repetidos juntos, sem três terrenos iguais juntos e com produção parelha entre recursos.
+Terrenos y números ocultos mientras se colocan los pueblos y senderos iniciales. Al terminar todos, se revela el mapa y recién entonces se reparten los recursos del segundo pueblo.|Terrain and numbers are hidden while the starting villages and trails are placed. When everyone finishes, the map is revealed and only then are the second village's resources handed out.|Terrenos e números ocultos enquanto os povoados e trilhas iniciais são colocados. Quando todos terminam, o mapa é revelado e só então os recursos do segundo povoado são distribuídos.
+Terrenos|Terrains|Terrenos
+Terreno|Terrain|Terreno
+Tiempo por jugador (15 a 80 s, de 5 en 5)|Time per player (15 to 80 s, in steps of 5)|Tempo por jogador (15 a 80 s, de 5 em 5)
+Tiempo restante:|Time left:|Tempo restante:
+Tierra Austral · partida diaria|Tierra Austral · daily game|Tierra Austral · partida diária
+Tierras salvajes ✦|Wildlands ✦|Terras selvagens ✦
+Tierras salvajes: 3 hexágonos con marco dorado rinden el doble, pero las fieras se llevan 1 carta a quien cosecha allí.|Wildlands: 3 hexes with a golden frame yield double, but the beasts take 1 card from whoever harvests there.|Terras selvagens: 3 hexágonos com moldura dourada rendem o dobro, mas as feras levam 1 carta de quem colhe ali.
+Tierras salvajesLos hexágonos con marco dorado producen el doble, pero cada vez que dan recursos las fieras se llevan 1 carta al azar a quien los cosechó.|WildlandsHexes with a golden frame produce double, but every time they give resources the beasts take 1 random card from whoever harvested them.|Terras selvagensOs hexágonos com moldura dourada produzem o dobro, mas toda vez que dão recursos as feras levam 1 carta ao acaso de quem os colheu.
+Tierras salvajes|Wildlands|Terras selvagens
+Tipo de mapa|Map type|Tipo de mapa
+Tira los dados primero|Roll the dice first|Jogue os dados primeiro
+Tira los dados: los hexágonos con ese número producen para quien tenga un pueblo (1) o castillo (2) en sus esquinas.|Roll the dice: hexes with that number produce for whoever has a village (1) or castle (2) on their corners.|Jogue os dados: os hexágonos com esse número produzem para quem tiver um povoado (1) ou castelo (2) nos cantos.
+Tira los dados|Roll the dice|Jogue os dados
+Tirar dados|Roll dice|Jogar dados
+Todas las variantes a la vez contra tres rivales difíciles con personalidad. Llega a 11 puntos.|All variants at once against three hard rivals with personality. Reach 11 points.|Todas as variantes ao mesmo tempo contra três rivais difíceis com personalidade. Chegue a 11 pontos.
+Todos reciben 1 carta al azar del banco.|Everyone gets 1 random card from the bank.|Todos recebem 1 carta ao acaso do banco.
+Toma 2 recursos del banco.|Take 2 resources from the bank.|Pegue 2 recursos do banco.
+Tres desiertos y menos recursos: partidas más tensas, donde cada hexágono productivo importa.|Three deserts and fewer resources: tenser games where every productive hex matters.|Três desertos e menos recursos: partidas mais tensas, onde cada hexágono produtivo importa.
+Tres hexágonos con marco dorado rinden el doble, pero las fieras se llevan 1 carta a quien cosecha allí.|Three hexes with a golden frame yield double, but the beasts take 1 card from whoever harvests there.|Três hexágonos com moldura dourada rendem o dobro, mas as feras levam 1 carta de quem colhe ali.
+Tu color|Your color|Sua cor
+Tu facción|Your faction|Sua facção
+Tu meta es llegar a|Your goal is to reach|Sua meta é chegar a
+Tu nombre y cómo vas contra tus amigos en las partidas en línea.|Your name and how you are doing against your friends in online games.|Seu nome e como você vai contra seus amigos nas partidas online.
+Tu nombre|Your name|Seu nome
+Tu oferta:|Your offer:|Sua oferta:
+Tu segundo pueblo|Your second village|Seu segundo povoado
+Tu turno: tira los dados.|Your turn: roll the dice.|Sua vez: jogue os dados.
+Tu turno|Your turn|Sua vez
+Turno anterior|Previous turn|Turno anterior
+Turno de la repetición|Replay turn|Turno da repetição
+Turno de|Turn of|Turno de
+Turno siguiente|Next turn|Próximo turno
+Turno|Turn|Turno
+Turnos máximos|Maximum turns|Turnos máximos
+Tus cartas de desarrollo|Your development cards|Suas cartas de desenvolvimento
+Tus edificios producen aunque el puma esté encima y nadie puede robarte con él.|Your buildings produce even with the puma on top and nobody can steal from you with it.|Suas construções produzem mesmo com o puma em cima e ninguém pode roubar de você com ele.
+Tus recursos|Your resources|Seus recursos
+Tus senderos cuestan solo 1 Barraca.|Your trails cost only 1 Lumber.|Suas trilhas custam só 1 Madeira.
+Tus victorias – las suyas|Your wins – theirs|Suas vitórias – as deles
+Tutorial guiado (opcional)|Guided tutorial (optional)|Tutorial guiado (opcional)
+Tutorial guiado|Guided tutorial|Tutorial guiado
+Tutorial · paso|Tutorial · step|Tutorial · passo
+Tutorial|Tutorial|Tutorial
+Tú eliges el terreno y el número de cada hexágono en el creador de mapas.|You choose the terrain and number of each hex in the map maker.|Você escolhe o terreno e o número de cada hexágono no criador de mapas.
+Tú tienes una copia de la partida: puedes tomar el mando para que el juego continúe sin esperar.|You have a copy of the game: you can take over so the game continues without waiting.|Você tem uma cópia da partida: pode assumir o comando para o jogo continuar sem esperar.
+Un evento o fenómeno climático cada ronda: heladas, crecidas y ventiscas. Llega a 8 puntos.|An event or weather phenomenon every round: frosts, floods and blizzards. Reach 8 points.|Um evento ou fenômeno climático a cada rodada: geadas, cheias e nevascas. Chegue a 8 pontos.
+Un pueblo exige dejar al menos 2 senderos de distancia al pueblo o castillo más cercano y debe conectar con tu red de senderos. Un castillo mejora un pueblo tuyo.|A village requires at least 2 trails of distance from the nearest village or castle and must connect to your trail network. A castle upgrades one of your villages.|Um povoado exige pelo menos 2 trilhas de distância do povoado ou castelo mais próximo e deve se conectar à sua rede de trilhas. Um castelo melhora um povoado seu.
+Un valle: bosque a la izquierda, arcilla a la derecha, minas en los bordes y praderas en la franja central. Los recursos se reparten por zonas, así que conviene comerciar.|A valley: forest on the left, clay on the right, mines at the edges and meadows in the central strip. Resources are split by zone, so trading pays off.|Um vale: floresta à esquerda, argila à direita, minas nas bordas e pradarias na faixa central. Os recursos se dividem por zonas, então vale a pena negociar.
+Un volcán dormido (desierto) en el centro rodeado de minas y arcilla. Fuera, bosque, lana y trigo. El puma empieza en la cima.|A dormant volcano (desert) in the center surrounded by mines and clay. Outside, forest, wool and grain. The puma starts on the summit.|Um vulcão adormecido (deserto) no centro cercado de minas e argila. Fora, floresta, lã e trigo. O puma começa no topo.
+Una helada deja sin producir a los hexágonos de|A frost stops the hexes of|Uma geada impede de produzir os hexágonos de
+Una partida corta contra rivales fáciles, acompañada paso a paso.|A short game against easy rivals, guided step by step.|Uma partida curta contra rivais fáceis, acompanhada passo a passo.
+Una por turno, y no la que compraste ese mismo turno.|One per turn, and not the one you bought that same turn.|Uma por turno, e não a que você comprou nesse mesmo turno.
+Una tarjeta te explica paso a paso tus primeras jugadas. Puedes cerrarla cuando quieras y reabrirla con el botón «Tutorial».|A card walks you through your first moves step by step. You can close it whenever you want and reopen it with the "Tutorial" button.|Um cartão explica passo a passo suas primeiras jogadas. Você pode fechá-lo quando quiser e reabri-lo com o botão «Tutorial».
+Une tu segundo pueblo con un sendero. Después empieza la partida.|Connect your second village with a trail. Then the game starts.|Ligue seu segundo povoado com uma trilha. Depois a partida começa.
+Unirse|Join|Entrar
+Usa el puma y las Guardias contra el líder.|Uses the puma and Guards against the leader.|Usa o puma e as Guardas contra o líder.
+Usar este mapa|Use this map|Usar este mapa
+Vale 1 punto. Se mantiene oculto.|Worth 1 point. Stays hidden.|Vale 1 ponto. Permanece oculto.
+Valle (bosques y minas a los lados)|Valley (forests and mines on the sides)|Vale (florestas e minas nos lados)
+Variantes|Variants|Variantes
+Ver repetición|Watch replay|Ver repetição
+Ver tablero|View board|Ver tabuleiro
+Victoria más rápida|Fastest victory|Vitória mais rápida
+Victorias (|Wins (|Vitórias (
+Volcán (desierto y minas al centro)|Volcano (desert and mines in the center)|Vulcão (deserto e minas no centro)
+Volumen|Volume|Volume
+Volver a la partida|Back to the game|Voltar à partida
+Volver|Back|Voltar
+Ya la jugaste, sin victoria.|You played it already, without a win.|Você já jogou, sem vitória.
+Ya usaste todos los hexágonos de|You have used all the hexes of|Você já usou todos os hexágonos de
+Ya usaste todos los|You have used all the|Você já usou todos os
+Zoom del tablero|Board zoom|Zoom do tabuleiro
+a cambio de:|in exchange for:|em troca de:
+a cambio de|in exchange for|em troca de
+acapara|hoards|acumula
+acepta el trato de|accepts the deal from|aceita o acordo de
+acepta el trato.|accepts the deal.|aceita o acordo.
+aceptó tu trato.|accepted your deal.|aceitou seu acordo.
+al gremio.|to the guild.|à guilda.
+amplió un pueblo a castillo|upgraded a village to a castle|ampliou um povoado a castelo
+amplía un pueblo a castillo.|upgrades a village to a castle.|amplia um povoado a castelo.
+bota un barco.|launches a ship.|lança um barco.
+cambia|trades|troca
+cartas con los dados|cards from dice|cartas com os dados
+cartas de ayuda comunal.|community aid cards.|cartas de ajuda comunitária.
+cartas iguales|identical cards|cartas iguais
+cartas perdidas|cards lost|cartas perdidas
+cartas al azar.|random cards.|cartas ao acaso.
+cartas. El lote vale unas 3 cartas: ofrecer más de 3 nunca conviene.|cards. The lot is worth about 3 cards: offering more than 3 never pays.|cartas. O lote vale umas 3 cartas: oferecer mais de 3 nunca compensa.
+cartas.|cards.|cartas.
+cartas|cards|cartas
+carta|card|carta
+cerca de|near|perto de
+compra una carta de desarrollo.|buys a development card.|compra uma carta de desenvolvimento.
+con el banco.|with the bank.|com o banco.
+construye un sendero.|builds a trail.|constrói uma trilha.
+cumplió una misión secreta|completed a secret mission|cumpriu uma missão secreta
+descarta|discards|descarta
+durante 2 rondas.|for 2 rounds.|por 2 rodadas.
+durante tu turno. Pueblo 1, castillo 2, Sendero más largo 2, Guardia mayor 2, Hito 1|during your turn. Village 1, castle 2, Longest Trail 2, Largest Guard 2, Milestone 1|durante o seu turno. Povoado 1, castelo 2, Trilha mais longa 2, Maior Guarda 2, Marco 1
+elige su ubicación…|is choosing a location…|escolhe a localização…
+fue expulsado|was removed|foi expulso
+fue reemplazado por votación del grupo|was replaced by group vote|foi substituído por votação do grupo
+funda un pueblo.|founds a village.|funda um povoado.
+fundó la colonia|founded the colony|fundou a colônia
+fundó un pueblo|founded a village|fundou um povoado
+gana la subasta pagando|wins the auction paying|vence o leilão pagando
+gana quien tenga más puntos. Cada turno de cada jugador cuenta como uno. Si marcas ambas reglas, termina la que ocurra primero.|whoever has more points wins. Each player's turn counts as one. If you tick both rules, whichever happens first ends it.|vence quem tiver mais pontos. Cada turno de cada jogador conta como um. Se marcar as duas regras, termina a que ocorrer primeiro.
+ganadas|won|vencidas
+ganó una subasta|won an auction|venceu um leilão
+guardias jugados|guards played|guardas jogadas
+guardias|guards|guardas
+juega Acaparador y se queda con|plays Hoarder and keeps|joga Acumulador e fica com
+juega Cosecha.|plays Harvest.|joga Colheita.
+juega Guardia.|plays Guard.|joga Guarda.
+juega Senderos libres.|plays Free Trails.|joga Trilhas livres.
+juega|plays|joga
+jugadores|players|jogadores
+juntos|together|juntos
+la mayor obra levantada|the biggest build raised|a maior obra erguida
+le roba 1|steals 1 from them|rouba 1 dele
+le roba una carta a|steals a card from|rouba uma carta de
+lidera la Guardia mayor (|leads the Largest Guard (|lidera a Maior Guarda (
+llegar primero a|reach first|chegar primeiro a
+llegó a|reached|chegou a
+llegó primero a la isla lejana|was first to reach the distant island|chegou primeiro à ilha distante
+logros.|achievements.|conquistas.
+mejora su ciudad:|upgrades their city:|melhora sua cidade:
+mejoró su ciudad:|upgraded their city:|melhorou sua cidade:
+menos|fewer|menos
+meta|goal|meta
+mueve el puma a|moves the puma to|move o puma para
+no producen durante esta ronda.|do not produce this round.|não produzem nesta rodada.
+no tiene|has none|não tem
+paga 1|pays 1|paga 1
+partidas,|games,|partidas,
+partida|game|partida
+por 1|for 1|por 1
+produce 1 carta extra esta ronda.|produces 1 extra card this round.|produz 1 carta extra nesta rodada.
+producen el doble esta ronda.|produce double this round.|produzem o dobro nesta rodada.
+propone a|proposes to|propõe a
+puntos que se suman a los tuyos sin que los demás lo sepan hasta el final. Ejemplos:|points that add to yours without the others knowing until the end. Examples:|pontos que se somam aos seus sem que os outros saibam até o final. Exemplos:
+puntos secretos.|secret points.|pontos secretos.
+puntos secretos|secret points|pontos secretos
+puntos (meta|points (goal|pontos (meta
+puntos.|points.|pontos.
+puntos|points|pontos
+punto|point|ponto
+rechaza el trato de|declines the deal from|recusa o acordo de
+rechaza el trato.|declines the deal.|recusa o acordo.
+recibe:|receives:|recebe:
+recibe|receives|recebe
+ronda(s) ocurre algo inesperado: sequía, cosecha abundante, mercado favorable, impuesto del gremio, ayuda comunal, festival, obras públicas, temporal o un puma que deambula.|round(s) something unexpected happens: drought, bountiful harvest, favorable market, guild tax, community aid, festival, public works, storm or a roaming puma.|rodada(s) acontece algo inesperado: seca, colheita abundante, mercado favorável, imposto da guilda, ajuda comunitária, festival, obras públicas, temporal ou um puma vagueando.
+ronda(s) ocurre uno. Duran una ronda los que cambian reglas: Sequía, Cosecha abundante, Mercado favorable, Obras públicas|round(s) one happens. Those that change rules last one round: Drought, Bountiful harvest, Favorable market, Public works|rodada(s) ocorre um. Duram uma rodada os que mudam regras: Seca, Colheita abundante, Mercado favorável, Obras públicas
+rondas ·|rounds ·|rodadas ·
+rondas|rounds|rodadas
+ronda|round|rodada
+salió de la sala|left the room|saiu da sala
+se quedó con el Sendero más largo|took the Longest Trail|ficou com a Trilha mais longa
+suma|adds|soma
+te ofrece:|offers you:|oferece a você:
+tener más puntos al turno|have more points at turn|ter mais pontos no turno
+tiene el Sendero más largo (|has the Longest Trail (|tem a Trilha mais longa (
+tira los dados:|rolls the dice:|joga os dados:
+toma 2 recursos al azar con Cosecha.|takes 2 random resources with Harvest.|pega 2 recursos ao acaso com Colheita.
+tomó la Guardia mayor|took the Largest Guard|tomou a Maior Guarda
+tomó la delantera|took the lead|tomou a dianteira
+toma|takes|pega
+turnos.|turns.|turnos.
+turno|turn|turno
+victorias,|wins,|vitórias,
+volvió a la partida.|came back to the game.|voltou à partida.
+y pasó de|and went from|e passou de
+¡Bienvenido a Tierra Austral!|Welcome to Tierra Austral!|Bem-vindo a Tierra Austral!
+¡Buen golpe!|Nice move!|Belo golpe!
+¡Ganaste la costa!|You won the coast!|Você conquistou a costa!
+¡Ganó tu equipo!|Your team won!|Sua equipe venceu!
+¡Misión completada!|Mission complete!|Missão completa!
+¡Misión cumplida! «|Mission accomplished! «|Missão cumprida! «
+¡Sale 7! El puma entra en acción.|A 7! The puma springs into action.|Saiu 7! O puma entra em ação.
+¡Salió 7! Descarta|A 7 came up! Discard|Saiu 7! Descarte
+¡Suerte!|Good luck!|Boa sorte!
+· Guardias|· Guards|· Guardas
+· Le robaron|· Were robbed|· Foi roubado
+· Robó|· Stole|· Roubou
+· duración|· duration|· duração
+· jugó|· played|· jogou
+¿A quién robas?|Whom do you steal from?|De quem você rouba?
+¿Cómo te llamas?|What is your name?|Qual é o seu nome?
+⛏️ Más productivo|⛏️ Most productive|⛏️ Mais produtivo
+🏗️ Más constructor|🏗️ Top builder|🏗️ Maior construtor
+😵 El más robado|😵 Most robbed|😵 O mais roubado
+🛡️ Más guardias|🛡️ Most guards|🛡️ Mais guardas
+Elige cómo quieres jugar.|Choose how you want to play.|Escolha como você quer jogar.
+Elige cómo quieres|Choose how you want to|Escolha como você quer
+Comercio entre jugadores activado (los rivales también te hacen ofertas).|Trading between players enabled (rivals also make you offers).|Comércio entre jogadores ativado (os rivais também fazem ofertas a você).
+Sin límite de tiempo por turno.|No time limit per turn.|Sem limite de tempo por turno.
+Rivales:|Rivals:|Rivais:
+Comercia con el banco o con otros jugadores (los rivales también te pueden proponer tratos).|Trade with the bank or with other players (rivals can also propose deals to you).|Negocie com o banco ou com outros jogadores (os rivais também podem propor acordos a você).
+Guardia: mueve el puma. Con 3 o más tienes Guardia mayor (hay que superar al actual).|Guard: moves the puma. With 3 or more you hold Largest Guard (you must beat the current holder).|Guarda: move o puma. Com 3 ou mais você tem a Maior Guarda (é preciso superar o atual).
+Senderos libres, Cosecha, Acaparador y Hito.|Free Trails, Harvest, Hoarder and Milestone.|Trilhas livres, Colheita, Acumulador e Marco.
+Fácil se distrae y regala tratos; difícil planifica y bloquea al líder.|Easy gets distracted and gives away deals; hard plans ahead and blocks the leader.|Fácil se distrai e dá acordos de graça; difícil planeja e bloqueia o líder.
+Fáciles|Easy|Fáceis
+Fácil|Easy|Fácil
+Difíciles|Hard|Difíceis
+Difícil|Hard|Difícil
+Una isla extra al otro lado de un estrecho. Se llega con barcos (1 Barraca + 1 Lana) y el primero en fundar allí gana 1 punto (Explorador). Los barcos cuentan para el Sendero más largo.|An extra island across a strait. You reach it with ships (1 Lumber + 1 Wool) and the first to found a village there gets 1 point (Explorer). Ships count toward the Longest Trail.|Uma ilha extra do outro lado de um estreito. Chega-se com barcos (1 Madeira + 1 Lã) e o primeiro a fundar lá ganha 1 ponto (Explorador). Os barcos contam para a Trilha mais longa.
+Cada jugador recibe una misión oculta (por ejemplo, «ten un puerto y un Sendero de 4»). Cumplirla da 2 puntos secretos.|Each player gets a hidden mission (for example, "have a port and a Trail of 4"). Completing it gives 2 secret points.|Cada jogador recebe uma missão oculta (por exemplo, «tenha um porto e uma Trilha de 4»). Cumpri-la dá 2 pontos secretos.
+Cada ronda sale un lote (3 cartas de un recurso, 1 de cada uno de 3 recursos o una carta de desarrollo). Ofertas a sobre cerrado con cartas de tu mano.|Each round a lot comes up (3 cards of one resource, 1 of each of 3 resources or a development card). Sealed-envelope bids with cards from your hand.|A cada rodada sai um lote (3 cartas de um recurso, 1 de cada um de 3 recursos ou uma carta de desenvolvimento). Ofertas em envelope fechado com cartas da sua mão.
+Con un castillo puedes comprar Murallas (el puma no te bloquea ni te roba), Almacén (descartas solo con más de 11 cartas) y Mercado (el banco te cobra 1 menos).|With a castle you can buy Walls (the puma does not block or rob you), Warehouse (you discard only with more than 11 cards) and Market (the bank charges you 1 less).|Com um castelo você pode comprar Muralhas (o puma não bloqueia nem rouba você), Armazém (você descarta só com mais de 11 cartas) e Mercado (o banco cobra 1 a menos).
+Cada rival es Comerciante, Agresivo (usa el puma y las Guardias contra el líder) o Constructor (prioriza senderos).|Each rival is a Trader, Aggressive (uses the puma and Guards against the leader) or a Builder (prioritizes trails).|Cada rival é Comerciante, Agressivo (usa o puma e as Guardas contra o líder) ou Construtor (prioriza trilhas).
+(de 3 a 12). Sin importar cuántos turnos se hayan jugado.|(from 3 to 12). Regardless of how many turns have been played.|(de 3 a 12). Independentemente de quantos turnos foram jogados.
+Proponer tratos a los rivales y recibir los suyos (el banco siempre está disponible).|Propose deals to rivals and receive theirs (the bank is always available).|Propor acordos aos rivais e receber os deles (o banco está sempre disponível).
+Dificultad de|Difficulty of|Dificuldade de
+Tiempo por turno de|Time per turn of|Tempo por turno de
+Tiempo por turno|Time per turn|Tempo por turno
+Chat y reacciones|Chat and reactions|Chat e reações
+Vibración|Vibration|Vibração
+Vibra el teléfono al empezar tu turno (si el aviso está activo).|Vibrates the phone when your turn starts (if the alert is on).|Vibra o celular ao começar o seu turno (se o aviso estiver ativo).
+En una sala en línea, los colores de los jugadores los define el anfitrión; el tema del tablero lo eliges cada uno.|In an online room, player colors are set by the host; each person picks their own board theme.|Em uma sala online, as cores dos jogadores são definidas pelo anfitrião; o tema do tabuleiro cada um escolhe.
+Partidas en línea|Online games|Partidas online
+Idioma|Language|Idioma
+Ámbar|Amber|Âmbar
+Juega con amigos a distancia: uno crea la sala y comparte el código; los demás entran con él.|Play with friends at a distance: one creates the room and shares the code; the others join with it.|Jogue com amigos à distância: um cria a sala e compartilha o código; os demais entram com ele.
+Relámpago|Lightning|Relâmpago
+No se pudo cargar la lista.|Could not load the list.|Não foi possível carregar a lista.
+Chat|Chat|Chat
+Barracas|Lumber|Madeira
+Barraca|Lumber|Madeira
+Adobes|Clay|Argila
+Adobe|Clay|Argila
+Lana|Wool|Lã
+Trigo|Grain|Trigo
+Metal|Ore|Minério
+Sendero|Trail|Trilha
+Senderos|Trails|Trilhas
+Pueblo|Village|Povoado
+Pueblos|Villages|Povoados
+Castillo|Castle|Castelo
+Castillos|Castles|Castelos
+Barco|Ship|Barco
+Barcos|Ships|Barcos
+Banco|Bank|Banco
+Trato|Deal|Acordo
+Tratos|Deals|Acordos
+Tú (tú)|You (you)|Você (você)
+Tú|You|Você
+Comprar carta|Buy card|Comprar carta
+desarr.|dev.|desenv.
+Guardia mayor|Largest Guard|Maior Guarda
+Guardias|Guards|Guardas
+Guardia|Guard|Guarda
+Hitos|Milestones|Marcos
+Hito|Milestone|Marco
+Comerciante|Trader|Comerciante
+Agresivo|Aggressive|Agressivo
+Constructor|Builder|Construtor
+Murallas|Walls|Muralhas
+Almacén|Warehouse|Armazém
+Mercado|Market|Mercado
+Explorador|Explorer|Explorador
+puma|puma|puma
+Puma|Puma|Puma
+hexágonos|hexes|hexágonos
+hexágono|hex|hexágono
+Hexágono|Hex|Hexágono
+puertos|ports|portos
+puerto|port|porto
+Puertos|Ports|Portos
+Puerto|Port|Porto
+Puerto general|General port|Porto geral
+intersección|intersection|interseção
+intersecciones|intersections|interseções
+pueblos|villages|povoados
+pueblo|village|povoado
+castillos|castles|castelos
+castillo|castle|castelo
+senderos|trails|trilhas
+sendero|trail|trilha
+barcos|ships|barcos
+barco|ship|barco
+banco|bank|banco
+dados|dice|dados
+rivales|rivals|rivais
+rival|rival|rival
+recursos|resources|recursos
+recurso|resource|recurso
+Recursos|Resources|Recursos
+Recurso|Resource|Recurso
+Madera|Lumber|Madeira
+Arcilla|Clay|Argila
+Piedra|Ore|Minério
+Desierto|Desert|Deserto
+Bosque|Forest|Floresta
+Colinas|Hills|Colinas
+Montañas|Mountains|Montanhas
+Pradera|Meadow|Pradaria
+Campos|Fields|Campos
+Mar|Sea|Mar
+costa|coast|costa
+Costa|Coast|Costa
+Nevado|Snow|Nevado
+Atardecer|Sunset|Entardecer
+Bosque|Forest|Floresta
+Te falta:|Missing:|Falta:
+Te falta|You lack|Falta
+Necesitas|You need|Você precisa de
+No te quedan|You have no more|Não restam
+No es tu turno|It is not your turn|Não é a sua vez
+Copiado|Copied|Copiado
+Resultado|Result|Resultado
+Cartas|Cards|Cartas
+Helada|Frost|Geada
+Crecida|Flood|Cheia
+Ventisca|Blizzard|Nevasca
+Festival|Festival|Festival
+Evento: |Event: |Evento: 
+Victoria|Victory|Vitória
+Derrota|Defeat|Derrota
+Ganó|Won|Venceu
+Ganaste|You won|Você venceu
+Perdiste|You lost|Você perdeu
+Sí|Yes|Sim
+No|No|Não
+Rojo|Red|Vermelho
+Azul|Blue|Azul
+Verde|Green|Verde
+Naranja|Orange|Laranja
+Morado|Purple|Roxo
+Amarillo|Yellow|Amarelo
+Rosa|Pink|Rosa
+Turquesa|Turquoise|Turquesa
+Cielo|Sky|Céu
+Costa|Coast|Costa
+Bosque nevado|Snowy forest|Floresta nevada
+Pausar|Pause|Pausar
+Reanudar partida|Resume game|Retomar partida
+Reanudar sala|Resume room|Retomar sala
+Reanudar|Resume|Retomar
+Hola|Hi|Olá
+Cambiar nombre|Change name|Mudar nome
+Elige cómo quieres jugar|Choose how you want to play|Escolha como você quer jogar
+Instalar app|Install app|Instalar app
+Sala guardada|Saved room|Sala salva
+Tomar el mando|Take over|Assumir o comando
+Anfitrión|Host|Anfitrião
+Conectado|Connected|Conectado
+(tú)|(you)|(você)
+espectador|spectator|espectador
+Espectador|Spectator|Espectador
+Reemplazar por bot|Replace with a bot|Substituir por bot
+no responde.|is not responding.|não responde.
+Premios|Awards|Prêmios
+El ladrón|The thief|O ladrão
+Más robado|Most robbed|Mais roubado
+Más productivo|Most productive|Mais produtivo
+Más constructor|Top builder|Maior construtor
+Más guardias|Most guards|Mais guardas
+Producción|Production|Produção
+Robó|Stole|Roubou
+Le robaron|Were robbed|Foi roubado
+Cargando|Loading|Carregando
+Reglas|Rules|Regras
+Costos|Costs|Custos
+Costo|Cost|Custo
+Se resuelve al terminar la ronda.|Resolved at the end of the round.|Resolve-se ao terminar a rodada.
+Comercian mejor: el banco te cobra 1 carta menos por cambio (mínimo 2).|They trade better: the bank charges you 1 card less per exchange (minimum 2).|Negociam melhor: o banco cobra 1 carta a menos por troca (mínimo 2).
+El banco te cobra 1 carta menos por cambio (mínimo 2).|The bank charges you 1 card less per exchange (minimum 2).|O banco cobra 1 carta a menos por troca (mínimo 2).
+Abre esta página en|Open this page in|Abra esta página no
+Toca el botón|Tap the|Toque no botão
+Compartir|Share|Compartilhar
+(el cuadrado con la flecha hacia arriba).|button (the square with the arrow pointing up).|(o quadrado com a seta para cima).
+Añadir a pantalla de inicio|Add to Home Screen|Adicionar à tela de início
+Añadir|Add|Adicionar
+y luego|and then|e depois
+Abre el menú del navegador (⋮ o ⋯).|Open the browser menu (⋮ or ⋯).|Abra o menu do navegador (⋮ ou ⋯).
+Instalar app|Install app|Instalar app
+=Cada|Every|A cada
+=Llega a|Reach|Chegue a
+=Tienes|You have|Você tem
+=Pides|You ask for|Você pede
+=Entregas|You give|Você entrega
+=Cambiar|Change|Trocar
+=Elige|Choose|Escolha
+=Ver|View|Ver
+=Más|More|Mais
+=Menos|Less|Menos
+=Hecho|Done|Feito
+=Oferta|Offer|Oferta
+=Ofrecer|Offer|Oferecer
+=Total|Total|Total
+Barrero|Clay pit|Barreiro
+Trigal|Wheat field|Trigal
+Cordillera|Mountains|Cordilheira
+Pampa|Pampa|Pampa
+Bosque|Forest|Floresta
+Pradera|Meadow|Pradaria`;
+/*I18N_END*/
+function trBuild(){
+  if(TR.ready)return;TR.ready=true;
+  const low=x=>x.charAt(0).toLowerCase()+x.slice(1),up=x=>x.charAt(0).toUpperCase()+x.slice(1);
+  const rows=I18N_RAW.split('\n').map(l=>l.split('|')).filter(a=>a.length===3&&a[0].trim());
+  ['en','pt'].forEach((lg,li)=>{
+    const m=TR.map[lg];
+    for(const a of rows){const k=a[0].trim(),v=a[li+1].trim();if(!v)continue;
+      if(k.charAt(0)==='='){TR.ex[lg][k.slice(1)]=v;continue;}
+      if(m[k]===undefined)m[k]=v;
+      const kl=low(k),ku=up(k);
+      if(kl!==k&&m[kl]===undefined)m[kl]=low(v);
+      if(ku!==k&&m[ku]===undefined)m[ku]=up(v);}
+    const keys=Object.keys(m).sort((x,y)=>y.length-x.length);
+    const esc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const parts=keys.map(k=>(/^\p{L}/u.test(k)?'(?<![\\p{L}])':'')+esc(k)+(/\p{L}$/u.test(k)?'(?![\\p{L}])':''));
+    TR.re[lg]=new RegExp(parts.join('|'),'gu');
+  });
+}
+const TRRULES={
+  en:[[/(\d+) de (\d+)/g,'$1 of $2'],[/\b(Lumber|Clay|Wool|Grain|Ore|card|cards) de ([A-ZÁÉÍÓÚ])/g,'$1 from $2'],[/ y (?=[a-z])/g,' and '],[/ a (?=\d)/g,' to ']],
+  pt:[[/(\d+) de (\d+)/g,'$1 de $2'],[/\b(Madeira|Argila|Lã|Trigo|Minério|carta|cartas) de ([A-ZÁÉÍÓÚ])/g,'$1 de $2'],[/ y (?=[a-z])/g,' e ']]
+};
+function trStr(s){
+  if(LANG==='es'||!s||!/\p{L}/u.test(s))return s;
+  trBuild();const c=TR.cache[LANG],h=c.get(s);if(h!==undefined)return h;
+  const m=TR.map[LANG];let out;
+  const t=s.trim();
+  if(m[t]!==undefined)out=s.replace(t,()=>m[t]);
+  else if(TR.ex[LANG][t]!==undefined)out=s.replace(t,()=>TR.ex[LANG][t]);
+  else{out=s.replace(TR.re[LANG],k=>m[k]);for(const r of TRRULES[LANG])out=out.replace(r[0],r[1]);}
+  if(c.size>4000)c.clear();c.set(s,out);return out;
+}
+const TRATTR=['title','aria-label','placeholder','alt'];
+function trNode(n){
+  if(n.nodeType===3){
+    const v=n.nodeValue;let o=v;
+    if(n.__tv!==undefined&&v===n.__tv)o=n.__es;
+    const out=trStr(o);
+    if(out!==v)n.nodeValue=out;
+    n.__es=o;n.__tv=out;return;
+  }
+  if(n.nodeType!==1)return;
+  const tg=n.tagName;if(tg==='SCRIPT'||tg==='STYLE')return;
+  for(const a of TRATTR){
+    if(!n.hasAttribute(a))continue;
+    const v=n.getAttribute(a),st=n.__ta||(n.__ta={}),r=st[a];
+    const o=r&&r.t===v?r.o:v,out=trStr(o);
+    if(out!==v)n.setAttribute(a,out);
+    st[a]={o,t:out};
+  }
+  for(let c=n.firstChild;c;c=c.nextSibling)trNode(c);
+}
+let TRBUSY=false;
+const TROBS=new MutationObserver(ms=>{
+  if(LANG==='es'&&!TR.dirty)return;
+  if(TRBUSY)return;TRBUSY=true;
+  try{for(const m of ms){
+    if(m.type==='characterData')trNode(m.target);
+    else if(m.type==='attributes')trNode(m.target);
+    else m.addedNodes.forEach(trNode);
+  }}finally{TRBUSY=false;TROBS.takeRecords();}
+});
+function trAll(){
+  TRBUSY=true;try{trNode(document.documentElement);document.title=trStr(TR.titleEs||(TR.titleEs=document.title));}finally{TRBUSY=false;TROBS.takeRecords();}
+}
+function setLang(l){
+  if(!LANGS[l])return;
+  LANG=l;TR.dirty=true;try{localStorage.setItem('ta-lang',l);}catch(e){}
+  document.documentElement.lang=l;
+  trAll();
+}
+TROBS.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:TRATTR});
+document.documentElement.lang=LANG;
+const langChips=()=>`<div class="thm" role="group" aria-label="Language">${Object.keys(LANGS).map(k=>`<button class="btn${k===LANG?' on':''}" onclick="setLang('${k}');showPersonalize()" aria-pressed="${k===LANG}">${LANGS[k]}</button>`).join('')}</div>`;
 function setOpt(k,v){OPT[k]=!!v;try{localStorage.setItem('ta-o-'+k,v?'1':'0');}catch(e){}if(k==='chat')try{chatSync();}catch(e){}applyA11y();showPersonalize();}
 function applyTheme(){THEMES.forEach(t=>document.body.classList.toggle('th-'+t[0],t[0]===THEME&&t[0]!=='coast'));}
 applyTheme();
@@ -2969,6 +3912,7 @@ function setMyColor(i){
 }
 function showPersonalize(){
   openModal(`<h2>Personalizar</h2><p>Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.</p>
+   <h3>Idioma</h3>${langChips()}
    <h3>Tema del tablero</h3><div class="thm" role="group" aria-label="Tema del tablero">${THEMES.map(t=>`<button class="btn${t[0]===THEME?' on':''}" onclick="setTheme('${t[0]}')" aria-pressed="${t[0]===THEME}"><span class="sw" style="background:${t[2]}"></span>${t[1]}</button>`).join('')}</div>
    <h3>Tu color</h3><div class="cols" role="group" aria-label="Tu color">${MYCOLS.map((c,i)=>`<button class="btn${i===MYCOL?' on':''}" style="background:${c[1]}" onclick="setMyColor(${i})" aria-label="${c[0]}" aria-pressed="${i===MYCOL}"></button>`).join('')}</div>
    <h3>Accesibilidad</h3><div class="optl">${[['big','Letra grande','Agranda textos y botones de los paneles.'],['hc','Alto contraste','Fondo negro, textos blancos y bordes marcados.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
@@ -2992,6 +3936,7 @@ try{PNAME=localStorage.getItem('ta-name')||'';}catch(e){}
 function showWelcome(){
   const lg=document.querySelector('header.top .logo svg');
   openModal(`<div class="welcome"><div class="wl">${lg?lg.outerHTML:''}</div><h2>¡Bienvenido a Tierra Austral!</h2>
+   <div class="thm" role="group" aria-label="Language" style="justify-content:center">${Object.keys(LANGS).map(k=>`<button class="btn${k===LANG?' on':''}" onclick="setLang('${k}');showWelcome()">${LANGS[k]}</button>`).join('')}</div>
    <p>Coloniza una costa remota y gana quien llegue primero a los puntos de victoria. Juega solo, contra la IA o con amigos en línea.</p>
    <div class="field"><label for="w-name">¿Cómo te llamas?</label><input id="w-name" type="text" maxlength="14" value="${esc(PNAME)}" placeholder="Tu nombre" autocomplete="nickname" autocapitalize="words"></div>
    <button class="btn primary" id="w-go">Entrar</button></div>`);
@@ -3766,6 +4711,7 @@ try{setPalette(localStorage.getItem('ta-cb')==='on',true);}catch(e){setPalette(f
 updateSndUI();updateMusUI();
 render();
 setInterval(tick,250);
+if(LANG!=='es'){TR.dirty=true;trAll();}
 if(!NETH.autoJoin())showWelcome();
 </script>
 </body>
