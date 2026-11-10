@@ -2881,6 +2881,9 @@ const MI={
 const mi=n=>`<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">${MI[n]||''}</svg>`;
 const THEMES=[['coast','Costa','linear-gradient(135deg,#2a7893,#0c2c3d)'],['forest','Bosque','linear-gradient(135deg,#3f9a78,#0d3327)'],['snow','Nevado','linear-gradient(135deg,#a6d4ee,#27536f)'],['dusk','Atardecer','linear-gradient(135deg,#cf7d63,#2e2040)']];
 let THEME='coast';try{THEME=localStorage.getItem('ta-theme')||'coast';}catch(e){}
+const OPT={chat:true,alert:true,vib:true};
+try{for(const k in OPT){const v=localStorage.getItem('ta-o-'+k);if(v!==null)OPT[k]=v==='1';}}catch(e){}
+function setOpt(k,v){OPT[k]=!!v;try{localStorage.setItem('ta-o-'+k,v?'1':'0');}catch(e){}if(k==='chat')try{chatSync();}catch(e){}showPersonalize();}
 function applyTheme(){THEMES.forEach(t=>document.body.classList.toggle('th-'+t[0],t[0]===THEME&&t[0]!=='coast'));}
 applyTheme();
 function setTheme(id){THEME=id;try{localStorage.setItem('ta-theme',id);}catch(e){}applyTheme();showPersonalize();}
@@ -2892,6 +2895,7 @@ function showPersonalize(){
   openModal(`<h2>Personalizar</h2><p>Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.</p>
    <h3>Tema del tablero</h3><div class="thm" role="group" aria-label="Tema del tablero">${THEMES.map(t=>`<button class="btn${t[0]===THEME?' on':''}" onclick="setTheme('${t[0]}')" aria-pressed="${t[0]===THEME}"><span class="sw" style="background:${t[2]}"></span>${t[1]}</button>`).join('')}</div>
    <h3>Tu color</h3><div class="cols" role="group" aria-label="Tu color">${MYCOLS.map((c,i)=>`<button class="btn${i===MYCOL?' on':''}" style="background:${c[1]}" onclick="setMyColor(${i})" aria-label="${c[0]}" aria-pressed="${i===MYCOL}"></button>`).join('')}</div>
+   <h3>Partidas en línea</h3><div class="optl">${[['chat','Chat y reacciones','Muestra el botón 💬 y los mensajes de la sala.'],['alert','Aviso de turno','Suena y cambia el título de la pestaña cuando te toca.'],['vib','Vibración','Vibra el teléfono al empezar tu turno (si el aviso está activo).']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
    <p style="color:var(--muted);font-size:13px">${CBP.on?'Con el modo daltonismo activado se usan colores especiales y esta elección no se aplica. ':''}En una sala en línea, los colores de los jugadores los define el anfitrión; el tema del tablero lo eliges cada uno.</p>
    <div class="mact"><button class="btn primary" onclick="showMenu()">Listo</button></div>`);
 }
@@ -3543,7 +3547,7 @@ function chatInit(){
   r.append(i,sd);pn.append(h,l,q,r);document.body.append(pn);
 }
 function chatSync(){
-  const on=!!NET.role;
+  const on=!!NET.role&&OPT.chat;
   if(on)chatInit();
   const b=$('#chatbtn');if(b)b.classList.toggle('on',on);
   if(!on){const p=$('#chatpanel');if(p)p.classList.remove('on');const f=$('#chatfeed');if(f)f.textContent='';CHAT.log=[];CHAT.unread=0;CHAT.wasMine=false;}
@@ -3560,6 +3564,7 @@ function chatRender(){
   l.scrollTop=l.scrollHeight;
 }
 function chatShow(seat,name,text){
+  if(!OPT.chat)return;
   chatInit();
   CHAT.log.push({seat,name,text});if(CHAT.log.length>50)CHAT.log.shift();
   const open=$('#chatpanel').classList.contains('on');
@@ -3578,8 +3583,8 @@ function netChatSend(text){
 function netChatCast(seat,name,text){netSend({t:'chatmsg',seat,name,text});chatShow(seat,name,text);}
 /* aviso cuando llega tu turno: vibración, sonido breve y título de la pestaña */
 function turnAlert(mine){
-  if(mine&&!CHAT.wasMine){
-    try{if(navigator.vibrate)navigator.vibrate([140,70,140]);}catch(e){}
+  if(mine&&!CHAT.wasMine&&OPT.alert){
+    try{if(OPT.vib&&navigator.vibrate)navigator.vibrate([140,70,140]);}catch(e){}
     try{const c=audio();if(c&&SFX.coin){SND.v=.6;SFX.coin(c,c.currentTime+.01);}}catch(e){}
     if(document.hidden)document.title='🔔 ¡Tu turno! · Tierra Austral';
   }
