@@ -1294,7 +1294,7 @@ function startTurn(){
   if(G.rules.auc&&G.cur===0)G.auc={lot:newLot(),bids:{}};
   if(G.rules.events&&G.cur===0&&G.turn>1){const ri=(G.turn-1)/G.n;if(ri>0&&ri%G.rules.evEvery===0)triggerEvent();}
   if(G.rules.timer){G.turnLimit=G.limits[G.cur];G.turnEnd=Date.now()+G.turnLimit*1000;G.paused=false;G.timerOn=true;}else G.timerOn=false;
-  NETH.pending();
+  NETH.pending();NETH.snap();
   if(isBot(G.cur)){G.busy=true;G.msg=`Turno de ${pn(G.cur)}…`;render();botTurn(G.cur);}
   else{G.busy=false;G.msg=G.cur===G.cfg.humanSeat?'Tu turno: tira los dados.':`Turno de ${pn(G.cur)}.`;render();sfx('turn');saveGame(false);}
 }
@@ -2885,7 +2885,7 @@ function showMenu(){
    ventanas) y reenvía sus clics al anfitrión, que los valida y ejecuta como ese asiento.
    Así no hay dos motores que se desincronicen y nadie recibe las cartas de los demás. */
 const NET={role:null,code:null,id:null,name:'',roster:[],remote:{},modalSeat:null,lobby:false,started:false,
-  beatMs:3000,offMs:20000,pingMs:4000,lostMs:25000,seq:0,gseq:0,ords:{},gord:null,tp:null,tm:null,busy:false,dirty:false,last:{},lastModal:'',seen:{},back:{},hostSeen:0,ended:false,seat:-1,bye:false,ask:null};
+  beatMs:3000,offMs:20000,pingMs:4000,lostMs:25000,seq:0,gseq:0,ords:{},gord:null,tp:null,tm:null,busy:false,dirty:false,last:{},lastModal:'',seen:{},back:{},hostSeen:0,ended:false,seat:-1,bye:false,ask:null,hs:0,snap:null};
 NET.ask=o=>humanTradeModal(o);
 const NETALLOW=['uiRoll','uiEnd','uiUndo','uiPlayDev','uiBuyUpg','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg','openAuction','closeModal','bkPick','bkGo','propose','dscAdj','dscOk','aucAdj','aucOk','plPick','pickVictim','monoPick'];
 const NETMODAL=['closeModal','bkPick','bkGo','propose','dscAdj','dscOk','aucAdj','aucOk','plPick','pickVictim','monoPick'];
@@ -2959,7 +2959,7 @@ function netSan(html){
         if(n.startsWith('on')||n==='srcdoc'||n==='formaction'||n==='action'||n==='style'&&/expression|url\s*\(|@import|javascript:/i.test(v)){c.removeAttribute(a.name);continue;}
         if((n==='href'||n==='xlink:href'||n==='src')&&!/^\s*#/.test(v)){c.removeAttribute(a.name);continue;}
         if((n==='data-oc')&&!/^[A-Za-z_]\w*\([^;{}]*\)\s*;?$/.test(v)){c.removeAttribute(a.name);continue;}
-        if(n==='data-local'&&!/^(netLeave)\(\)$/.test(v)){c.removeAttribute(a.name);continue;}
+        if(n==='data-local'&&!/^(netLeave|netTakeOver)\(\)$/.test(v)){c.removeAttribute(a.name);continue;}
       }
       walk(c);
     }
@@ -2996,7 +2996,7 @@ const NETH={
   modalOpen(){
     if(NET.role!=='host')return;
     const seat=G.cfg.humanSeat;
-    if(seat!==0&&NET.remote[seat]){
+    if(seat!==NET.hs&&NET.remote[seat]){
       if(NET.modalSeat!=null&&NET.modalSeat!==seat)netSend({t:'mclose',to:NET.modalSeat});
       NET.modalSeat=seat;$('#modal').classList.add('remote');netSendModal(true);
     }else{
@@ -3013,6 +3013,7 @@ const NETH={
       if(!G.cfg.humans.includes(r.seat)){G.cfg.humans.push(r.seat);NET.remote[r.seat]=true;say(`${r.name} volvió a la partida.`);}}}
   },
   end(){if(NET.role==='host'&&NET.started)netEnd();},
+  snap(){if(NET.role==='host'&&NET.started)netSnap();},
   starting(cfg){ // el formulario «Partida rápida» en modo sala
     if(NET.role!=='host'||!NET.lobby)return false;
     const hs=NET.roster.slice(0,NETMAX),nb=Math.max(0,Math.min(+cfg.bots,NETMAX-hs.length));
@@ -3053,14 +3054,15 @@ async function netCreate(name){
   let code=null;
   for(let i=0;i<6;i++){const c=NETCODE();try{if(await NETT.create(c)){code=c;break;}}catch(e){showNetMenu(null,null,'No se pudo conectar con el servidor de salas.');return;}}
   if(!code){showNetMenu(null,null,'No se pudo crear la sala. Intenta de nuevo.');return;}
-  Object.assign(NET,{role:'host',code,id:NETID(),name,roster:[],remote:{},started:false,lobby:true,last:{},seen:{},back:{},bye:false,ended:false});
+  Object.assign(NET,{role:'host',hs:0,snap:null,code,id:NETID(),name,roster:[],remote:{},started:false,lobby:true,last:{},seen:{},back:{},bye:false,ended:false});
   NET.roster=[{id:NET.id,name,seat:0,online:true}];
   try{NET.tp=await NETT.open(code,netHostIn);}catch(e){NET.role=null;showNetMenu(null,null,'No se pudo abrir la sala en tiempo real.');return;}
-  netSave();
+  netSave();gidSet(code,NET.id);
   NET.hb=setInterval(netHostBeat,NET.beatMs);
   showLobby();
 }
 function netHostIn(m){
+  if(m&&m.h&&m.t==='takeover'&&NET.role==='host'&&m.id!==NET.id){netYield();return;}
   if(!m||m.h||NET.role!=='host')return;
   if(m.t==='hello'&&m.id){if(NET.ords[m.id])NET.ords[m.id].stop();delete NET.ords[m.id];}
   if(m.q!=null&&m.id){const o=NET.ords[m.id]||(NET.ords[m.id]=new NetOrd(netHostMsg,()=>{}));o.push(m);}
@@ -3087,7 +3089,7 @@ function netHostMsg(m){
     else{NET.roster=NET.roster.filter(x=>x.id!==r.id);NET.roster.forEach((x,i)=>{x.seat=i;});netLobbyCast();if(NET.inLobby)showLobby();}
     return;
   }
-  if(!NET.started||r.seat<1)return;
+  if(!NET.started||r.seat===NET.hs)return;
   if(m.t==='call')netExec(r.seat,m.s);
   else if(m.t==='mclick')netModalClick(r.seat,m.path);
   else if(m.t==='minput')netModalInput(r.seat,m.path,m.v);
@@ -3097,10 +3099,71 @@ function netHostBeat(){
   netSend({t:'hb'});
   const now=Date.now();
   for(const r of NET.roster){
-    if(r.seat===0)continue;
+    if(r.seat===NET.hs)continue;
     if(now-(NET.seen[r.id]||0)>NET.offMs){if(r.online){r.online=false;if(NET.started)netSeatOffline(r,'se desconectó');else{NET.roster=NET.roster.filter(x=>x.id!==r.id);NET.roster.forEach((x,i)=>{x.seat=i;});if(NET.inLobby)showLobby();}netLobbyCast();}}
   }
   if(NET.started)netRecover();
+}
+/* ---------- continuidad: copia de la partida, reanudar y relevo de anfitrión ---------- */
+const gidGet=c=>{try{return localStorage.getItem('ta-gid-'+c)||'';}catch(e){return '';}};
+const gidSet=(c,id)=>{try{localStorage.setItem('ta-gid-'+c,id);}catch(e){}};
+const NETSAVE='ta-netsave';
+function netSnapPack(){return{code:NET.code,hs:NET.hs,roster:NET.roster.map(r=>({id:r.id,name:r.name,seat:r.seat})),ser:ser()};}
+async function netSnap(){
+  if(NET.role!=='host'||!NET.started||G.over)return;
+  let sn;try{sn=netSnapPack();}catch(e){return;}
+  try{localStorage.setItem(NETSAVE,JSON.stringify({...sn,at:Date.now()}));}catch(e){}
+  const bk=NET.roster.find(r=>r.seat!==NET.hs&&r.online);if(!bk)return;
+  const z=await netGz(JSON.stringify(sn));
+  if(z&&z.length<180000&&NET.role==='host')netSend({t:'snap',to:bk.seat,z});
+}
+function netSaveInfo(){
+  try{const o=JSON.parse(localStorage.getItem(NETSAVE)||'null');if(!o||!o.code||!o.ser||Date.now()-o.at>30*864e5)return null;
+    const g=JSON.parse(o.ser).G;return{code:o.code,at:o.at,turn:g.turn,names:o.roster.map(r=>r.name)};}catch(e){return null;}
+}
+async function netBecomeHost(sn,myId,name){
+  const me=sn.roster.find(r=>r.id===myId);if(!me)return false;
+  try{await NETT.create(sn.code);}catch(e){}
+  NETT.setStatus(sn.code,'playing');
+  if(NET.gord)NET.gord.stop();
+  clearInterval(NET.hb);clearInterval(NET.hello);try{if(NET.tp)NET.tp.close();}catch(e){}
+  try{loadSerial(sn.ser);}catch(e){showNetMenu(null,null,'La copia de la partida está dañada.');return false;}
+  const exp=NET.gord&&NET.gord.exp?NET.gord.exp:0;
+  Object.assign(NET,{role:'host',hs:me.seat,code:sn.code,id:myId,name,snap:null,started:true,lobby:false,inLobby:false,
+    roster:sn.roster.map(r=>({id:r.id,name:r.name,seat:r.seat,online:r.id===myId})),remote:{},ords:{},last:{},seen:{},back:{},bye:false,ended:false,
+    seq:Math.max(Date.now(),exp+50000),gord:null,gseq:0,seat:-1,modalSeat:null,lastModal:''});
+  G.cfg.humanSeat=me.seat;G.cfg.net=true;G.cfg.humans=[me.seat];
+  G.players.forEach((p,i)=>{if(p.name===undefined)p.name='Jugador '+(i+1);});
+  try{NET.tp=await NETT.open(sn.code,netHostIn);}catch(e){NET.role=null;showNetMenu(null,null,'No se pudo abrir la sala en tiempo real.');return false;}
+  netSave();gidSet(sn.code,myId);
+  NET.hb=setInterval(netHostBeat,NET.beatMs);
+  closeModal();closeLocalModal();
+  G.busy=false;G.paused=false;
+  if(G.rules.timer){G.turnEnd=Date.now()+(G.turnLimit||60)*1000;G.timerOn=true;}
+  G.msg=G.cur===me.seat?'Partida retomada: es tu turno.':'Partida retomada: los jugadores que vuelvan se reincorporan solos.';
+  netSend({t:'takeover',id:myId});
+  render();netLobbyCast();netPush(true);netRecover();
+  return true;
+}
+async function netResume(){
+  let sn=null;try{sn=JSON.parse(localStorage.getItem(NETSAVE)||'null');}catch(e){}
+  if(!sn||!sn.code){showNetMenu(null,null,'No hay una sala guardada.');return;}
+  const hid=(sn.roster.find(r=>r.seat===sn.hs)||{}).id;
+  await netBecomeHost(sn,hid,netName()||'Anfitrión');
+}
+async function netTakeOver(){
+  if(NET.role!=='guest'||!NET.snap)return;
+  let sn;try{sn=JSON.parse(await netGunz(NET.snap));}catch(e){}
+  if(!sn||!sn.roster||!sn.ser){showNetMenu(NET.code,null,'No se pudo leer la copia de la partida.');return;}
+  await netBecomeHost(sn,NET.id,NET.name);
+}
+function netYield(){ // otro jugador tomó el mando: este equipo deja de ser anfitrión
+  clearInterval(NET.hb);try{if(NET.tp)NET.tp.close();}catch(e){}
+  Object.assign(NET,{role:null,tp:null,started:false,lobby:false,roster:[],remote:{},modalSeat:null,last:{},code:null,seat:-1,hs:0});
+  netForget();closeLocalModal();
+  if(G.cfg&&G.cfg.net){G.cfg.humans=null;G.cfg.net=false;}
+  try{newGame({name:'Tú',bots:3,speed:1,spectate:false});G.msg='Abre el Menú para empezar.';render();}catch(e){}
+  openModal(`<h2>Otro jugador tomó el mando</h2><p>La sala continúa con un nuevo anfitrión. Puedes volver a entrar con el mismo código desde «Multijugador en línea».</p><div class="mact"><button class="btn primary" onclick="showMenu()">Entendido</button></div>`);
 }
 function netSeatOffline(r,why){
   r.online=false;
@@ -3164,7 +3227,7 @@ async function netPush(force){
     do{
       NET.dirty=false;
       for(const r of NET.roster){
-        if(r.seat<1||!r.online)continue;
+        if(r.seat===NET.hs||!r.online)continue;
         const v=netView(r.seat),l=NET.last[r.seat]||(NET.last[r.seat]={});
         const msg={t:'view',to:r.seat,my:(G.cur===r.seat&&!G.over)?1:0};
         if(force||v.b!==l.b){const z=await netGz(v.b);if(z)msg.bz=z;else msg.b=v.b;msg.vb=VB;l.b=v.b;}
@@ -3186,7 +3249,7 @@ function netEndHTML(seat){
   return `<div class="mbox"><h2>${title}</h2><p>Turno ${G.turn} · duración ${fmt(gameMs())}.</p><div class="players" style="margin-top:8px">${rows}</div><div class="mact"><button class="btn primary" data-local="netLeave()">Salir de la sala</button></div></div>`;
 }
 function netEnd(){
-  if(NET.ended)return;NET.ended=true;
+  if(NET.ended)return;NET.ended=true;try{localStorage.removeItem(NETSAVE);}catch(e){}
   NETT.setStatus(NET.code,'ended');
   for(const r of NET.roster)if(r.seat>0)netSend({t:'end',to:r.seat,html:netEndHTML(r.seat)});
 }
@@ -3199,11 +3262,11 @@ async function netJoin(code,name,saved){
   try{localStorage.setItem('ta-name',name);}catch(e){}
   let ok=false;try{ok=await NETT.exists(code);}catch(e){showNetMenu(code,null,'No se pudo conectar con el servidor de salas.');return;}
   if(!ok){netForget();showNetMenu(code,null,'No existe una sala abierta con ese código.');return;}
-  Object.assign(NET,{role:'guest',code,id:(saved&&saved.id)||NETID(),name,roster:[],started:false,lobby:false,hostSeen:Date.now(),seat:-1,bye:false,ended:false});
+  Object.assign(NET,{role:'guest',code,id:(saved&&saved.id)||gidGet(code)||NETID(),name,roster:[],started:false,lobby:false,hostSeen:Date.now(),seat:-1,bye:false,ended:false});
   if(NET.gord)NET.gord.stop();
   NET.gord=new NetOrd(netGuestMsg,()=>netSend({t:'hello',id:NET.id,name:NET.name}));NET.gseq=0;
   try{NET.tp=await NETT.open(code,m=>{if(m&&m.h&&NET.gord)NET.gord.push(m);});}catch(e){NET.role=null;showNetMenu(code,null,'No se pudo abrir la sala en tiempo real.');return;}
-  netSave();
+  netSave();gidSet(code,NET.id);
   openModal(`<h2>Entrando a la sala ${code}…</h2><p>Esperando al anfitrión.</p><div class="mact"><button class="btn" data-local="netLeave()">Cancelar</button></div>`);
   $('#modal').innerHTML=netNeut($('#modal').innerHTML);
   let tries=0;
@@ -3216,8 +3279,8 @@ async function netJoin(code,name,saved){
   netSend({t:'hello',id:NET.id,name});
   NET.hb=setInterval(()=>{
     if(NET.role!=='guest')return;
-    netSend({t:'ping',id:NET.id});
-    if(!NET.bye&&Date.now()-NET.hostSeen>NET.lostMs){NET.bye=true;netGuestModal(`<h2>Sin conexión con el anfitrión</h2><p>Se perdió la comunicación. Si el anfitrión vuelve, reintenta entrar con el mismo código.</p><div class="mact"><button class="btn primary" data-local="netLeave()">Salir de la sala</button></div>`);}
+    netSend(NET.bye?{t:'hello',id:NET.id,name:NET.name}:{t:'ping',id:NET.id});
+    if(!NET.bye&&Date.now()-NET.hostSeen>NET.lostMs){NET.bye=true;netGuestModal(`<h2>Sin conexión con el anfitrión</h2><p>Se perdió la comunicación. Si el anfitrión vuelve, la partida seguirá sola.${NET.snap?' Tú tienes una copia de la partida: puedes <b>tomar el mando</b> para que el juego continúe sin esperar.':''}</p><div class="mact">${NET.snap?'<button class="btn primary" data-local="netTakeOver()">Tomar el mando</button>':''}<button class="btn${NET.snap?'':' primary'}" data-local="netLeave()">Salir de la sala</button></div>`);}
   },NET.pingMs);
 }
 function netGuestModal(html){const m=$('#modal');m.innerHTML=netNeut(html.startsWith('<div class="mbox')?html:`<div class="mbox">${html}</div>`);m.classList.add('open');}
@@ -3230,6 +3293,7 @@ async function netGuestHandle(m){
   if(m.t==='reject'&&m.to===netTag(NET.id,NET.code)){netLeave(true);showNetMenu(NET.code,null,String(m.why||'No se pudo entrar.').slice(0,80));return;}
   NET.hostSeen=Date.now();
   if(m.t==='hb')return;
+  if(m.t==='snap'){if(typeof m.z==='string'&&m.z.length<400000)NET.snap=m.z;return;}
   if(m.t==='chatmsg'){chatShow(Math.max(0,Math.min(5,+m.seat||0)),String(m.name||'').slice(0,14),netChatClean(m.text));return;}
   if(m.t==='lobby'||m.t==='start'){
     NET.roster=(Array.isArray(m.roster)?m.roster:[]).slice(0,NETMAX).map(r=>({tag:String(r&&r.tag||''),name:String(r&&r.name||'').slice(0,14),seat:+(r&&r.seat)||0,online:!!(r&&r.online)}));{const mine=netTag(NET.id,NET.code),f=NET.roster.find(x=>x.tag===mine);NET.seat=f?f.seat:-1;}
@@ -3245,7 +3309,7 @@ async function netGuestHandle(m){
     if(m.mb!=null)$('#mbar').innerHTML=netNeut(m.mb);
     if(m.m!=null)$('#msg').textContent=m.m||' ';
     if(m.my!=null)turnAlert(!!m.my);
-    NET.bye=false;
+    if(NET.bye)closeLocalModal();NET.bye=false;
   }else if(m.t==='modal')netGuestModal(m.html);
   else if(m.t==='mclose')closeLocalModal();
   else if(m.t==='sfx'){try{sfx(m.n,m.v);}catch(e){}}
@@ -3258,7 +3322,7 @@ function netLeave(silent){
   clearInterval(NET.hb);clearInterval(NET.hello);
   try{if(NET.tp)NET.tp.close();}catch(e){}
   const wasGuestPlaying=NET.role==='guest'&&NET.started;
-  Object.assign(NET,{role:null,tp:null,started:false,lobby:false,roster:[],remote:{},modalSeat:null,last:{},code:null,seat:-1});
+  Object.assign(NET,{role:null,tp:null,started:false,lobby:false,roster:[],remote:{},modalSeat:null,last:{},code:null,seat:-1,hs:0,snap:null});
   netForget();closeLocalModal();
   if(G.cfg&&G.cfg.net){G.cfg.humans=null;G.cfg.net=false;}
   if(wasGuestPlaying||!silent){try{newGame({name:'Tú',bots:3,speed:1,spectate:false});G.msg='Abre el Menú para empezar.';render();}catch(e){}}
@@ -3271,6 +3335,7 @@ function showNetMenu(code,saved,err){
   openModal(`<h2>Multijugador en línea</h2><p>Juega con amigos a distancia: uno crea la sala y comparte el código; los demás entran con él.${'ontouchstart' in window?'':' Funciona igual en computador y teléfono.'}</p>
    ${err?`<p class="err" style="color:var(--bad)">${err}</p>`:''}
    <div class="field"><label for="n-name">Tu nombre</label><input id="n-name" maxlength="14" value="${esc(nm)}" placeholder="Tu nombre"></div>
+   ${(()=>{const si=netSaveInfo();return si?`<div class="menu" style="margin-top:8px"><button class="mcard" onclick="netResume()"><b>${mi('play')}Reanudar sala ${si.code}</b><small>Turno ${si.turn} · ${si.names.map(netEsc).join(', ')}. Tus amigos entran con el mismo código.</small></button></div>`:''})()}
    <div class="menu" style="margin-top:8px"><button class="mcard hero" onclick="netCreate($('#n-name').value)"><b>${mi('plus')}Crear sala</b><small>Serás el anfitrión: eliges reglas y rivales, y recibes un código.</small></button></div>
    <div class="field" style="margin-top:12px"><label for="n-code">Código de una sala</label><div class="row"><input id="n-code" maxlength="8" value="${esc(code||'')}" placeholder="ABCDE" style="text-transform:uppercase;flex:1"><button class="btn primary" onclick="netJoin($('#n-code').value,$('#n-name').value)">Unirse</button></div></div>
    <div class="mact"><button class="btn" onclick="showMenu()">Volver</button></div>`,true);
@@ -3307,7 +3372,7 @@ function showRoomMenu(){
 document.addEventListener('click',e=>{
   if(NET.role!=='guest')return;
   const loc=e.target.closest&&e.target.closest('[data-local]');
-  if(loc){e.preventDefault();e.stopPropagation();const f=/^(netLeave)\(\)$/.exec(loc.dataset.local);if(f&&window[f[1]])window[f[1]]();return;}
+  if(loc){e.preventDefault();e.stopPropagation();const f=/^(netLeave|netTakeOver)\(\)$/.exec(loc.dataset.local);if(f&&window[f[1]])window[f[1]]();return;}
   if(!NET.started)return;
   const inModal=e.target.closest&&e.target.closest('#modal');
   const oc=e.target.closest&&e.target.closest('[data-oc]');
