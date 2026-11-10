@@ -228,7 +228,14 @@ select,input[type=text],input[type=number]{background:var(--panel2);color:var(--
 
 .menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .mcard{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 15px;color:var(--ink);font:inherit;cursor:pointer;min-height:82px;transition:border-color .15s,transform .08s}
-.mcard b{font:800 17px var(--font-display)}
+.mcard b{font:800 17px var(--font-display);display:flex;align-items:center;gap:9px}
+.mi{width:22px;height:22px;flex:none;color:var(--accent);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.welcome{text-align:center;padding:6px 4px}
+.welcome .wl svg{width:92px;height:92px;filter:drop-shadow(0 8px 18px #0008)}
+.welcome h2{font-size:28px;margin:10px 0 4px}
+.welcome p{color:var(--muted);margin:0 0 16px}
+.welcome .field{max-width:320px;margin:0 auto 14px;text-align:left}
+.welcome .btn.primary{min-width:200px;min-height:48px;font-size:17px}
 .mcard small{color:var(--muted);font-size:12.5px;line-height:1.35}
 .mcard:hover:not(:disabled){border-color:var(--accent)}
 .mcard:active:not(:disabled){transform:translateY(1px)}
@@ -2113,7 +2120,7 @@ function showStart(){
   const num=(a,b,sel)=>{let o='';for(let i=a;i<=b;i++)o+=`<option value="${i}" ${i===sel?'selected':''}>${i}</option>`;return o;};
   openModal(`<h2>Nueva partida</h2>
    <div class="two">
-    <div class="field"><label for="c-name">Tu nombre</label><input id="c-name" type="text" value="Tú" maxlength="14" oninput="drawTimeRows()"></div>
+    <div class="field"><label for="c-name">Tu nombre</label><input id="c-name" type="text" value="${esc(PNAME||'Tú')}" maxlength="14" oninput="drawTimeRows()"></div>
     <div class="field"><label for="c-bots">Rivales</label><select id="c-bots" onchange="rowsChanged()"><option value="2">2 rivales</option><option value="3" selected>3 rivales</option></select></div>
    </div>
    <div class="two">
@@ -2708,19 +2715,44 @@ function replayLast(){
 function playTutorial(){
   launch({name:'Tú',bots:2,speed:1,spectate:false,map:'beginner',rules:{target:6},diff:['normal','easy','easy']},{tutorial:true});
 }
+const MI={
+ bolt:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+ play:'<polygon points="6 4 20 12 6 20 6 4"/>',
+ flag:'<path d="M4 22V4"/><path d="M4 4h13l-2 4 2 4H4"/>',
+ cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ trophy:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+ replay:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 8v4l3 2"/>',
+ book:'<path d="M2 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z"/>',
+ list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+ users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+ plus:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
+ door:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>'};
+const mi=n=>`<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">${MI[n]||''}</svg>`;
+let PNAME='';
+try{PNAME=localStorage.getItem('ta-name')||'';}catch(e){}
+function showWelcome(){
+  const lg=document.querySelector('header.top .logo svg');
+  openModal(`<div class="welcome"><div class="wl">${lg?lg.outerHTML:''}</div><h2>¡Bienvenido a Tierra Austral!</h2>
+   <p>Coloniza una costa remota y gana quien llegue primero a los puntos de victoria. Juega solo, contra la IA o con amigos en línea.</p>
+   <div class="field"><label for="w-name">¿Cómo te llamas?</label><input id="w-name" type="text" maxlength="14" value="${esc(PNAME)}" placeholder="Tu nombre" autocomplete="nickname" autocapitalize="words"></div>
+   <button class="btn primary" id="w-go">Entrar</button></div>`);
+  const inp=$('#w-name'),go=()=>{PNAME=(inp.value||'').replace(/[<>&"']/g,'').trim().slice(0,14)||'Jugador';try{localStorage.setItem('ta-name',PNAME);}catch(e){}closeModal();showMenu();};
+  $('#w-go').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
+  setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},60);
+}
 function showMenu(){
   if(NET.role){if(NET.role==='host'&&NET.lobby&&!NET.started)showLobby();else showRoomMenu();return;}
   const sv=saveInfo(),last=!!LS.raw(LASTKEY),dk=todayKey(),dd=(LS.get('ta-daily',{})||{})[dk],st=loadStats();
-  openModal(`<h2>Tierra Austral</h2><p>Elige cómo quieres jugar.</p><div class="menu">
-   ${sv?`<button class="mcard hero" onclick="resumeGame()"><b>Reanudar partida</b><small>Turno ${sv.turn} · ${sv.names.join(', ')} · guardada ${fmtDate(sv.at)}</small></button>`:''}
-   <button class="mcard" onclick="showStart()"><b>Partida rápida</b><small>Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.</small></button>
-   <button class="mcard" onclick="showCampaign()"><b>Campaña</b><small>Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.</small></button>
-   <button class="mcard" onclick="startDaily()"><b>Partida diaria</b><small>El mismo mapa para todos hoy (${dk}). ${dd?(dd.won?`Ganada en ${dd.rounds} rondas.`:'Ya la jugaste, sin victoria.'):'Aún no la juegas.'}</small></button>
-   <button class="mcard" onclick="showStats()"><b>Estadísticas y logros</b><small>${st.games} partidas, ${st.wins} victorias, ${ACH.filter(a=>st.ach[a.id]).length} de ${ACH.length} logros.</small></button>
-   <button class="mcard" onclick="replayLast()" ${last?'':'disabled'}><b>Repetición</b><small>${last?'Mira turno a turno la última partida terminada.':'Aparece al terminar tu primera partida.'}</small></button>
-   <button class="mcard" onclick="playTutorial()"><b>Tutorial guiado</b><small>Una partida corta contra rivales fáciles, acompañada paso a paso.</small></button>
-   <button class="mcard" onclick="showRules()"><b>Reglas y costos</b><small>Cómo se juega y cuánto cuesta cada construcción.</small></button>
-   <button class="mcard" onclick="showNetMenu()"><b>Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.</small></button>
+  openModal(`<h2>Tierra Austral</h2><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false" style="color:var(--accent)">Cambiar nombre</a>`:''}</p><div class="menu">
+   ${sv?`<button class="mcard hero" onclick="resumeGame()"><b>${mi('play')}Reanudar partida</b><small>Turno ${sv.turn} · ${sv.names.join(', ')} · guardada ${fmtDate(sv.at)}</small></button>`:''}
+   <button class="mcard" onclick="showStart()"><b>${mi('bolt')}Partida rápida</b><small>Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.</small></button>
+   <button class="mcard" onclick="showCampaign()"><b>${mi('flag')}Campaña</b><small>Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.</small></button>
+   <button class="mcard" onclick="startDaily()"><b>${mi('cal')}Partida diaria</b><small>El mismo mapa para todos hoy (${dk}). ${dd?(dd.won?`Ganada en ${dd.rounds} rondas.`:'Ya la jugaste, sin victoria.'):'Aún no la juegas.'}</small></button>
+   <button class="mcard" onclick="showStats()"><b>${mi('trophy')}Estadísticas y logros</b><small>${st.games} partidas, ${st.wins} victorias, ${ACH.filter(a=>st.ach[a.id]).length} de ${ACH.length} logros.</small></button>
+   <button class="mcard" onclick="replayLast()" ${last?'':'disabled'}><b>${mi('replay')}Repetición</b><small>${last?'Mira turno a turno la última partida terminada.':'Aparece al terminar tu primera partida.'}</small></button>
+   <button class="mcard" onclick="playTutorial()"><b>${mi('book')}Tutorial guiado</b><small>Una partida corta contra rivales fáciles, acompañada paso a paso.</small></button>
+   <button class="mcard" onclick="showRules()"><b>${mi('list')}Reglas y costos</b><small>Cómo se juega y cuánto cuesta cada construcción.</small></button>
+   <button class="mcard" onclick="showNetMenu()"><b>${mi('users')}Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.</small></button>
   </div><div class="mact"><button class="btn" onclick="closeModal()">Cerrar</button></div>`,true);
 }
 
@@ -3113,7 +3145,7 @@ function showNetMenu(code,saved,err){
   openModal(`<h2>Multijugador en línea</h2><p>Juega con amigos a distancia: uno crea la sala y comparte el código; los demás entran con él.${'ontouchstart' in window?'':' Funciona igual en computador y teléfono.'}</p>
    ${err?`<p class="err" style="color:var(--bad)">${err}</p>`:''}
    <div class="field"><label for="n-name">Tu nombre</label><input id="n-name" maxlength="14" value="${esc(nm)}" placeholder="Tu nombre"></div>
-   <div class="menu" style="margin-top:8px"><button class="mcard hero" onclick="netCreate($('#n-name').value)"><b>Crear sala</b><small>Serás el anfitrión: eliges reglas y rivales, y recibes un código.</small></button></div>
+   <div class="menu" style="margin-top:8px"><button class="mcard hero" onclick="netCreate($('#n-name').value)"><b>${mi('plus')}Crear sala</b><small>Serás el anfitrión: eliges reglas y rivales, y recibes un código.</small></button></div>
    <div class="field" style="margin-top:12px"><label for="n-code">Código de una sala</label><div class="row"><input id="n-code" maxlength="8" value="${esc(code||'')}" placeholder="ABCDE" style="text-transform:uppercase;flex:1"><button class="btn primary" onclick="netJoin($('#n-code').value,$('#n-name').value)">Unirse</button></div></div>
    <div class="mact"><button class="btn" onclick="showMenu()">Volver</button></div>`,true);
   if(saved&&code&&!err){netJoin(code,nm,saved);}
@@ -3184,7 +3216,7 @@ try{setPalette(localStorage.getItem('ta-cb')==='on',true);}catch(e){setPalette(f
 updateSndUI();updateMusUI();
 render();
 setInterval(tick,250);
-if(!NETH.autoJoin())showMenu();
+if(!NETH.autoJoin())showWelcome();
 </script>
 </body>
 </html>
