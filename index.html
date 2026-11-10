@@ -96,6 +96,8 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
 select,input[type=text],input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:600 14px var(--font-body)}
 .mact{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.mact .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 16px;line-height:1}
+.mact .btn .mi{width:20px;height:20px;margin:0}
 .cnt{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px}
 .cnt button{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font-weight:800;cursor:pointer}
 .clock{display:flex;gap:16px;align-items:center;justify-content:space-between}
@@ -591,7 +593,7 @@ const NINV_S={2:1,3:2,4:2,5:2,6:2,8:2,9:2,10:2,11:2,12:1},NINV_B={2:2,3:3,4:4,5:
 const HINV_=()=>BIG?HINV_B:HINV_S,NINV_=()=>BIG?NINV_B:NINV_S;
 const HINV=HINV_S,NINV=NINV_S; // el editor de mapas siempre usa el tablero normal
 const isRed=n=>n===6||n===8;
-const MAPNAMES={balanced:'Equilibrado',beginner:'Principiante (fijo)',classic:'Clásico aleatorio',blind:'Aleatorio con revelación tardía',custom:'Personalizado'};
+const MAPNAMES={balanced:'Equilibrado',beginner:'Principiante (fijo)',classic:'Clásico aleatorio',blind:'Aleatorio con revelación tardía',custom:'Personalizado',valley:'Valle (bosques y minas a los lados)',fiords:'Fiordos (costa rica, centro fértil)',archipelago:'Archipiélago (islas de un mismo recurso)',volcano:'Volcán (desierto y minas al centro)',ridge:'Cordillera (franja de minas)',pampa:'Pampa (mucho trigo y lana)',drought:'Sequía (tres desiertos, recursos escasos)'};
 const BEGIN_ROWS={'-2':['ore10','wool2','wood9'],'-1':['grain12','brick6','wood4','brick10'],'0':['wood9','ore11','desert','grain3','wool8'],'1':['wool8','brick3','grain4','ore5'],'2':['grain5','wood11','wool6']};
 const BEGIN_PORTS=['any','wool','any','brick','any','ore','wood','any','grain'];
 function mainCoords(){const R=BIG?3:2,c=[];for(let q=-R;q<=R;q++)for(let r=-R;r<=R;r++)if(Math.abs(q+r)<=R)c.push([q,r]);return c;}
@@ -614,6 +616,37 @@ function balancedOK(hs){
   for(const t in per)if(Math.max(...per[t])<4)return false;
   return true;
 }
+const THEMED=['valley','fiords','archipelago','volcano','ridge','pampa','drought'];
+/* mapas temáticos: cada hexágono «prefiere» ciertos terrenos según su posición y se reparten con algo de azar */
+function themedLayout(mode){
+  const coords=mainCoords(),R=BIG?3:2,HI=Object.assign({},HINV_());
+  if(mode==='pampa')Object.assign(HI,BIG?{wood:4,brick:4,wool:10,grain:12,ore:4,desert:3}:{wood:2,brick:2,wool:5,grain:6,ore:3,desert:1});
+  if(mode==='drought')Object.assign(HI,BIG?{wood:7,brick:5,wool:6,grain:6,ore:5,desert:8}:{wood:4,brick:3,wool:3,grain:3,ore:3,desert:3});
+  const hs=coords.map(([q,r],i)=>({id:i,q,r,type:null,num:0})),left={...HI};
+  const RESN=['wood','brick','wool','grain','ore'];
+  const D=h=>hexDist(h,{q:0,r:0}),X=h=>h.q+h.r/2;
+  let seeds=[];
+  if(mode==='archipelago'){const ks=shuffle(hs.slice()).slice(0,BIG?7:5),ts=shuffle(RESN.slice());seeds=ks.map((h,i)=>({h,t:ts[i%5]}));}
+  const tip=shuffle(hs.filter(h=>D(h)===R)).slice(0,1)[0];
+  const score=(t,h)=>{
+    const d=D(h),x=X(h);let s=0;
+    if(mode==='valley'){if(t===(x<-.6?'wood':x>.6?'brick':'-'))s+=3;if(Math.abs(h.r)===R&&t==='ore')s+=3;if(Math.abs(h.r)<=1&&(t==='wool'||t==='grain'))s+=2;if(t==='desert'&&d===0)s+=2;}
+    else if(mode==='fiords'){if(d===R){if(t==='ore')s+=3;if(t==='brick')s+=2.5;if(t==='wood')s+=1;}else if(d>=1){if(t==='wool'||t==='grain')s+=2;}if(t==='desert'&&d===0)s+=4;}
+    else if(mode==='volcano'){if(t==='desert'&&d===0)s+=8;if(d===1){if(t==='ore')s+=3;if(t==='brick')s+=2.5;}if(d>=2&&(t==='wood'||t==='wool'||t==='grain'))s+=1.5;}
+    else if(mode==='ridge'){if(Math.abs(h.q-h.r)<=1){if(t==='ore')s+=3;if(t==='brick')s+=2.5;}else if(t==='wood'||t==='wool'||t==='grain')s+=1;if(t==='desert'&&h===tip)s+=3;}
+    else if(mode==='archipelago'){const ds=seeds.map(k=>({t:k.t,d:hexDist(h,k.h.id!==undefined?k.h:k.h)})).sort((a,b)=>a.d-b.d);
+      if(t===ds[0].t)s+=3.5;if(t==='desert'&&ds.length>1&&ds[1].d-ds[0].d<=0)s+=4;}
+    return s*1.9;
+  };
+  const types=Object.keys(left),order=hs.map(h=>({h,b:Math.max(...types.map(t=>score(t,h)))+Math.random()*.8})).sort((a,b)=>b.b-a.b).map(o=>o.h);
+  for(const h of order){
+    let best=null,bs=-1e9;
+    for(const t of types){if(!left[t])continue;const v=score(t,h)+Math.random()*1.1;if(v>bs){bs=v;best=t;}}
+    h.type=best;left[best]--;
+  }
+  balanceNumbers(hs);
+  return hs;
+}
 function layoutMain(mode,custom){
   const coords=mainCoords();
   const mk=(types,nums)=>coords.map(([q,r],i)=>({id:i,q,r,type:types[i],num:nums[i]||0}));
@@ -623,6 +656,7 @@ function layoutMain(mode,custom){
     return coords.map(([q,r],i)=>({id:i,q,r,...m[q+','+r]}));
   }
   if(mode==='custom'&&custom&&custom.length===NMAIN)return coords.map(([q,r],i)=>({id:i,q,r,type:custom[i].type,num:custom[i].num||0}));
+  if(THEMED.includes(mode))return themedLayout(mode);
   const HINV=HINV_(),NINV=NINV_();const pool=[];for(const t in HINV)for(let i=0;i<HINV[t];i++)pool.push(t);
   const nums=[];for(const n in NINV)for(let i=0;i<NINV[n];i++)nums.push(+n);
   let hs=null;
@@ -642,12 +676,12 @@ function balanceNumbers(hs){
   const land=hs.filter(h=>h.type!=='desert'),nums=[];{const NI=NINV_();for(const n in NI)for(let i=0;i<NI[n];i++)nums.push(+n);}
   let best=null,bs=1e9;
   for(let t=0;t<1500;t++){
-    const n=shuffle(nums);land.forEach((h,i)=>h.num=n[i]);
+    const n=shuffle(nums);land.forEach((h,i)=>h.num=n[i%n.length]);
     if(balancedOK(hs))return;
     let bad=0;for(const a of land)for(const b of land)if(a.id<b.id&&adjH(a,b)&&(a.num===b.num||(isRed(a.num)&&isRed(b.num))))bad++;
     if(bad<bs){bs=bad;best=n.slice();}
   }
-  land.forEach((h,i)=>h.num=best[i]);
+  land.forEach((h,i)=>h.num=best[i%best.length]);
 }
 function genBoard(o){
   o=o||{};
@@ -2217,7 +2251,14 @@ const MAPDESC={
   beginner:'Disposición fija y amable, igual en todas las partidas: buena producción cerca del centro y recursos variados. Ideal para aprender.',
   classic:'Reparto totalmente al azar (solo se evita que el 6 y el 8 queden pegados).',
   blind:'Terrenos y números ocultos mientras se colocan los pueblos y senderos iniciales. Al terminar todos, se revela el mapa y recién entonces se reparten los recursos del segundo pueblo.',
-  custom:'Tú eliges el terreno y el número de cada hexágono en el creador de mapas.'
+  custom:'Tú eliges el terreno y el número de cada hexágono en el creador de mapas.',
+  valley:'Un valle: bosque a la izquierda, arcilla a la derecha, minas en los bordes y praderas en la franja central. Los recursos se reparten por zonas, así que conviene comerciar.',
+  fiords:'Costa rica en minas y arcilla, y un centro fértil de lana y trigo. Los mejores terrenos de piedra y arcilla están en la orilla, junto a los puertos.',
+  archipelago:'Los terrenos se agrupan en «islas» del mismo recurso, separadas por estrechos desérticos. Cada isla tiene mucho de una cosa: los puertos y el comercio mandan.',
+  volcano:'Un volcán dormido (desierto) en el centro rodeado de minas y arcilla. Fuera, bosque, lana y trigo. El puma empieza en la cima.',
+  ridge:'Una cordillera cruza el mapa en diagonal con piedra y arcilla; a cada lado quedan bosques y praderas.',
+  pampa:'Casi todo es trigo y lana; bosque, arcilla y piedra escasean. Premia a quien negocia bien y usa puertos.',
+  drought:'Tres desiertos y menos recursos: partidas más tensas, donde cada hexágono productivo importa.'
 };
 function mapChanged(){
   const m=$('#c-map').value;
@@ -2877,6 +2918,7 @@ const MI={
  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
  plus:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
  palette:'<circle cx="13.5" cy="6.5" r=".6"/><circle cx="17.5" cy="10.5" r=".6"/><circle cx="8.5" cy="7.5" r=".6"/><circle cx="6.5" cy="12.5" r=".6"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-4.9-4.5-9-10-9z"/>',
+ install:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
  door:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>'};
 const mi=n=>`<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">${MI[n]||''}</svg>`;
 const THEMES=[['coast','Costa','linear-gradient(135deg,#2a7893,#0c2c3d)'],['forest','Bosque','linear-gradient(135deg,#3f9a78,#0d3327)'],['snow','Nevado','linear-gradient(135deg,#a6d4ee,#27536f)'],['dusk','Atardecer','linear-gradient(135deg,#cf7d63,#2e2040)']];
@@ -2936,7 +2978,7 @@ function showMenu(){
    <button class="mcard" onclick="showPersonalize()"><b>${mi('palette')}Personalizar</b><small>Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.</small></button>
    <button class="mcard" onclick="showRules()"><b>${mi('list')}Reglas y costos</b><small>Cómo se juega y cuánto cuesta cada construcción.</small></button>
    <button class="mcard" onclick="showNetMenu()"><b>${mi('users')}Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.</small></button>
-  </div><div class="mact">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('door')} Instalar app</button>`}<button class="btn" onclick="closeModal()">Cerrar</button></div>`,true);
+  </div><div class="mact">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('install')}<span>Instalar app</span></button>`}<button class="btn" onclick="closeModal()">Cerrar</button></div>`,true);
 }
 
 /* ===================== Multijugador en línea ===================== */
