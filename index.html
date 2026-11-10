@@ -2702,6 +2702,7 @@ function recordEnd(){
   return fresh;
 }
 function endExtras(){
+  try{if(NET.role==='host'&&!G.netRec){G.netRec=true;recordNet(netRes(NET.hs));}}catch(e){}
   try{localStorage.removeItem(SAVEKEY);localStorage.setItem(LASTKEY,ser());}catch(e){}
   const fresh=recordEnd();let h='';
   if(G.misMsg===undefined&&G.obj){
@@ -2715,6 +2716,43 @@ function endExtras(){
   if(G.daily&&G.cfg.humanSeat===0)h+=`<div class="evchip newach"><b>Partida diaria · ${G.daily}</b><small>El mapa de hoy es el mismo para todos.</small><div class="mact" style="margin-top:6px"><button class="btn" onclick="copyDaily()">Copiar resultado</button></div></div>`;
   return h;
 }
+/* ---------- perfil y marcador entre amigos (solo en este dispositivo, sin cuentas) ---------- */
+const FRKEY='ta-friends';
+function recordNet(res){ // res: {seat, win:[asientos ganadores], ps:[{n,h}]}
+  try{
+    if(!res||!Array.isArray(res.ps)||!Array.isArray(res.win))return;
+    const me=res.ps[res.seat];if(!me)return;
+    const won=res.win.includes(res.seat),st=loadStats(),fr=LS.get(FRKEY,{})||{};
+    st.net=st.net||[0,0];st.net[0]++;if(won)st.net[1]++;LS.set('ta-stats',st);
+    res.ps.forEach((q,i)=>{
+      if(i===res.seat||!q.h)return;
+      const k=String(q.n||'').slice(0,14);if(!k)return;
+      const e=fr[k]||(fr[k]={g:0,w:0,l:0,at:0});e.g++;e.at=Date.now();
+      const theirs=res.win.includes(i);
+      if(won&&!theirs)e.w++;else if(theirs&&!won)e.l++;
+    });
+    const ks=Object.keys(fr).sort((a,b)=>fr[b].at-fr[a].at);while(ks.length>40)delete fr[ks.pop()];
+    LS.set(FRKEY,fr);
+  }catch(e){}
+}
+const netRes=seat=>({seat,win:(G.winners||[G.winner]).slice(),ps:G.players.map(p=>({n:p.name,h:NET.roster.some(r=>r.seat===p.id&&!r.spec)?1:0}))});
+function showProfile(){
+  const st=loadStats(),fr=LS.get(FRKEY,{})||{},nm=PNAME||'Jugador',nt=st.net||[0,0];
+  const rows=Object.keys(fr).map(k=>({k,...fr[k]})).sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.g-a.g);
+  openModal(`<h2>Perfil y marcador</h2>
+   <div class="field"><label for="pf-name">Tu nombre</label><div class="row"><input id="pf-name" maxlength="14" value="${esc(nm)}" style="flex:1"><button class="btn" onclick="saveProfileName()">Guardar</button></div></div>
+   <div class="two"><div class="evchip"><b>${st.games+nt[0]}</b><small>Partidas en total</small></div><div class="evchip"><b>${st.wins+nt[1]}</b><small>Victorias (${st.games+nt[0]?Math.round((st.wins+nt[1])*100/(st.games+nt[0])):0} %)</small></div>
+   <div class="evchip"><b>${nt[0]}</b><small>Partidas en línea · ${nt[1]} ganadas</small></div><div class="evchip"><b>${st.streak}</b><small>Racha actual · mejor ${st.best}</small></div></div>
+   <h3 class="rh">Marcador entre amigos</h3>
+   ${rows.length?`<div class="players">${rows.map((r,i)=>`<div class="pl" style="grid-template-columns:26px 1fr auto"><span class="av" style="background:${PCOL[i%6]}">${netEsc(r.k[0].toUpperCase())}</span><span class="nm"><b>${netEsc(r.k)}</b><small style="display:block;color:var(--muted)">${r.g} partida${r.g===1?'':'s'} juntos</small></span><span class="vp" title="Tus victorias – las suyas">${r.w} – ${r.l}</span></div>`).join('')}</div>`:'<p style="color:var(--muted)">Aún no hay partidas en línea. Cuando juegues con amigos, aquí verás quién va ganando.</p>'}
+   <p style="color:var(--muted);font-size:13px">Se guarda solo en este dispositivo: cada amigo ve su propio marcador contra ti. No hay cuentas ni datos en ningún servidor.</p>
+   <div class="mact"><button class="btn" onclick="resetFriends(this)">Borrar marcador</button><button class="btn primary" onclick="showMenu()">Volver</button></div>`,true);
+}
+function saveProfileName(){
+  const v=($('#pf-name').value||'').replace(/[<>&"']/g,'').trim().slice(0,14);if(!v)return;
+  PNAME=v;try{localStorage.setItem('ta-name',v);}catch(e){}showProfile();showToast('Nombre guardado',v);
+}
+function resetFriends(b){if(!b.dataset.sure){b.dataset.sure='1';b.textContent='¿Seguro? Pulsa otra vez';return;}LS.set(FRKEY,{});showProfile();}
 function showStats(){
   const st=loadStats(),pct=a=>a[0]?Math.round(a[1]*100/a[0])+' %':'—',n=ACH.filter(a=>st.ach[a.id]).length;
   const row=(k,l)=>`<div class="trow"><span>${l}</span><b>${st.by[k][1]} de ${st.by[k][0]} · ${pct(st.by[k])}</b></div>`;
@@ -2887,6 +2925,7 @@ function showMenu(){
    <button class="mcard" onclick="showStart()"><b>${mi('bolt')}Partida rápida</b><small>Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.</small></button>
    <button class="mcard" onclick="showCampaign()"><b>${mi('flag')}Campaña</b><small>Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.</small></button>
    <button class="mcard" onclick="startDaily()"><b>${mi('cal')}Partida diaria</b><small>El mismo mapa para todos hoy (${dk}). ${dd?(dd.won?`Ganada en ${dd.rounds} rondas.`:'Ya la jugaste, sin victoria.'):'Aún no la juegas.'}</small></button>
+   <button class="mcard" onclick="showProfile()"><b>${mi('users')}Perfil y marcador</b><small>Tu nombre y cómo vas contra tus amigos en las partidas en línea.</small></button>
    <button class="mcard" onclick="showStats()"><b>${mi('trophy')}Estadísticas y logros</b><small>${st.games} partidas, ${st.wins} victorias, ${ACH.filter(a=>st.ach[a.id]).length} de ${ACH.length} logros.</small></button>
    <button class="mcard" onclick="replayLast()" ${last?'':'disabled'}><b>${mi('replay')}Repetición</b><small>${last?'Mira turno a turno la última partida terminada.':'Aparece al terminar tu primera partida.'}</small></button>
    <button class="mcard" onclick="playTutorial()"><b>${mi('book')}Tutorial guiado</b><small>Una partida corta contra rivales fáciles, acompañada paso a paso.</small></button>
@@ -3278,7 +3317,7 @@ function netEndHTML(seat){
 function netEnd(){
   if(NET.ended)return;NET.ended=true;try{localStorage.removeItem(NETSAVE);}catch(e){}
   NETT.setStatus(NET.code,'ended');
-  for(const r of NET.roster)if(r.seat>0)netSend({t:'end',to:r.seat,html:netEndHTML(r.seat)});
+  for(const r of NET.roster)if(r.seat!==NET.hs)netSend({t:'end',to:r.seat,html:netEndHTML(r.seat),res:r.spec?null:netRes(r.seat)});
 }
 
 /* ---------- invitado ---------- */
@@ -3289,7 +3328,7 @@ async function netJoin(code,name,saved){
   try{localStorage.setItem('ta-name',name);}catch(e){}
   let ok=false;try{ok=await NETT.exists(code);}catch(e){showNetMenu(code,null,'No se pudo conectar con el servidor de salas.');return;}
   if(!ok){netForget();showNetMenu(code,null,'No existe una sala abierta con ese código.');return;}
-  Object.assign(NET,{role:'guest',code,id:(saved&&saved.id)||gidGet(code)||NETID(),name,roster:[],started:false,lobby:false,hostSeen:Date.now(),seat:-1,bye:false,ended:false});
+  Object.assign(NET,{role:'guest',code,id:(saved&&saved.id)||gidGet(code)||NETID(),name,roster:[],started:false,lobby:false,hostSeen:Date.now(),seat:-1,bye:false,ended:false,rec:false});
   if(NET.gord)NET.gord.stop();
   NET.gord=new NetOrd(netGuestMsg,()=>netSend({t:'hello',id:NET.id,name:NET.name}));NET.gseq=0;
   try{NET.tp=await NETT.open(code,m=>{if(m&&m.h&&NET.gord)NET.gord.push(m);});}catch(e){NET.role=null;showNetMenu(code,null,'No se pudo abrir la sala en tiempo real.');return;}
@@ -3340,7 +3379,7 @@ async function netGuestHandle(m){
   }else if(m.t==='modal')netGuestModal(m.html);
   else if(m.t==='mclose')closeLocalModal();
   else if(m.t==='sfx'){try{sfx(m.n,m.v);}catch(e){}}
-  else if(m.t==='end'){netGuestModal(m.html);}
+  else if(m.t==='end'){netGuestModal(m.html);if(m.res&&!NET.rec){NET.rec=true;recordNet({seat:+m.res.seat,win:(Array.isArray(m.res.win)?m.res.win:[]).map(Number).slice(0,6),ps:(Array.isArray(m.res.ps)?m.res.ps:[]).slice(0,6).map(q=>({n:String(q&&q.n||'').replace(/[<>&"']/g,'').slice(0,14),h:q&&q.h?1:0}))});}}
 }
 function closeLocalModal(){const m=$('#modal');m.classList.remove('open','remote');m.innerHTML='';}
 function netLeave(silent){
