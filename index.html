@@ -355,11 +355,11 @@ const RFULL={wood:'Barraca de madera',brick:'Adobe',wool:'Lana',grain:'Trigo',or
 const TNAME={wood:'Bosque',brick:'Barrero',wool:'Pradera',grain:'Trigal',ore:'Cordillera',desert:'Pampa'};
 const RCOL={wood:'#4a9a57',brick:'#c86a47',wool:'#9ccf63',grain:'#e9c548',ore:'#7f93a8',desert:'#cdb985'};
 const HEXCOL={wood:'#2a6b3c',brick:'#a6523a',wool:'#86b95a',grain:'#d3ae3b',ore:'#6d7b8b',desert:'#c9b47c'};
-const PAL={std:['#ef6a5b','#4aa3ff','#8fd14f','#b78cff'],cb:['#E69F00','#56B4E9','#009E73','#CC79A7']};
+const PAL={std:['#ef6a5b','#4aa3ff','#8fd14f','#b78cff'],cb:['#E69F00','#56B4E9','#009E73','#CC79A7','#F0E442','#D55E00']};
 const MYCOLS=[['Rojo','#ef6a5b'],['Azul','#4aa3ff'],['Verde','#8fd14f'],['Violeta','#b78cff'],['Ámbar','#f2b84b'],['Turquesa','#2ec4b6']];
 let MYCOL=0;try{MYCOL=Math.max(0,Math.min(5,parseInt(localStorage.getItem('ta-mycol'))||0));}catch(e){}
 const palStd=()=>{const b=MYCOLS.map(x=>x[1]);return [b[MYCOL],...b.filter((_,i)=>i!==MYCOL)];};
-const PCOL=palStd().slice(0,4);
+const PCOL=palStd().slice(0,6);
 const SYM=['●','■','▲','◆'];
 const DASH=['','9 5','2 5','10 4 2 4'];
 const CBP={on:false};
@@ -367,7 +367,7 @@ const ZOOM={s:1,cx:null,cy:null};
 const RM=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const COARSE=!!(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 const HR=COARSE?15:11,HW=COARSE?18:11;
-const BOTNAMES=['Nahuel','Aylén','Quillén','Millaray'];
+const BOTNAMES=['Nahuel','Aylén','Quillén','Millaray','Rayén','Lautaro'];
 const COST={ship:{wood:1,wool:1},road:{wood:1,brick:1},settle:{wood:1,brick:1,wool:1,grain:1},city:{grain:2,ore:3},dev:{wool:1,grain:1,ore:1}};
 const DEVN={knight:'Guardia',road:'Senderos libres',plenty:'Cosecha',monopoly:'Acaparador',vp:'Hito'};
 const DEVD={knight:'Mueve el puma y roba una carta. Suma a Guardia mayor.',road:'Construye 2 senderos gratis.',plenty:'Toma 2 recursos del banco.',monopoly:'Elige un recurso: todos te entregan los que tengan.',vp:'Vale 1 punto. Se mantiene oculto.'};
@@ -496,7 +496,7 @@ document.addEventListener('visibilitychange',()=>{
   else if(SILENT_EL&&!MUS.on){try{SILENT_EL.pause();}catch(e){}}
 });
 function setPalette(on,quiet){
-  CBP.on=!!on;PCOL.splice(0,PCOL.length,...(CBP.on?PAL.cb:palStd()).slice(0,4));
+  CBP.on=!!on;PCOL.splice(0,PCOL.length,...(CBP.on?PAL.cb:palStd()).slice(0,6));
   try{localStorage.setItem('ta-cb',CBP.on?'on':'off');}catch(e){}
   if(G&&G.players)G.players.forEach(p=>{p.color=PCOL[p.id];});
   const b=$('#cbbtn');if(b){b.textContent=CBP.on?'Daltonismo: sí':'Daltonismo: no';b.setAttribute('aria-pressed',CBP.on?'true':'false');b.classList.toggle('on',CBP.on);}
@@ -585,14 +585,16 @@ const corner=(c,i)=>{const a=Math.PI/180*(60*i-30);return{x:c.x+S*Math.cos(a),y:
 const hexDist=(a,b)=>(Math.abs(a.q-b.q)+Math.abs(a.r-b.r)+Math.abs(a.q+a.r-b.q-b.r))/2;
 const pipsOfNum=n=>6-Math.abs(7-n);
 let H=[],V=[],E=[],PORTS=[],SEAH=[],VB=[-310,-285,620,570],DISTISL=[];
-const NMAIN=19;
-const HINV={wood:4,brick:3,wool:4,grain:4,ore:3,desert:1};
-const NINV={2:1,3:2,4:2,5:2,6:2,8:2,9:2,10:2,11:2,12:1};
+let NMAIN=19,BIG=false;
+const HINV_S={wood:4,brick:3,wool:4,grain:4,ore:3,desert:1},HINV_B={wood:8,brick:6,wool:7,grain:7,ore:6,desert:3};
+const NINV_S={2:1,3:2,4:2,5:2,6:2,8:2,9:2,10:2,11:2,12:1},NINV_B={2:2,3:3,4:4,5:4,6:4,8:4,9:4,10:4,11:3,12:2};
+const HINV_=()=>BIG?HINV_B:HINV_S,NINV_=()=>BIG?NINV_B:NINV_S;
+const HINV=HINV_S,NINV=NINV_S; // el editor de mapas siempre usa el tablero normal
 const isRed=n=>n===6||n===8;
 const MAPNAMES={balanced:'Equilibrado',beginner:'Principiante (fijo)',classic:'Clásico aleatorio',blind:'Aleatorio con revelación tardía',custom:'Personalizado'};
 const BEGIN_ROWS={'-2':['ore10','wool2','wood9'],'-1':['grain12','brick6','wood4','brick10'],'0':['wood9','ore11','desert','grain3','wool8'],'1':['wool8','brick3','grain4','ore5'],'2':['grain5','wood11','wool6']};
 const BEGIN_PORTS=['any','wool','any','brick','any','ore','wood','any','grain'];
-function mainCoords(){const c=[];for(let q=-2;q<=2;q++)for(let r=-2;r<=2;r++)if(Math.abs(q+r)<=2)c.push([q,r]);return c;}
+function mainCoords(){const R=BIG?3:2,c=[];for(let q=-R;q<=R;q++)for(let r=-R;r<=R;r++)if(Math.abs(q+r)<=R)c.push([q,r]);return c;}
 const adjH=(a,b)=>hexDist(a,b)===1;
 /* ¿el reparto cumple los criterios de equilibrio? (hs: hexágonos con type y num) */
 function balancedOK(hs){
@@ -615,20 +617,20 @@ function balancedOK(hs){
 function layoutMain(mode,custom){
   const coords=mainCoords();
   const mk=(types,nums)=>coords.map(([q,r],i)=>({id:i,q,r,type:types[i],num:nums[i]||0}));
-  if(mode==='beginner'){
+  if(mode==='beginner'&&!BIG){
     const m={};
     for(const r in BEGIN_ROWS){const row=BEGIN_ROWS[r],q0=Math.max(-2,-2-(+r));row.forEach((t,i)=>{const mt=t.match(/^([a-z]+)(\d*)$/);m[(q0+i)+','+r]={type:mt[1],num:+mt[2]||0};});}
     return coords.map(([q,r],i)=>({id:i,q,r,...m[q+','+r]}));
   }
   if(mode==='custom'&&custom&&custom.length===NMAIN)return coords.map(([q,r],i)=>({id:i,q,r,type:custom[i].type,num:custom[i].num||0}));
-  const pool=[];for(const t in HINV)for(let i=0;i<HINV[t];i++)pool.push(t);
+  const HINV=HINV_(),NINV=NINV_();const pool=[];for(const t in HINV)for(let i=0;i<HINV[t];i++)pool.push(t);
   const nums=[];for(const n in NINV)for(let i=0;i<NINV[n];i++)nums.push(+n);
   let hs=null;
   for(let t=0;t<4000;t++){
     const ty=shuffle(pool),ns=shuffle(nums);let k=0;
     const arr=ty.map(x=>x==='desert'?0:ns[k++]);
     hs=mk(ty,arr);
-    if(mode==='classic'){ // clásico: solo evita 6/8 contiguos
+    if(mode==='classic'||BIG){ // clásico (y mapa grande): solo evita 6/8 contiguos
       const land=hs.filter(h=>h.type!=='desert');
       if(!land.some(a=>isRed(a.num)&&land.some(b=>b!==a&&isRed(b.num)&&adjH(a,b))))return hs;
     }else if(balancedOK(hs))return hs;
@@ -637,7 +639,7 @@ function layoutMain(mode,custom){
 }
 /* reparte números 2..12 sobre los terrenos ya puestos (para el editor y la isla) */
 function balanceNumbers(hs){
-  const land=hs.filter(h=>h.type!=='desert'),nums=[];for(const n in NINV)for(let i=0;i<NINV[n];i++)nums.push(+n);
+  const land=hs.filter(h=>h.type!=='desert'),nums=[];{const NI=NINV_();for(const n in NI)for(let i=0;i<NI[n];i++)nums.push(+n);}
   let best=null,bs=1e9;
   for(let t=0;t<1500;t++){
     const n=shuffle(nums);land.forEach((h,i)=>h.num=n[i]);
@@ -649,7 +651,8 @@ function balanceNumbers(hs){
 }
 function genBoard(o){
   o=o||{};
-  const mode=o.mode||'balanced',exp=!!o.expansion;
+  BIG=!!o.big;NMAIN=BIG?37:19;
+  const mode=o.mode||'balanced',exp=!!o.expansion&&!BIG;
   const lay=layoutMain(mode,o.custom);
   H=lay.map(x=>({...x,...hexCenter(x.q,x.r),v:[]}));
   SEAH=[];DISTISL=[];
@@ -701,10 +704,10 @@ function genBoard(o){
     const a=V[e.a],b=V[e.b],mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     return{e,mx,my,ang:Math.atan2(my,mx)};
   }).sort((p,q)=>p.ang-q.ang);
-  const pt=mode==='beginner'?BEGIN_PORTS.slice():shuffle(['any','any','any','any','wood','brick','wool','grain','ore']);
+  const NP=BIG?11:9,pt=(mode==='beginner'&&!BIG)?BEGIN_PORTS.slice():shuffle(BIG?['any','any','any','any','any','any','wood','brick','wool','grain','ore']:['any','any','any','any','wood','brick','wool','grain','ore']);
   PORTS=[];
-  for(let i=0;i<(o.noPorts?0:9);i++){
-    const c=coast[Math.floor(i*coast.length/9)];
+  for(let i=0;i<(o.noPorts?0:NP);i++){
+    const c=coast[Math.floor(i*coast.length/NP)];
     V[c.e.a].port=pt[i];V[c.e.b].port=pt[i];
     PORTS.push({type:pt[i],e:c.e,mx:c.mx,my:c.my});
   }
@@ -717,6 +720,10 @@ function genBoard(o){
     for(const h of H)for(const i of h.v){x0=Math.min(x0,V[i].x);x1=Math.max(x1,V[i].x);y0=Math.min(y0,V[i].y);y1=Math.max(y1,V[i].y);}
     const m=78,w=Math.max(x1-x0+2*m,620),hh=Math.max(y1-y0+2*m,570),cx=(x0+x1)/2,cy=(y0+y1)/2;
     VB=[cx-w/2,cy-hh/2,w,hh];
+  }else if(BIG){
+    let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+    for(const h of H)for(const i of h.v){x0=Math.min(x0,V[i].x);x1=Math.max(x1,V[i].x);y0=Math.min(y0,V[i].y);y1=Math.max(y1,V[i].y);}
+    const m=60,w=x1-x0+2*m,hh=y1-y0+2*m;VB=[(x0+x1)/2-w/2,(y0+y1)/2-hh/2,w,hh];
   }else VB=[-310,-285,620,570];
   if(o.wild){const c=shuffle(H.filter(h=>h.id<NMAIN&&h.type!=='desert'));c.slice(0,3).forEach(h=>{h.wild=true;});}
   H.forEach(h=>{h.art=hexArt(h);});
@@ -791,7 +798,7 @@ const other=(e,vid)=>e.a===vid?e.b:e.a;
 const nbrs=vid=>V[vid].edges.map(e=>other(E[e],vid));
 
 /* ===================== Estado ===================== */
-const DEFR={pts:true,target:10,turnLimit:false,maxTurns:100,timer:false,discard:true,trade:true,dev:true,bonus:true,expansion:false,events:false,evEvery:3,obj:false,fac:false,auc:false,wx:false,upg:false,wild:false,pers:false,noPorts:false};
+const DEFR={pts:true,target:10,turnLimit:false,maxTurns:100,timer:false,discard:true,trade:true,dev:true,bonus:true,expansion:false,events:false,evEvery:3,obj:false,fac:false,auc:false,wx:false,upg:false,wild:false,pers:false,noPorts:false,teams:false};
 const DIFFN={easy:'Fácil',normal:'Normal',hard:'Difícil'};
 const NOISE={easy:4.5,normal:1.8,hard:.12};
 let CB=-1;
@@ -814,22 +821,24 @@ function newGame(cfg){
      map:cfg.map||'balanced',hidden:false,pendStart:[],ev:[],evLast:null,explorer:null,diff:(cfg.diff||[]).slice(),revealAt:0,tradeAsk:null};
   G.rules.target=Math.min(12,Math.max(3,+G.rules.target||10));
   if(cfg.seed!=null)RNG=mulberry(cfg.seed);
-  genBoard({mode:G.map,custom:cfg.custom,expansion:G.rules.expansion,wild:G.rules.wild,noPorts:G.rules.noPorts});
-  G.hidden=G.map==='blind';
-  G.robber=H.find(h=>h.type==='desert').id;
   const nb=cfg.bots;
   const hn=(cfg.humanNames&&cfg.humanNames.length>1)?cfg.humanNames.length:1;
   G.n=cfg.spectate?nb:nb+hn;
+  G.big=G.n>4;if(G.big){G.rules.expansion=false;}
+  G.teams=!!(G.rules.teams&&G.n===4);
+  genBoard({mode:G.map,custom:cfg.custom,expansion:G.rules.expansion,wild:G.rules.wild,noPorts:G.rules.noPorts,big:G.big});
+  G.hidden=G.map==='blind';
+  G.robber=H.find(h=>h.type==='desert').id;
   const names=[];
   if(!cfg.spectate){if(hn>1)cfg.humanNames.forEach(x=>names.push(esc(x)||'Jugador'));else names.push(esc(cfg.name||'Tú')||'Tú');}
   const nBots=G.n-names.length;
-  for(let i=0;i<nBots;i++)names.push(BOTNAMES[i%4]);
+  for(let i=0;i<nBots;i++)names.push(BOTNAMES[i%6]);
   if(cfg.spectate){G.cfg.humanSeat=-1;}else{G.cfg.humanSeat=0;if(hn>1){G.cfg.humans=[...Array(hn).keys()];G.cfg.net=true;}}
   G.players=names.map((name,i)=>({id:i,name,color:PCOL[i],res:{wood:0,brick:0,wool:0,grain:0,ore:0},dev:[],knights:0,left:{road:15,settle:5,city:4,ship:10}}));
   G.prodStat=G.players.map(()=>({wood:0,brick:0,wool:0,grain:0,ore:0}));ZOOM.s=1;ZOOM.cx=null;ZOOM.cy=null;
   G.limits=(cfg.limits&&cfg.limits.length===G.n)?cfg.limits.slice():Array(G.n).fill(60);
-  G.bank={wood:19,brick:19,wool:19,grain:19,ore:19};
-  G.deck=shuffle([...Array(14).fill('knight'),...Array(5).fill('vp'),...Array(2).fill('road'),...Array(2).fill('plenty'),...Array(2).fill('monopoly')]);
+  const BK=G.big?24:19;G.bank={wood:BK,brick:BK,wool:BK,grain:BK,ore:BK};
+  G.deck=G.big?shuffle([...Array(20).fill('knight'),...Array(5).fill('vp'),...Array(3).fill('road'),...Array(3).fill('plenty'),...Array(3).fill('monopoly')]):shuffle([...Array(14).fill('knight'),...Array(5).fill('vp'),...Array(2).fill('road'),...Array(2).fill('plenty'),...Array(2).fill('monopoly')]);
   const seq=[];for(let i=0;i<G.n;i++)seq.push(i);for(let i=G.n-1;i>=0;i--)seq.push(i);
   G.setupSeq=seq;
   G.fac=G.rules.fac?assignFac(cfg):null;
@@ -1067,15 +1076,20 @@ function updateAwards0(){
   if(best!==G.la&&best!==null){keyEv(best,'tomó la Guardia mayor');say(`${pn(best)} lidera la Guardia mayor (${bk}).`);sfx('award',.7);}
   G.la=best;
 }
+const teamOf=pid=>G.teams?pid%2:pid;
+const TEAMN=['Equipo Cóndor','Equipo Puma'];
+const teamVP=t=>G.players.reduce((a,p)=>a+(p.id%2===t?vp(p.id):0),0);
+const teamGoal=()=>Math.ceil(G.rules.target*1.6);
 function checkWin(){
   if(G.over||G.phase==='idle'||G.phase.startsWith('setup')||!G.rules.pts)return false;
   const pid=G.cur;
+  if(G.teams){const t=teamOf(pid);if(teamVP(t)>=teamGoal()){G.over=true;G.winners=G.players.filter(p=>p.id%2===t).map(p=>p.id);G.winner=pid;G.tEnd=Date.now();G.timerOn=false;G.busy=false;render();showWin(false);return true;}return false;}
   if(vp(pid)>=G.rules.target){G.over=true;G.winner=pid;G.winners=[pid];G.tEnd=Date.now();G.timerOn=false;G.busy=false;render();showWin(false);return true;}
   return false;
 }
 function finishByLimit(){
   G.timerOn=false;G.over=true;G.tEnd=Date.now();G.busy=false;
-  const sc=G.players.map(p=>vp(p.id)),mx=Math.max(...sc);
+  const sc=G.teams?G.players.map(p=>teamVP(p.id%2)):G.players.map(p=>vp(p.id)),mx=Math.max(...sc);
   G.winners=sc.map((v,i)=>v===mx?i:-1).filter(i=>i>=0);G.winner=G.winners[0];
   say(`Se llegó al turno ${G.rules.maxTurns}: termina la partida.`);
   render();showWin(true);
@@ -1245,7 +1259,7 @@ function moveRobber(pid,hid){
   setRobber(hid);sfx('thud',isBot(pid)?.55:1);
   say(`${pn(pid)} mueve el puma a ${TNAME[H[hid].type]}${H[hid].num?' '+H[hid].num:''}.`);
   const vs=new Set();
-  for(const vid of H[hid].v){const b=V[vid].b;if(b&&b.owner!==pid&&total(G.players[b.owner])>0&&!hasUpg(b.owner,'mur'))vs.add(b.owner);}
+  for(const vid of H[hid].v){const b=V[vid].b;if(b&&b.owner!==pid&&!(G.teams&&teamOf(b.owner)===teamOf(pid))&&total(G.players[b.owner])>0&&!hasUpg(b.owner,'mur'))vs.add(b.owner);}
   return [...vs];
 }
 function steal(pid,vic){
@@ -2106,12 +2120,12 @@ function sideHTML(){
     const act=(G.ev||[]).filter(e=>e.until>G.turn),ri=Math.floor((G.turn-1)/G.n),nx=(Math.floor(ri/G.rules.evEvery)+1)*G.rules.evEvery*G.n+1-G.turn;
     h+=`<section class="card"><h3>Eventos</h3>${act.map(e=>`<div class="evchip"><b>${e.name}</b><small>${e.desc}</small></div>`).join('')||'<div style="color:var(--muted);font-size:13px">Ningún evento activo.</div>'}<div style="color:var(--muted);font-size:12px;margin-top:6px">Próximo evento: en ${nx} turno${nx===1?'':'s'}.</div></section>`;
   }
-  h+=`<section class="card" id="sec-players"><h3>Jugadores</h3><div class="players">`;
+  h+=`<section class="card" id="sec-players"><h3>Jugadores</h3>${G.teams?`<div class="evchip" style="margin-bottom:8px"><b>${TEAMN[0]} ${teamVP(0)} · ${TEAMN[1]} ${teamVP(1)}</b><small>Los compañeros suman sus puntos: gana el equipo que llegue a ${teamGoal()}. No puedes robar a tu compañero.</small></div>`:''}<div class="players">`;
   for(const p of G.players){
     const pub=vp(p.id,false),mine=hu&&p.id===hu.id;
     const ln=G.lens?G.lens[p.id]:0;
     h+=`<div class="pl ${p.id===G.cur&&!idle?'cur':''}"><span class="av" style="background:radial-gradient(circle at 35% 30%,${shade(p.color,.35)},${p.color})">${p.name[0].toUpperCase()}</span>
-      <div><div class="nm">${CBP.on?SYM[p.id]+' ':''}${p.name}${mine?' (tú)':''}</div><div class="sub"><span>${total(p)} cartas</span><span>${p.dev.length} desarr.</span><span>${p.knights} guardias</span>${ln?`<span>sendero ${ln}</span>`:''}${G.lr===p.id?'<span class="tag">Sendero más largo</span>':''}${G.la===p.id?'<span class="tag">Guardia mayor</span>':''}${G.explorer===p.id?'<span class="tag">Explorador</span>':''}${fac(p.id)?`<span class="tag" title="${FACN[fac(p.id)].d}">${FACN[fac(p.id)].n}</span>`:''}${pers(p.id)?`<span class="tag" title="${PERSD[pers(p.id)]}">${PERSN[pers(p.id)]}</span>`:''}${isBot(p.id)?`<span class="tag">${DIFFN[diff(p.id)]}</span>`:''}</div>${timerLine(p)}</div>
+      <div><div class="nm">${CBP.on?SYM[p.id]+' ':''}${p.name}${mine?' (tú)':''}</div><div class="sub"><span>${total(p)} cartas</span><span>${p.dev.length} desarr.</span><span>${p.knights} guardias</span>${ln?`<span>sendero ${ln}</span>`:''}${G.teams?`<span class="tag">${TEAMN[p.id%2].replace('Equipo ','Eq. ')}</span>`:''}${G.lr===p.id?'<span class="tag">Sendero más largo</span>':''}${G.la===p.id?'<span class="tag">Guardia mayor</span>':''}${G.explorer===p.id?'<span class="tag">Explorador</span>':''}${fac(p.id)?`<span class="tag" title="${FACN[fac(p.id)].d}">${FACN[fac(p.id)].n}</span>`:''}${pers(p.id)?`<span class="tag" title="${PERSD[pers(p.id)]}">${PERSN[pers(p.id)]}</span>`:''}${isBot(p.id)?`<span class="tag">${DIFFN[diff(p.id)]}</span>`:''}</div>${timerLine(p)}</div>
       <div class="vp" title="Puntos de victoria">${mine?vp(p.id,true):pub}</div></div>`;
   }
   h+=`</div></section>`;
@@ -2193,9 +2207,9 @@ function drawDfRows(){
   box.innerHTML=seats.map(sid=>{const nm=BOTNAMES[spec?sid:sid-1];
     return `<div class="trow"><span><span class="dot" style="display:inline-block;vertical-align:-2px;background:${PCOL[sid]}"></span> ${nm}</span><select id="df${sid}" aria-label="Dificultad de ${nm}" onchange="DFV[${sid}]=this.value">${Object.keys(DIFFN).map(d=>`<option value="${d}" ${(DFV[sid]||'normal')===d?'selected':''}>${DIFFN[d]}</option>`).join('')}</select></div>`;}).join('');
 }
-function dfAll(v){if(!v)return;for(let i=0;i<4;i++){DFV[i]=v;const e=$('#df'+i);if(e)e.value=v;}$('#df-all').value='';}
-function rowsChanged(){drawTimeRows();drawDfRows();}
-function tmAll(v){if(!v)return;for(let i=0;i<4;i++){TMV[i]=+v;const e=$('#tm'+i);if(e)e.value=v;}$('#tm-all').value='';}
+function dfAll(v){if(!v)return;for(let i=0;i<6;i++){DFV[i]=v;const e=$('#df'+i);if(e)e.value=v;}$('#df-all').value='';}
+function rowsChanged(){drawTimeRows();drawDfRows();try{const big=+$('#c-bots').value>=4,e=$('#r-exp');if(e){if(big)e.checked=false;e.disabled=big;}const t=$('#r-teams');if(t){const four=$('#c-spec').checked||+$('#c-bots').value===3;if(!four)t.checked=false;t.disabled=!four;}}catch(x){}}
+function tmAll(v){if(!v)return;for(let i=0;i<6;i++){TMV[i]=+v;const e=$('#tm'+i);if(e)e.value=v;}$('#tm-all').value='';}
 function toggleTm(){$('#tm-box').style.display=$('#r-tm').checked?'block':'none';}
 function ruleGuard(id){if(!$('#r-pts').checked&&!$('#r-lim').checked)$('#'+id).checked=true;}
 const MAPDESC={
@@ -2216,7 +2230,7 @@ function showStart(){
   openModal(`<h2>Nueva partida</h2>
    <div class="two">
     <div class="field"><label for="c-name">Tu nombre</label><input id="c-name" type="text" value="${esc(PNAME||'Tú')}" maxlength="14" oninput="drawTimeRows()"></div>
-    <div class="field"><label for="c-bots">Rivales</label><select id="c-bots" onchange="rowsChanged()"><option value="2">2 rivales</option><option value="3" selected>3 rivales</option></select></div>
+    <div class="field"><label for="c-bots">Rivales</label><select id="c-bots" onchange="rowsChanged()"><option value="2">2 rivales</option><option value="3" selected>3 rivales</option><option value="4">4 rivales (mapa grande)</option><option value="5">5 rivales (mapa grande)</option></select></div>
    </div>
    <div class="two">
     <div class="field"><label for="c-speed">Ritmo de los rivales</label><select id="c-speed"><option value="1">Normal</option><option value="0.45">Rápido</option></select></div>
@@ -2239,6 +2253,7 @@ function showStart(){
    <label class="chk"><input id="r-upg" type="checkbox"><span><b>Mejoras de ciudad</b><small>Con un castillo puedes comprar Murallas (el puma no te bloquea ni te roba), Almacén (descartas solo con más de 11 cartas) y Mercado (el banco te cobra 1 menos).</small></span></label>
    <label class="chk"><input id="r-wild" type="checkbox"><span><b>Tierras salvajes</b><small>Tres hexágonos con marco dorado rinden el doble, pero las fieras se llevan 1 carta a quien cosecha allí.</small></span></label>
    <label class="chk"><input id="r-pers" type="checkbox"><span><b>Rivales con personalidad</b><small>Cada rival es Comerciante, Agresivo (usa el puma y las Guardias contra el líder) o Constructor (prioriza senderos).</small></span></label>
+   <label class="chk"><input id="r-teams" type="checkbox"><span><b>Equipos 2 contra 2</b><small>Solo con 4 jugadores: te juntas con quien juega frente a ti. Sus puntos se suman y ganan al llegar a 1,6 veces la meta. No se puede robar al compañero.</small></span></label>
    <label class="chk"><input id="r-nop" type="checkbox"><span><b>Sin puertos</b><small>El mar no tiene puertos: el banco cobra siempre 4:1.</small></span></label>
    <h3 class="rh">Reglas de la partida</h3>
    <label class="chk"><input id="r-pts" type="checkbox" checked onchange="ruleGuard('r-pts')"><span><b>Gana quien llegue primero a la meta de puntos</b><small>Puntos necesarios: <select id="r-tgt" aria-label="Puntos para ganar">${num(3,12,10)}</select> (de 3 a 12). Sin importar cuántos turnos se hayan jugado.</small></span></label>
@@ -2263,7 +2278,7 @@ function startFromForm(){
   const mx=Math.min(999,Math.max(10,parseInt($('#r-max').value)||100));
   const map=$('#c-map').value;
   if(map==='custom'&&!window.CUSTOM){openEditor();return;}
-  const rules={pts:$('#r-pts').checked,target:+$('#r-tgt').value,turnLimit:$('#r-lim').checked,maxTurns:mx,timer:$('#r-tm').checked,discard:$('#r-dis').checked,trade:$('#r-trd').checked,dev:$('#r-dev').checked,bonus:$('#r-bon').checked,expansion:$('#r-exp').checked,events:$('#r-ev').checked||$('#r-wx').checked,evEvery:+$('#r-evn').value,wx:$('#r-wx').checked,obj:$('#r-obj').checked,fac:$('#r-fac').checked,auc:$('#r-auc').checked,upg:$('#r-upg').checked,wild:$('#r-wild').checked,pers:$('#r-pers').checked,noPorts:$('#r-nop').checked};
+  const rules={pts:$('#r-pts').checked,target:+$('#r-tgt').value,turnLimit:$('#r-lim').checked,maxTurns:mx,timer:$('#r-tm').checked,discard:$('#r-dis').checked,trade:$('#r-trd').checked,dev:$('#r-dev').checked,bonus:$('#r-bon').checked,expansion:$('#r-exp').checked,events:$('#r-ev').checked||$('#r-wx').checked,evEvery:+$('#r-evn').value,wx:$('#r-wx').checked,obj:$('#r-obj').checked,fac:$('#r-fac').checked,auc:$('#r-auc').checked,upg:$('#r-upg').checked,wild:$('#r-wild').checked,pers:$('#r-pers').checked,noPorts:$('#r-nop').checked,teams:!!($('#r-teams')&&$('#r-teams').checked&&n===4)};
   if(!rules.pts&&!rules.turnLimit)rules.pts=true;
   const limits=Array.from({length:n},(_,i)=>{const e=$('#tm'+i);return e?+e.value:60;});
   const diffs=Array.from({length:n},(_,i)=>{const e=$('#df'+i);return e?e.value:'normal';});
@@ -2367,8 +2382,9 @@ function showWin(limit){
   const ws=G.winners||[G.winner],names=ws.map(i=>G.players[i].name);
   const meIn=ws.includes(G.cfg.humanSeat);
   sfx(meIn||G.cfg.humanSeat<0?'win':'lose');
-  const title=ws.length>1?`Empate entre ${names.join(' y ')}`:(meIn?'¡Ganaste la costa!':`${names[0]} fundó la colonia`);
-  const why=limit?`Se llegó al límite de ${G.rules.maxTurns} turnos.`:`${names[0]} llegó a ${vp(ws[0])} puntos.`;
+  const tw=G.teams&&ws.length===2&&ws[0]%2===ws[1]%2;
+  const title=tw?(meIn?'¡Ganó tu equipo!':`Ganó el ${TEAMN[ws[0]%2]}`):ws.length>1?`Empate entre ${names.join(' y ')}`:(meIn?'¡Ganaste la costa!':`${names[0]} fundó la colonia`);
+  const why=limit?`Se llegó al límite de ${G.rules.maxTurns} turnos.`:tw?`${TEAMN[ws[0]%2]} suma ${teamVP(ws[0]%2)} puntos (meta ${teamGoal()}).`:`${names[0]} llegó a ${vp(ws[0])} puntos.`;
   const rows=G.players.slice().sort((a,b)=>vp(b.id)-vp(a.id)).map(q=>`<div class="pl" style="grid-template-columns:30px 1fr auto"><span class="av" style="background:${q.color}">${q.name[0].toUpperCase()}</span><div class="nm">${CBP.on?SYM[q.id]+' ':''}${q.name}${ws.includes(q.id)?' (gana)':''}</div><div class="vp">${vp(q.id)}</div></div>`).join('');
   const dec=decisive(),lastRow=G.hist[G.hist.length-1],extra=endExtras();
   openModal(`<h2>${title}</h2><p>${why} Turno ${G.turn} · duración ${fmt(gameMs())}.</p><div class="players" style="margin-top:8px">${rows}</div>
@@ -2468,6 +2484,7 @@ function edUsed(){
 function edHexes(){return mainCoords().map(([q,r],i)=>({id:i,q,r,type:ED.cells[i].type||'x',num:ED.cells[i].num||0}));}
 function edComplete(){return ED.cells.every(c=>c.type&&(c.type==='desert'||c.num));}
 function openEditor(){
+  BIG=false;NMAIN=19;
   if(ED.cells.length!==NMAIN)ED.cells=mainCoords().map(()=>({type:null,num:0}));
   if(window.CUSTOM&&!ED.loaded){ED.cells=window.CUSTOM.map(c=>({...c}));ED.loaded=true;}
   ED.msg='';$('#editor').classList.add('open');drawEditor();
@@ -2735,7 +2752,7 @@ function loadSerial(txt){
   PORTS=B.PORTS.map(p=>({type:p.type,e:E[p.e],mx:p.mx,my:p.my}));
   H.forEach(h=>{h.art=hexArt(h);});
   const nid=(G.id||0)+1;
-  G=o.G;G.id=nid;G.tok=0;G.busy=false;G.dsc=null;G.pend=null;G.paused=false;G.beep=null;G.tradeAsk=null;G.undo=null;G.mode=null;G.flash=null;G.fresh=null;G.refused={};
+  G=o.G;G.id=nid;BIG=!!G.big;NMAIN=BIG?37:19;G.tok=0;G.busy=false;G.dsc=null;G.pend=null;G.paused=false;G.beep=null;G.tradeAsk=null;G.undo=null;G.mode=null;G.flash=null;G.fresh=null;G.refused={};
   G.t0=Date.now()-(o.ms||0);G.tEnd=G.over?G.t0+(o.ms||0):null;
   G.players.forEach(p=>{p.color=PCOL[p.id];});
   SPEED=(G.cfg&&G.cfg.speed)??1;ZOOM.s=1;ZOOM.cx=ZOOM.cy=null;
@@ -2889,7 +2906,7 @@ const NET={role:null,code:null,id:null,name:'',roster:[],remote:{},modalSeat:nul
 NET.ask=o=>humanTradeModal(o);
 const NETALLOW=['uiRoll','uiEnd','uiUndo','uiPlayDev','uiBuyUpg','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg','openAuction','closeModal','bkPick','bkGo','propose','dscAdj','dscOk','aucAdj','aucOk','plPick','pickVictim','monoPick'];
 const NETMODAL=['closeModal','bkPick','bkGo','propose','dscAdj','dscOk','aucAdj','aucOk','plPick','pickVictim','monoPick'];
-const NETMAX=4;
+const NETMAX=6;
 /* Supabase puede entregar mensajes rápidos en otro orden: cada mensaje lleva un número (q) y se reordena. */
 class NetOrd{
   constructor(fn,gap){this.fn=fn;this.gap=gap;this.exp=null;this.buf=new Map();this.tm=null;}
@@ -2983,8 +3000,8 @@ const netSeatOf=id=>{const r=NET.roster.find(x=>x.id===id);return r?r.seat:-1;};
 /* ---------- ganchos que usa el motor (NETH) ---------- */
 const NETH={
   as(seat,fn){ // ejecuta fn «como» ese asiento (para ventanas y acciones de invitados)
-    if(!NET.role||seat==null||seat<0||seat===G.cfg.humanSeat)return fn();
-    const sv=G.cfg.humanSeat;G.cfg.humanSeat=seat;
+    if(!NET.role||seat==null||seat===G.cfg.humanSeat)return fn();
+    const sv=G.cfg.humanSeat;G.cfg.humanSeat=seat>=10?-1:seat; // los espectadores miran sin ver manos
     try{return fn();}finally{G.cfg.humanSeat=sv;}
   },
   touch(){
@@ -3033,7 +3050,7 @@ const NETH={
     if(NET.role!=='host'||!NET.lobby)return;
     for(const id of ['c-name','c-spec','r-tut']){const e=$('#'+id);const f=e&&e.closest('.field,label.chk');if(f)f.style.display='none';}
     const sel=$('#c-bots');
-    if(sel){const mx=Math.max(0,NETMAX-NET.roster.length);sel.innerHTML=Array.from({length:mx+1},(_,i)=>`<option value="${i}">${i===0?'Sin rivales de la IA':i+' rival'+(i>1?'es':'')+' de la IA'}</option>`).join('');sel.value=String(mx);try{rowsChanged();}catch(e){}}
+    if(sel){const mx=Math.max(0,NETMAX-NET.roster.length);sel.innerHTML=Array.from({length:mx+1},(_,i)=>`<option value="${i}">${i===0?'Sin rivales de la IA':i+' rival'+(i>1?'es':'')+' de la IA'}</option>`).join('');sel.value=String(Math.max(0,Math.min(mx,4-NET.roster.length)));try{rowsChanged();}catch(e){}}
   },
   autoJoin(){
     let code=null,saved=null;
@@ -3047,6 +3064,7 @@ const NETH={
 
 /* ---------- anfitrión ---------- */
 const netRoster=()=>NET.roster.map(r=>({tag:netTag(r.id,NET.code),name:r.name,seat:r.seat,online:r.online}));
+const netPlayers=()=>NET.roster.filter(r=>!r.spec);
 function netLobbyCast(){netSend({t:'lobby',roster:netRoster(),started:NET.started});}
 async function netCreate(name){
   name=(name||'').trim().slice(0,14)||'Anfitrión';
@@ -3074,10 +3092,16 @@ function netHostMsg(m){
   if(r)NET.seen[r.id]=Date.now();
   if(m.t==='hello'){
     if(r){r.online=true;r.name=r.name||m.name;
-      if(NET.started){NET.last={};if(G.cfg.humans&&!G.cfg.humans.includes(r.seat)){NET.back[r.id]=true;if(G.cur!==r.seat)NETH.pending();}}
+      if(NET.started){NET.last={};if(!r.spec&&G.cfg.humans&&!G.cfg.humans.includes(r.seat)){NET.back[r.id]=true;if(G.cur!==r.seat)NETH.pending();}}
       netLobbyCast();if(NET.started)netPush(true);else if(NET.inLobby)showLobby();return;}
-    if(NET.started){netSend({t:'reject',to:netTag(m.id,NET.code),why:'La partida ya comenzó.'});return;}
-    if(NET.roster.length>=NETMAX){netSend({t:'reject',to:netTag(m.id,NET.code),why:'La sala está llena.'});return;}
+    if(NET.started){ // la partida ya empezó: entra como espectador
+      const ns=NET.roster.filter(x=>x.spec);
+      if(ns.length>=8){netSend({t:'reject',to:netTag(m.id,NET.code),why:'La sala ya tiene demasiados espectadores.'});return;}
+      let k=10;while(NET.roster.some(x=>x.seat===k))k++;
+      NET.roster.push({id:m.id,name:String(m.name||'Espectador').replace(/[<>&"]/g,'').slice(0,14),seat:k,online:true,spec:true});
+      NET.seen[m.id]=Date.now();NET.last={};netLobbyCast();netPush(true);return;
+    }
+    if(netPlayers().length>=NETMAX){netSend({t:'reject',to:netTag(m.id,NET.code),why:'La sala está llena.'});return;}
     NET.roster.push({id:m.id,name:String(m.name||'Jugador').replace(/[<>&"]/g,'').slice(0,14),seat:NET.roster.length,online:true});
     NET.seen[m.id]=Date.now();netLobbyCast();if(NET.inLobby)showLobby();return;
   }
@@ -3085,6 +3109,7 @@ function netHostMsg(m){
   if(m.t==='ping')return;
   if(m.t==='chat'){const n=NET.cht||(NET.cht={});if(Date.now()-(n[r.id]||0)<600)return;n[r.id]=Date.now();const tx=netChatClean(m.text);if(tx)netChatCast(r.seat,r.name,tx);return;}
   if(m.t==='leave'){
+    if(r.spec){NET.roster=NET.roster.filter(x=>x.id!==r.id);netLobbyCast();return;}
     if(NET.started){netSeatOffline(r,'salió de la sala');}
     else{NET.roster=NET.roster.filter(x=>x.id!==r.id);NET.roster.forEach((x,i)=>{x.seat=i;});netLobbyCast();if(NET.inLobby)showLobby();}
     return;
@@ -3100,6 +3125,7 @@ function netHostBeat(){
   const now=Date.now();
   for(const r of NET.roster){
     if(r.seat===NET.hs)continue;
+    if(r.spec&&now-(NET.seen[r.id]||0)>NET.offMs){NET.roster=NET.roster.filter(x=>x.id!==r.id);netLobbyCast();continue;}
     if(now-(NET.seen[r.id]||0)>NET.offMs){if(r.online){r.online=false;if(NET.started)netSeatOffline(r,'se desconectó');else{NET.roster=NET.roster.filter(x=>x.id!==r.id);NET.roster.forEach((x,i)=>{x.seat=i;});if(NET.inLobby)showLobby();}netLobbyCast();}}
   }
   if(NET.started)netRecover();
@@ -3108,12 +3134,12 @@ function netHostBeat(){
 const gidGet=c=>{try{return localStorage.getItem('ta-gid-'+c)||'';}catch(e){return '';}};
 const gidSet=(c,id)=>{try{localStorage.setItem('ta-gid-'+c,id);}catch(e){}};
 const NETSAVE='ta-netsave';
-function netSnapPack(){return{code:NET.code,hs:NET.hs,roster:NET.roster.map(r=>({id:r.id,name:r.name,seat:r.seat})),ser:ser()};}
+function netSnapPack(){return{code:NET.code,hs:NET.hs,roster:netPlayers().map(r=>({id:r.id,name:r.name,seat:r.seat})),ser:ser()};}
 async function netSnap(){
   if(NET.role!=='host'||!NET.started||G.over)return;
   let sn;try{sn=netSnapPack();}catch(e){return;}
   try{localStorage.setItem(NETSAVE,JSON.stringify({...sn,at:Date.now()}));}catch(e){}
-  const bk=NET.roster.find(r=>r.seat!==NET.hs&&r.online);if(!bk)return;
+  const bk=netPlayers().find(r=>r.seat!==NET.hs&&r.online);if(!bk)return;
   const z=await netGz(JSON.stringify(sn));
   if(z&&z.length<180000&&NET.role==='host')netSend({t:'snap',to:bk.seat,z});
 }
@@ -3244,7 +3270,8 @@ async function netPush(force){
 }
 function netEndHTML(seat){
   const ws=G.winners||[G.winner],names=ws.map(i=>G.players[i].name),me=ws.includes(seat);
-  const title=ws.length>1?`Empate entre ${names.join(' y ')}`:(me?'¡Ganaste la costa!':`${names[0]} fundó la colonia`);
+  const tw=G.teams&&ws.length===2&&ws[0]%2===ws[1]%2;
+  const title=tw?(me?'¡Ganó tu equipo!':`Ganó el ${TEAMN[ws[0]%2]}`):ws.length>1?`Empate entre ${names.join(' y ')}`:(me?'¡Ganaste la costa!':`${names[0]} fundó la colonia`);
   const rows=G.players.slice().sort((a,b)=>vp(b.id)-vp(a.id)).map(q=>`<div class="pl" style="grid-template-columns:30px 1fr auto"><span class="av" style="background:${q.color}">${q.name[0].toUpperCase()}</span><span class="nm"><b>${q.name}${q.id===seat?' (tú)':''}</b></span><span class="vpb"><b>${vp(q.id)}</b> pts</span></div>`).join('');
   return `<div class="mbox"><h2>${title}</h2><p>Turno ${G.turn} · duración ${fmt(gameMs())}.</p><div class="players" style="margin-top:8px">${rows}</div><div class="mact"><button class="btn primary" data-local="netLeave()">Salir de la sala</button></div></div>`;
 }
@@ -3296,7 +3323,7 @@ async function netGuestHandle(m){
   if(m.t==='snap'){if(typeof m.z==='string'&&m.z.length<400000)NET.snap=m.z;return;}
   if(m.t==='chatmsg'){chatShow(Math.max(0,Math.min(5,+m.seat||0)),String(m.name||'').slice(0,14),netChatClean(m.text));return;}
   if(m.t==='lobby'||m.t==='start'){
-    NET.roster=(Array.isArray(m.roster)?m.roster:[]).slice(0,NETMAX).map(r=>({tag:String(r&&r.tag||''),name:String(r&&r.name||'').slice(0,14),seat:+(r&&r.seat)||0,online:!!(r&&r.online)}));{const mine=netTag(NET.id,NET.code),f=NET.roster.find(x=>x.tag===mine);NET.seat=f?f.seat:-1;}
+    NET.roster=(Array.isArray(m.roster)?m.roster:[]).slice(0,NETMAX+8).map(r=>({tag:String(r&&r.tag||''),name:String(r&&r.name||'').slice(0,14),seat:+(r&&r.seat)||0,online:!!(r&&r.online)}));{const mine=netTag(NET.id,NET.code),f=NET.roster.find(x=>x.tag===mine);NET.seat=f?f.seat:-1;}
     if(NET.seat<0)return;
     if(m.t==='start'||m.started){NET.started=true;NET.bye=false;closeLocalModal();}
     else showGuestLobby();
