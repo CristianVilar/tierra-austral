@@ -359,6 +359,7 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
       <button class="btn" id="cbbtn" onclick="setPalette(!CBP.on)" aria-pressed="false" title="Colores y símbolos pensados para daltonismo">Daltonismo: no</button>
       <button class="btn" onclick="tutHeader()">Tutorial</button>
       <button class="btn" onclick="showRules()">Reglas y costos</button>
+      <button class="btn" onclick="window.open('/3d/','_blank')" title="Abre esta partida en 3D en otra pestaña">Visor 3D (beta)</button>
       <button class="btn primary" onclick="showMenu()">Menú</button>
     </div>
   </header>
@@ -2226,7 +2227,14 @@ function sideHTML(){
   return h;
 }
 function placeDice(){const d=document.querySelector('#side .dicecard'),t=$('#dicepos');if(t)t.innerHTML=d?d.outerHTML:'';}
-function render(){if(NET.role==='guest')return;NETH.touch();musicRefresh();renderBoard();$('#side').innerHTML=sideHTML();placeDice();$('#msg').textContent=G.msg||' ';updateClocks();tutHL();renderMbar();bumpRes();}
+/* copia del estado para el visor 3D (otra pestaña del mismo navegador lo lee y se actualiza solo) */
+let _s3=0,_s3t=null;
+function sync3d(){
+  if(!G.players||!G.players.length||!H.length)return;
+  const go=()=>{try{localStorage.setItem('ta-3d',ser());}catch(e){}_s3=Date.now();};
+  clearTimeout(_s3t);if(Date.now()-_s3>450)go();else _s3t=setTimeout(go,450);
+}
+function render(){if(NET.role==='guest')return;NETH.touch();try{sync3d();}catch(e){}musicRefresh();renderBoard();$('#side').innerHTML=sideHTML();placeDice();$('#msg').textContent=G.msg||' ';updateClocks();tutHL();renderMbar();bumpRes();}
 
 /* ===================== Modales ===================== */
 function openModal(html,wide){const m=$('#modal');m.innerHTML=`<div class="mbox${wide?' wide':''}">${html}</div>`;m.classList.add('open');NETH.modalOpen();}
@@ -3370,6 +3378,7 @@ Registro|Log|Registro
 Reglas de esta partida|Rules of this game|Regras desta partida
 Reglas de la partida|Game rules|Regras da partida
 Reglas y costos|Rules and costs|Regras e custos
+Visor 3D (beta)|3D viewer (beta)|Visualizador 3D (beta)
 Rellenar al azar|Fill randomly|Preencher ao acaso
 Repetición de la partida|Game replay|Repetição da partida
 Repetición|Replay|Repetição

@@ -1,0 +1,117 @@
+import re
+s=open('/home/claude/tierra-austral/proto/index.html').read()
+def rep(old,new,cnt=1):
+    global s
+    assert old in s,'NOT FOUND: '+old[:90]
+    s=s.replace(old,new,cnt)
+
+rep('"three":"./vendor/three.module.min.js","three/addons/":"./vendor/"','"three":"../proto/vendor/three.module.min.js","three/addons/":"../proto/vendor/"')
+s=s.replace('url(fonts/','url(../proto/fonts/')
+s=re.sub(r'<title>.*?</title>','<title>Tierra Austral · Visor 3D</title>',s,1)
+
+# ---- tablero desde el estado real ----
+a=s.index('const ARCH=/[?&]islas/');b=s.index('const corner=(t,i)')
+orig=s[a:b]
+orig=orig.replace('const ARCH=/[?&]islas/.test(location.search);\n','').replace('const tiles=[];\n','')
+new='''const ARCH0=/[?&]islas/.test(location.search);
+let LV=null,LVST=null;try{if(!/[?&]demo/.test(location.search)){const t=localStorage.getItem('ta-3d');if(t)LV=JSON.parse(t);}}catch(e){}
+const ARCH=!LV&&ARCH0;
+const tiles=[];
+if(LV){const NM=LV.G.big?37:19;for(const h of LV.B.H){const q=h.q,r=h.r;tiles.push({q,r,type:h.type,num:h.num||0,x:S*SQ3*(q+r/2),z:S*1.5*r,top:Y0+TOP[h.type]+BEV,isle:h.id>=NM?1:0,hid:h.id});}}
+else{
+'''+orig.replace('if(ARCH)for','if(ARCH)for')+'''}
+const BB=(()=>{let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const t of tiles){x0=Math.min(x0,t.x);x1=Math.max(x1,t.x);z0=Math.min(z0,t.z);z1=Math.max(z1,t.z);}return{cx:(x0+x1)/2,cz:(z0+z1)/2,hw:(x1-x0)/2,hh:(z1-z0)/2};})();
+'''
+s=s[:a]+new+s[b:]
+rep('const MASK_HALF=ARCH?9.6:7.5;','const MASK_HALF=LV?Math.max(7.5,Math.max(...tiles.map(t=>Math.max(Math.abs(t.x),Math.abs(t.z))))+3.2):(ARCH?9.6:7.5);')
+rep('controls.target.set(ARCH?1.75:0,0,.1);','controls.target.set(LV?BB.cx:(ARCH?1.75:0),0,LV?BB.cz+.1:.1);')
+rep('const halfW=ARCH?7.4:5.6,halfH=ARCH?5.0:5.2;','const halfW=LV?BB.hw+2.1:(ARCH?7.4:5.6),halfH=LV?BB.hh+2.2:(ARCH?5.0:5.2);')
+rep('r:(ARCH?10.6:6.3)+i*(ARCH?.8:.55)','r:(LV?Math.hypot(BB.cx,BB.cz)+Math.max(BB.hw,BB.hh*1.2)+2.9:(ARCH?10.6:6.3))+i*(ARCH?.8:.55)')
+# balsa de dados
+a=s.index('function placeRaft(){');b=s.index('\n',a)
+s=s[:a]+'''function placeRaft(){if(!diceRaft)return;const portrait=innerWidth/innerHeight<.9;
+  if(LV){if(portrait){diceRaft.position.x=BB.cx+1.5;diceRaft.userData.z=BB.cz+BB.hh+2.6;diceRaft.rotation.y=-.1;}else{diceRaft.position.x=BB.cx+BB.hw+2.9;diceRaft.userData.z=BB.cz+1.9;diceRaft.rotation.y=-1.25;}diceRaft.position.z=diceRaft.userData.z;return;}
+  if(portrait){diceRaft.position.x=ARCH?3:1.5;diceRaft.userData.z=5.6;diceRaft.rotation.y=-.1;}else{diceRaft.position.x=ARCH?3.5:6.4;diceRaft.userData.z=ARCH?4.9:1.9;diceRaft.rotation.y=ARCH?-.1:-1.25;}diceRaft.position.z=diceRaft.userData.z;}'''+s[b:]
+
+# ---- puertos desde el estado ----
+rep("const PORTS=[['3:1',null],['2:1','wood'],['3:1',null],['2:1','brick'],['2:1','wool'],['3:1',null],['2:1','grain'],['3:1',null],['2:1','ore']];",
+"""const PORTS=LV?LV.B.PORTS.map(p=>[p.type==='any'?'3:1':'2:1',p.type==='any'?null:p.type]):[['3:1',null],['2:1','wood'],['3:1',null],['2:1','brick'],['2:1','wool'],['3:1',null],['2:1','grain'],['3:1',null],['2:1','ore']];
+  const coastL=LV?LV.B.PORTS.map(p=>{const ed=LV.B.E[p.e],va=LV.B.V[ed.a],vb=LV.B.V[ed.b];const c1=[va.x/54,va.y/54],c2=[vb.x/54,vb.y/54];
+    const hid=va.hexes.find(h=>vb.hexes.includes(h));const t=tiles.find(t=>t.hid===hid);if(!t)return null;return{mx:(c1[0]+c2[0])/2,mz:(c1[1]+c2[1])/2,c1,c2,t,ti:tiles.indexOf(t)};}):null;""")
+rep("PORTS.forEach((P,i)=>{const e=coast[Math.floor((i+.3)*coast.length/PORTS.length)];if(!e)return;","PORTS.forEach((P,i)=>{const e=LV?coastL[i]:coast[Math.floor((i+.3)*coast.length/PORTS.length)];if(!e)return;")
+
+# ---- caminos: extraer función ----
+a=s.index('    if(o){const mx=(c.x+o.x)/2');endm='world.add(rd);}'
+b=s.index(endm,a)
+body=s[a+len('    if(o){'):b+len('world.add(rd);')]
+body=body.replace('PCOL[p]','col')
+s=s[:a]+'    if(o)mkRoad(c,o,p,PCOL[p]);'+s[b+len(endm):]
+# insertar mkRoad antes de MK.house=...
+rep('  MK.house=house;MK.castle=castle;','  function mkRoad(c,o,p,col){'+body+'return rd;}\n  MK.house=house;MK.castle=castle;')
+rep('{const c0=chosen[0];EDGE=','if(chosen.length){const c0=chosen[0];EDGE=')
+# demo de construcciones solo sin estado
+rep('  chosen.forEach((c,i)=>{const p=i%4,city=i===2;','  if(!LV)chosen.forEach((c,i)=>{const p=i%4,city=i===2;')
+
+# ---- aplicar estado vivo ----
+live='''
+  /* ---- estado real del juego: construcciones, senderos, bandido y dados ---- */
+  const LB=new Map(),LRD=new Map();let lastRoll=null;
+  const PCs=o=>(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4];
+  const nearC=(x,z)=>{let b=null,bd=1e9;for(const c of cmap.values()){const d=Math.hypot(c.x-x,c.z-z);if(d<bd){bd=d;b=c;}}return bd<.3?b:null;};
+  const popIn=(g,s1)=>tween(.55,u=>{const e=u<1?1-Math.pow(1-u,3)*Math.cos(u*9):1;g.scale.setScalar(Math.max(.001,s1*e));},()=>g.scale.setScalar(s1));
+  MK.apply=(st,first)=>{
+    const Vs=st.B.V,Es=st.B.E,own=new Set();
+    for(const v of Vs){if(!v.b)continue;own.add(v.id);const cur=LB.get(v.id);if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner)continue;
+      const c=nearC(v.x/54,v.y/54);if(!c)continue;const p=v.b.owner,col=PCs(p),city=v.b.type==='c';
+      if(cur){world.remove(cur.g);const i=buildings.indexOf(cur.rec);if(i>=0)buildings.splice(i,1);}
+      const g=city?castle(col,p%4):house(col,p%4),top=Math.max(...c.tiles.map(ti=>tiles[ti].top));
+      g.position.set(c.x,top,c.z);g.rotation.y=hash2(v.id,3,9)*6;const s1=city?1.0:1.45;world.add(g);
+      if(first)g.scale.setScalar(s1);else popIn(g,s1);
+      const rec={g,p:p%4,owner:p,city,tiles:c.tiles,x:c.x,z:c.z,top};buildings.push(rec);LB.set(v.id,{g,type:v.b.type,owner:p,rec});}
+    for(const e of Es){if(e.owner==null||!e.kind||LRD.has(e.id))continue;
+      const va=Vs[e.a],vb=Vs[e.b],ca=nearC(va.x/54,va.y/54),cb=nearC(vb.x/54,vb.y/54);if(!ca||!cb)continue;const col=PCs(e.owner);let g;
+      if(e.kind==='ship'){const A=[ca.x,ca.z],B=[cb.x,cb.z],bt=makeBoat(col,1.0,.34,false);bt.scale.setScalar(.8);bt.position.set((A[0]+B[0])/2,0,(A[1]+B[1])/2);bt.rotation.y=Math.atan2(-(B[1]-A[1]),B[0]-A[0]);
+        bt.userData={base:bt.position.clone(),ph:e.id*1.3,ry:bt.rotation.y};world.add(bt);moored.push(bt);g=bt;}
+      else{g=mkRoad(ca,cb,e.owner,col);}
+      if(!first&&e.kind!=='ship'){const s0=g.scale.clone();g.scale.set(.01,.01,.01);tween(.5,u=>g.scale.setScalar(Math.max(.01,u)),()=>g.scale.set(1,1,1));}
+      LRD.set(e.id,{g});}
+    const rt=tiles.find(t=>t.hid===st.G.robber);
+    if(rt&&robber&&robber.userData.tile!==rt){
+      if(first){robber.position.set(rt.x,rt.top,rt.z);robber.userData.tile=rt;}
+      else{const from=robber.userData.tile;robber.userData.tile=rt;tween(.9,u=>{const e=ease(u);robber.position.set(lerp(from.x,rt.x,e),lerp(from.top,rt.top,e)+Math.sin(u*Math.PI)*1.1,lerp(from.z,rt.z,e));},()=>robber.position.set(rt.x,rt.top,rt.z));}}
+    if(st.G.dice&&st.G.rollAt!==lastRoll){lastRoll=st.G.rollAt;const [a,b]=st.G.dice;
+      if(first){throwDie(dice[0],a,0,.05);throwDie(dice[1],b,1,.05);}
+      else{throwDie(dice[0],a,0,1.35);throwDie(dice[1],b,1,1.5).then(()=>toast(`<span style="color:var(--gold);font-size:26px">${a+b}</span> &nbsp;(${a} + ${b})`,2200));}}
+  };
+'''
+# insertar justo antes del bloque del bandido
+rep('  // bandido\n',live+'  // bandido\n')
+rep("const desert=tiles.find(t=>t.type==='desert');","const desert=(LV&&tiles.find(t=>t.hid===LV.G.robber))||tiles.find(t=>t.type==='desert');")
+
+# ---- HUD en vivo ----
+rep("function renderPlayers(){","""function vpLive(p,st){let n=0;for(const v of st.B.V)if(v.b&&v.b.owner===p)n+=v.b.type==='c'?2:1;if(st.G.lr===p)n+=2;if(st.G.la===p)n+=2;if(st.G.explorer===p)n+=1;return n;}
+function renderPlayers(){
+  if(LV){const st=LVST||LV;$('#players').innerHTML=st.G.players.map((p,i)=>`<div class="pl${st.G.cur===i&&!st.G.over?' on':''}" style="--pc:${p.color||PCOL[i%4]}"><small>${String(p.name).replace(/[<>&]/g,'')}</small><b>${vpLive(i,st)}<em>pts</em></b></div>`).join('');return;}""")
+rep("setTimeout(()=>{if(chips.wood){setChip('wood',2)","setTimeout(()=>{if(!LV&&chips.wood){setChip('wood',2)")
+rep("    await buildIsland();renderPlayers();","    await buildIsland();if(LV){LVST=LV;MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');}else{renderPlayers();$('#hint').textContent='Vista de demostración · abre una partida en otra pestaña y aparecerá aquí en 3D';$('#hint').style.opacity=1;}")
+rep("window.TA3D={","""function liveHUD(st){
+  renderPlayers();
+  const seat=st.G.cfg&&st.G.cfg.humanSeat>=0?st.G.cfg.humanSeat:-1,pl=seat>=0?st.G.players[seat]:null;
+  $('#chips').style.display=pl?'grid':'none';
+  if(pl)for(const r of RES)if(chips[r]&&chips[r].n!==pl.res[r])setChip(r,pl.res[r]);
+  const cur=st.G.players[st.G.cur];$('#stat').textContent=st.G.over?'Partida terminada':((cur?cur.name+' · ':'')+(st.G.msg||'')).slice(0,140);
+}
+addEventListener('storage',e=>{if(e.key!=='ta-3d'||!e.newValue)return;
+  try{const st=JSON.parse(e.newValue);if(!LV||st.G.id!==LV.G.id||st.B.H.length!==LV.B.H.length){location.reload();return;}LVST=st;MK.apply(st,false);liveHUD(st);}catch(err){console.error(err);}});
+window.TA3D={""")
+# barra de estado + css
+rep('<div class="chips" id="chips"></div>','<div id="stat"></div>\n  <div class="chips" id="chips"></div>')
+rep('#hint{bottom:','''#stat{pointer-events:none;text-align:center;font:600 13px/1.25 system-ui;color:#dbe8f2;text-shadow:0 1px 6px #000;margin:0 0 7px;min-height:16px}
+body.live .act,body.live #sheet,body.live #isl{display:none!important}
+#hint{bottom:''')
+rep("function mkInst(geo,mat,cap){const m=new THREE.InstancedMesh(geo,mat,cap);","function mkInst(geo,mat,cap){const m=new THREE.InstancedMesh(geo,mat,Math.ceil(cap*Math.max(1,tiles.length/19)));")
+rep("let LV=null,LVST=null;","let READY=false,LVNEXT=null;let LV=null,LVST=null;")
+rep("MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');}","MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}}")
+rep("LVST=st;MK.apply(st,false);liveHUD(st);}catch(err)","if(!READY){LVNEXT=st;return;}LVST=st;MK.apply(st,false);liveHUD(st);}catch(err)")
+open('/home/claude/tierra-austral/3d/index.html','w').write(s)
+print('ok',len(s))
