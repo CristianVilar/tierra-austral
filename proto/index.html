@@ -44,7 +44,7 @@ html,body{margin:0;height:100%;background:#0b1620;color:var(--ink);font-family:s
 #fps{position:fixed;left:8px;bottom:calc(170px + env(safe-area-inset-bottom));z-index:6;font:11px monospace;color:#9fe;display:none}
 .fly{position:fixed;z-index:7;width:38px;height:38px;background-size:contain;background-repeat:no-repeat;background-position:center;pointer-events:none;box-shadow:0 0 12px 2px #fff8,inset 0 -3px 5px #0006;left:0;top:0}
 .plus{position:fixed;z-index:7;pointer-events:none;font:800 18px Georgia,serif;text-shadow:0 2px 6px #000}
-#evbar{position:fixed;z-index:5;left:8px;right:8px;top:calc(118px + env(safe-area-inset-top));display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;pointer-events:auto;-webkit-overflow-scrolling:touch}
+#evbar{position:fixed;z-index:5;left:8px;right:8px;top:calc(174px + env(safe-area-inset-top));display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;pointer-events:auto;-webkit-overflow-scrolling:touch}
 #evbar::-webkit-scrollbar{display:none}
 #evbar button{flex:0 0 auto;background:#0d1a23d9;border:1px solid var(--line);border-radius:20px;color:var(--ink);font:600 13px/1 inherit;padding:9px 12px;min-height:36px;backdrop-filter:blur(6px);white-space:nowrap}
 #evbar button.on{background:var(--gold);color:#241a05;border-color:var(--gold)}
@@ -206,10 +206,10 @@ const WATER=new THREE.ShaderMaterial({
   fragmentShader:`precision highp float;
    uniform float uTime,uFogN,uFogF,uMH,uLite,uStorm;uniform sampler2D uMask;uniform vec3 uDeep,uShallow,uSun,uSunDir,uFog,uSkyH;varying vec3 vW;
    float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
-   float nz(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1,0)),f.x),mix(hs(i+vec2(0,1)),hs(i+vec2(1,1)),f.x),f.y);}
+   float nz(vec2 p){p=mat2(.8,.6,-.6,.8)*p+vec2(3.7,1.3);vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.-15.)+10.);return mix(mix(hs(i),hs(i+vec2(1,0)),f.x),mix(hs(i+vec2(0,1)),hs(i+vec2(1,1)),f.x),f.y);}
    float hgt(vec2 p){float t=uTime;
     float h=sin(p.x*1.1+t*.8+nz(p*.4)*3.)*.5+sin(p.y*1.4-t*.6+p.x*.5)*.35;
-    h+=nz(p*2.2+vec2(t*.35,-t*.25))*.5+nz(p*5.1-vec2(t*.5,t*.3))*.22*(1.-uLite);return h*(1.+uStorm*1.7);}
+    h+=nz(p*2.2+vec2(t*.35,-t*.25))*.5+nz(p*5.1-vec2(t*.5,t*.3))*.22*(1.-uLite);return h*(1.+uStorm*1.2);}
    void main(){
     vec2 p=vW.xz;float e=.06;
     float h0=hgt(p),hx=hgt(p+vec2(e,0.)),hz=hgt(p+vec2(0.,e));
