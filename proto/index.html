@@ -54,7 +54,7 @@ html,body{margin:0;height:100%;background:#0b1620;color:var(--ink);font-family:s
 <div id="load"><div>Tierra Austral</div><div class="bar"><i id="lb"></i></div><small id="lt">Preparando la isla…</small></div>
 
 <div class="hud top">
-  <div class="brand"><b>Tierra Austral</b><span>Prototipo 3D · gráficos procedurales</span><button class="pill" id="portinfo" style="margin-top:8px;pointer-events:auto">⚓ ¿Qué son los puertos?</button></div>
+  <div class="brand"><b>Tierra Austral</b><span>Prototipo 3D · gráficos procedurales</span></div>
   <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
     <button class="pill" id="q" aria-label="Calidad gráfica">Calidad: …</button>
     <div class="seg" id="tod" role="group" aria-label="Hora del día">
@@ -344,7 +344,7 @@ function scatter(t,n,rand,minR,maxR,sep=.17){
   return out;
 }
 let treeCone,treeTrunk,wheat,peak,snow,boulder,sheepBody,sheepHead,brickI,tuft;
-const portSprites=[],flags=[];
+const portSprites=[],flags=[],portRings=[];
 let robber,tokens=[],buildings=[],boats=[],piers=[],lampsM=[];
 let diceRaft,dice=[];
 
@@ -437,7 +437,7 @@ async function buildIsland(){
   // puertos en la costa
   const eMap=new Map();
   tiles.forEach((t,ti)=>{for(let i=0;i<6;i++){const [x,z]=corner(t,i),[x2,z2]=corner(t,(i+1)%6);const a=ck(x,z),b=ck(x2,z2),key=a<b?a+'|'+b:b+'|'+a;
-    if(!eMap.has(key))eMap.set(key,{n:0,mx:(x+x2)/2,mz:(z+z2)/2,t,ti});eMap.get(key).n++;}});
+    if(!eMap.has(key))eMap.set(key,{n:0,mx:(x+x2)/2,mz:(z+z2)/2,c1:[x,z],c2:[x2,z2],t,ti});eMap.get(key).n++;}});
   const coast=[...eMap.values()].filter(e=>e.n===1).map(e=>({...e,ang:Math.atan2(e.mz,e.mx)})).sort((a,b)=>a.ang-b.ang);
   const PORTS=[['3:1',null],['2:1','wood'],['3:1',null],['2:1','brick'],['2:1','wool'],['3:1',null],['2:1','grain'],['3:1',null],['2:1','ore']];
   const woodM=new THREE.MeshStandardMaterial({map:woodTex(),roughness:.85});
@@ -449,6 +449,22 @@ async function buildIsland(){
     const pole=new THREE.Mesh(new THREE.CylinderGeometry(.014,.014,.5,6),woodM);pole.position.set(.66,.33,0);pole.castShadow=true;g.add(pole);
     const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:portTex(P[0],P[1]),transparent:true,depthWrite:false}));
     sp.scale.set(.82,.82,1);sp.position.set(.66,.78,0);sp.userData.port={ratio:P[0],res:P[1]};g.add(sp);portSprites.push(sp);
+    // los dos puntos de la costa donde construir para obtener el puerto
+    const pc=P[1]?RCOL[P[1]]:'#f0c24b',pcn=new THREE.Color(pc);
+    for(const c of [e.c1,e.c2]){
+      const lz=(c[0]-e.mx)*(-uz)+(c[1]-e.mz)*ux, lx=(c[0]-e.mx)*ux+(c[1]-e.mz)*uz, ty=e.t.top;
+      const m=new THREE.Group();m.position.set(lx,ty,lz);const bx0=lx-.03,bz0=lz*.7;
+      const ringM=new THREE.MeshBasicMaterial({color:pcn,transparent:true,opacity:.9,depthWrite:false});portRings.push(ringM);
+      const rg=new THREE.Mesh(new THREE.RingGeometry(.14,.21,32),ringM);rg.rotation.x=-Math.PI/2;rg.position.y=.012;m.add(rg);
+      const dot=new THREE.Mesh(new THREE.CylinderGeometry(.045,.05,.03,14),new THREE.MeshStandardMaterial({color:pcn,roughness:.5,emissive:pcn,emissiveIntensity:.25}));dot.position.set(bx0-lx,.015,bz0-lz);dot.castShadow=true;m.add(dot);
+      const bol=new THREE.Mesh(new THREE.CylinderGeometry(.026,.032,.15,8),woodM);bol.position.set(bx0-lx,.09,bz0-lz);bol.castShadow=true;m.add(bol);
+      const cap=new THREE.Mesh(new THREE.SphereGeometry(.036,10,8),new THREE.MeshStandardMaterial({color:pcn,roughness:.45,emissive:pcn,emissiveIntensity:.35}));cap.position.set(bx0-lx,.18,bz0-lz);m.add(cap);
+      g.add(m);
+      // cuerda del vértice al muelle
+      const A=new THREE.Vector3(bx0,ty+.1,bz0),B=new THREE.Vector3(.12,.085,Math.sign(lz)*.085),D=B.clone().sub(A);
+      const rope=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,D.length(),5),flatMat(0xc9b27a,1));
+      rope.position.copy(A).addScaledVector(D,.5);rope.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),D.clone().normalize());g.add(rope);
+    }
     world.add(g);piers.push(g);
   });
 
@@ -472,19 +488,38 @@ async function buildIsland(){
     g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;
   }
   function castle(col){
-    const g=new THREE.Group(),roof=flatMat(col,.7);
-    bx(.46,.035,.32,stoneM,0,.0175,0,g);
-    bx(.24,.15,.17,wallW,-.09,.11,.03,g);
-    const r=new THREE.Mesh(prism(.3,.12,.21),roof);r.position.set(-.09,.185,.03);g.add(r);
-    const tw=new THREE.Mesh(new THREE.CylinderGeometry(.07,.078,.32,10),stoneM);tw.position.set(.13,.195,-.03);g.add(tw);
-    const tc=new THREE.Mesh(new THREE.ConeGeometry(.1,.14,10),roof);tc.position.set(.13,.425,-.03);g.add(tc);
-    for(let i=0;i<7;i++){bx(.03,.03,.02,stoneM,-.2+i*.065,.05,.15,g);}
-    bx(.05,.08,.01,darkM,-.09,.075,.12,g);
-    bx(.036,.04,.01,lampM,-.17,.12,.12,g);bx(.036,.04,.01,lampM,-.01,.12,.12,g);
-    const w=new THREE.Mesh(new THREE.BoxGeometry(.03,.07,.012),lampM);w.position.set(.13,.26,.04);g.add(w);
-    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.2,5),poleM);pole.position.set(.13,.57,-.03);g.add(pole);
-    const fg=new THREE.PlaneGeometry(.13,.07);fg.translate(.065,0,0);
-    const flag=new THREE.Mesh(fg,new THREE.MeshStandardMaterial({color:col,roughness:.7,side:THREE.DoubleSide}));flag.position.set(.134,.62,-.03);g.add(flag);flags.push(flag);
+    const g=new THREE.Group(),roof=flatMat(col,.7),st2=flatMat(0xa7a294,1),st3=flatMat(0x77736a,1);
+    // plataforma y muralla con almenas
+    bx(.56,.035,.42,stoneM,0,.0175,0,g);
+    const W=.5,D=.36,wh=.1,wt=.035;
+    bx(W,wh,wt,st2,0,.035+wh/2,D/2-wt/2,g);bx(W,wh,wt,st2,0,.035+wh/2,-D/2+wt/2,g);
+    bx(wt,wh,D,st2,-W/2+wt/2,.035+wh/2,0,g);bx(wt,wh,D,st2,W/2-wt/2,.035+wh/2,0,g);
+    for(let i=0;i<7;i++){const x=-W/2+.05+i*(W-.1)/6;bx(.034,.03,.02,st2,x,.035+wh+.015,D/2-.01,g);bx(.034,.03,.02,st2,x,.035+wh+.015,-D/2+.01,g);}
+    for(let i=0;i<5;i++){const z=-D/2+.06+i*(D-.12)/4;bx(.02,.03,.034,st2,-W/2+.01,.035+wh+.015,z,g);bx(.02,.03,.034,st2,W/2-.01,.035+wh+.015,z,g);}
+    // portón
+    bx(.09,.085,.012,darkM,0,.035+.0425,D/2+.002,g);
+    bx(.11,.012,.016,st3,0,.035+.09,D/2+.004,g);
+    const arch=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.012,12,1,false,0,Math.PI),darkM);arch.rotation.x=Math.PI/2;arch.rotation.z=Math.PI/2;arch.position.set(0,.035+.085,D/2+.002);g.add(arch);
+    // cuatro torres redondas con techo cónico
+    for(const [tx,tz] of [[-W/2,-D/2],[W/2,-D/2],[-W/2,D/2],[W/2,D/2]]){
+      const t=new THREE.Mesh(new THREE.CylinderGeometry(.052,.058,.27,10),st2);t.position.set(tx,.035+.135,tz);g.add(t);
+      const band=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.015,10),st3);band.position.set(tx,.035+.27,tz);g.add(band);
+      const c=new THREE.Mesh(new THREE.ConeGeometry(.072,.13,10),roof);c.position.set(tx,.035+.27+.0075+.065,tz);g.add(c);
+      bx(.014,.04,.01,lampM,tx,.035+.17,tz+(tz>0?.054:-.054),g).rotation.y=0;
+    }
+    // torre del homenaje, alta, con remate y techo piramidal
+    const kh=.5,kw=.17;
+    bx(kw,kh,kw,st2,0,.035+kh/2,0,g);
+    bx(kw+.035,.03,kw+.035,st3,0,.035+kh+.015,0,g);
+    const mer=[[-1,-1],[1,-1],[-1,1],[1,1]];for(const [mx,mz] of mer)bx(.04,.04,.04,st3,mx*(kw+.035)/2-mx*.02,.035+kh+.05,mz*(kw+.035)/2-mz*.02,g);
+    const kr=new THREE.Mesh(new THREE.ConeGeometry(.15,.2,4),roof);kr.rotation.y=Math.PI/4;kr.position.set(0,.035+kh+.03+.1,0);g.add(kr);
+    // ventanas del homenaje
+    for(const y of [.17,.3,.43]){bx(.03,.05,.01,lampM,0,.035+y,kw/2+.002,g);bx(.03,.05,.01,lampM,0,.035+y,-kw/2-.002,g);bx(.01,.05,.03,lampM,kw/2+.002,.035+y,0,g);bx(.01,.05,.03,lampM,-kw/2-.002,.035+y,0,g);}
+    // bandera
+    const top=.035+kh+.03+.2;
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.006,.006,.2,5),poleM);pole.position.set(0,top+.08,0);g.add(pole);
+    const fg=new THREE.PlaneGeometry(.15,.08);fg.translate(.075,0,0);
+    const flag=new THREE.Mesh(fg,new THREE.MeshStandardMaterial({color:col,roughness:.7,side:THREE.DoubleSide}));flag.position.set(.004,top+.145,0);g.add(flag);flags.push(flag);
     g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;
   }
   const roadTex={};
@@ -498,7 +533,7 @@ async function buildIsland(){
   }
   chosen.forEach((c,i)=>{const p=i%4,city=i===2;
     const g=city?castle(PCOL[p]):house(PCOL[p]);const top=Math.max(...c.tiles.map(ti=>tiles[ti].top));
-    g.position.set(c.x,top,c.z);g.rotation.y=hash2(i,3,9)*6;g.scale.setScalar(city?1.25:1.45);world.add(g);
+    g.position.set(c.x,top,c.z);g.rotation.y=hash2(i,3,9)*6;g.scale.setScalar(city?1.0:1.45);world.add(g);
     buildings.push({g,p,city,tiles:c.tiles,x:c.x,z:c.z,top});
     const nb=[...c.nb].map(k=>cmap.get(k)).filter(o=>o.tiles.length>=2);const o=nb[Math.floor(hash2(i,7,2)*nb.length)%nb.length];
     if(o){const mx=(c.x+o.x)/2,mz=(c.z+o.z)/2,len=Math.hypot(o.x-c.x,o.z-c.z);const tt=Math.max(...c.tiles.concat(o.tiles).map(ti=>tiles[ti].top));
@@ -513,10 +548,31 @@ async function buildIsland(){
   // bandido
   const desert=tiles.find(t=>t.type==='desert');
   robber=new THREE.Group();
-  const rb=new THREE.Mesh(new THREE.ConeGeometry(.12,.34,10),flatMat(0x1b1d24,.8));rb.position.y=.17;robber.add(rb);
-  const rh=new THREE.Mesh(new THREE.SphereGeometry(.075,12,10),flatMat(0x1b1d24,.8));rh.position.y=.4;robber.add(rh);
-  const rf=new THREE.Mesh(new THREE.SphereGeometry(.05,10,8),flatMat(0x050608,1));rf.position.set(0,.4,.045);robber.add(rf);
-  const hood=new THREE.Mesh(new THREE.ConeGeometry(.085,.13,8),flatMat(0x1b1d24,.8));hood.position.y=.49;robber.add(hood);
+  const cloakM=flatMat(0x23262f,.85),cloak2=flatMat(0x14161c,.9),scarfM=flatMat(0xb3382c,.8),sackM=flatMat(0x9a7a45,.95),skinM=flatMat(0x07080a,1);
+  const eyeM=new THREE.MeshStandardMaterial({color:0xfff2b0,emissive:0xffd35a,emissiveIntensity:1.2});
+  // capa acampanada
+  const prof=[[0,0],[.15,0],[.145,.03],[.115,.2],[.085,.34],[.06,.4],[0,.41]].map(p=>new THREE.Vector2(p[0],p[1]));
+  const cl=new THREE.Mesh(new THREE.LatheGeometry(prof,14),cloakM);robber.add(cl);
+  const hem=new THREE.Mesh(new THREE.TorusGeometry(.148,.012,6,18),flatMat(0x4a2d2d,.9));hem.rotation.x=Math.PI/2;hem.position.y=.014;robber.add(hem);
+  // hombros y brazos ocultos bajo la capa
+  const sh=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),cloakM);sh.scale.set(1.25,.55,.85);sh.position.y=.385;robber.add(sh);
+  // bufanda roja
+  const sc=new THREE.Mesh(new THREE.TorusGeometry(.065,.022,8,14),scarfM);sc.rotation.x=Math.PI/2;sc.position.y=.425;robber.add(sc);
+  const tail=bx(.03,.12,.014,scarfM,.05,.37,.06,robber);tail.rotation.z=.15;
+  // capucha con la cara en sombra y ojos
+  const hd=new THREE.Mesh(new THREE.SphereGeometry(.088,14,12),cloak2);hd.position.y=.5;hd.scale.set(1,1.05,1.05);robber.add(hd);
+  const pk=new THREE.Mesh(new THREE.ConeGeometry(.07,.17,10),cloak2);pk.position.set(0,.6,-.035);pk.rotation.x=-.45;robber.add(pk);
+  const fc=new THREE.Mesh(new THREE.SphereGeometry(.062,12,10),skinM);fc.scale.set(1,1,.7);fc.position.set(0,.495,.05);robber.add(fc);
+  for(const ex of [-.026,.026]){const ey=new THREE.Mesh(new THREE.SphereGeometry(.0125,8,6),eyeM);ey.scale.set(1.4,.8,.6);ey.position.set(ex,.505,.093);robber.add(ey);}
+  // saco al hombro con monedas
+  const sk=new THREE.Mesh(new THREE.SphereGeometry(.085,12,10),sackM);sk.scale.set(1,1.1,.9);sk.position.set(-.04,.3,-.12);robber.add(sk);
+  const sn=new THREE.Mesh(new THREE.ConeGeometry(.03,.07,8),sackM);sn.position.set(-.04,.4,-.12);sn.rotation.z=.25;robber.add(sn);
+  const tie=new THREE.Mesh(new THREE.TorusGeometry(.03,.007,5,10),flatMat(0x4a3520,.9));tie.rotation.x=Math.PI/2;tie.position.set(-.04,.372,-.12);robber.add(tie);
+  const cn=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.006,10),new THREE.MeshStandardMaterial({color:0xf2c14e,metalness:.6,roughness:.3}));cn.rotation.x=Math.PI/2;cn.position.set(-.04,.3,-.036);robber.add(cn);
+  // daga al cinto
+  const dagg=bx(.012,.07,.012,flatMat(0xc9d1da,.4),.1,.17,.07,robber);dagg.rotation.z=-.25;
+  const hl=bx(.03,.012,.012,darkM,.108,.14,.07,robber);hl.rotation.z=-.25;
+  robber.scale.setScalar(1.18);
   robber.traverse(o=>{if(o.isMesh){o.castShadow=true;}});
   robber.position.set(desert.x,desert.top,desert.z);robber.userData.tile=desert;world.add(robber);
 
@@ -666,7 +722,7 @@ canvas.addEventListener('pointerup',e=>{
   const hit=ray.intersectObjects([...tileMeshes,...portSprites],false)[0];const tip=$('#tip');
   if(!hit){tip.classList.remove('on');sel=null;return;}
   if(hit.object.userData.port){const P=hit.object.userData.port;const q=P.res?RNAME[P.res]:null;
-    tip.textContent=P.res?`Puerto ${P.ratio} · ${q}\nCambias 2 de ${q} por 1 recurso a elección`:`Puerto ${P.ratio} · cualquier recurso\nCambias 3 iguales por 1 a elección`;
+    tip.textContent=P.res?`Puerto ${P.ratio} · ${q}\nConstruye en los 2 puntos de color junto al muelle:\ncambias 2 de ${q} por 1 a elección`:`Puerto ${P.ratio} · cualquier recurso\nConstruye en los 2 puntos dorados junto al muelle:\ncambias 3 iguales por 1 a elección`;
     const wp=new THREE.Vector3();hit.object.getWorldPosition(wp);const pp=screenOf(wp);tip.style.left=pp[0]+'px';tip.style.top=pp[1]+'px';tip.classList.add('on');setTimeout(()=>tip.classList.remove('on'),3200);sel=null;return;}
   const t=hit.object.userData.tile;if(sel===t){tip.classList.remove('on');sel=null;return;}sel=t;
   tip.textContent=TNAME[t.type]+(t.num?' · '+t.num:'');const p=screenOf(new THREE.Vector3(t.x,t.top+.2,t.z));tip.style.left=p[0]+'px';tip.style.top=p[1]+'px';tip.classList.add('on');
@@ -683,6 +739,7 @@ function loop(){
   for(const b of boats){const u=b.userData;const a=u.a+T*u.sp;b.position.set(Math.cos(a)*u.r,Math.sin(T*1.3+u.ph)*.03+.0,Math.sin(a)*u.r*.9);b.rotation.y=-a-Math.PI/2+Math.PI;b.rotation.z=Math.sin(T*1.1+u.ph)*.05;b.rotation.x=Math.sin(T*.9+u.ph)*.04;}
   if(diceRaft){diceRaft.position.y=Math.sin(T*1.2)*.018;diceRaft.rotation.z=Math.sin(T*.9)*.012;}
   for(const f of flags){f.rotation.y=Math.sin(T*3.2+f.position.x*9)*.35;f.scale.x=.9+Math.sin(T*4.1)*.08;}
+  for(const rm of portRings)rm.opacity=.55+Math.sin(T*2.4)*.35;
   if(robber&&!rolling)robber.rotation.y=Math.sin(T*.7)*.25;
   if(intro){intro.t=Math.min(1,intro.t+dt/(REDUCED||/nointro/.test(location.search)?.01:2.6));const e=ease(intro.t);camPlace(lerp(fit*1.55,fit,e),lerp(.55,.9,e),lerp(.5,0,e));if(intro.t>=1){intro=null;controls.enabled=true;$('#roll').disabled=false;camPlace(fit,.9,0);controls.update();}}
   else if(!window.__free)controls.update();
@@ -713,10 +770,9 @@ function loop(){
 })();
 document.querySelectorAll('#tod button').forEach(b=>b.onclick=()=>todGo(b.dataset.t));
 $('#roll').onclick=()=>roll();
-$('#portinfo').onclick=()=>toast('<b>Puertos</b><small style="font-size:13px;color:#eef3f7;text-align:left"><b>2:1 + un recurso</b> (madera, adobe, lana, trigo o metal): con una casa junto a ese puerto cambias <b>2 de ese recurso</b> por <b>1 a elección</b>.<br><b>3:1 con “?”</b>: cambias <b>3 recursos iguales</b> por <b>1 a elección</b>.<br>Toca un puerto para ver el suyo.</small>',9000);
 $('#cam').onclick=()=>{const from=camera.position.clone(),tg=controls.target.clone();const sph=new THREE.Spherical().setFromVector3(from.clone().sub(tg));const tgt={r:fit,p:.9,t:0};
   controls.enabled=false;tween(.8,u=>{const e=ease(u);camPlace(lerp(sph.radius,tgt.r,e),lerp(sph.phi,tgt.p,e),lerp(sph.theta,tgt.t,e));},()=>{controls.enabled=true;controls.update();});};
-window.TA3D={roll,todGo,applyQuality,get q(){return Q;},tiles,buildings,camera,controls};
+window.TA3D={get robber(){return robber;},piers,roll,todGo,applyQuality,get q(){return Q;},tiles,buildings,camera,controls};
 </script>
 </body>
 </html>
