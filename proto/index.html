@@ -63,31 +63,80 @@ html,body{margin:0;height:100%;background:#0b1620;color:var(--ink);font-family:s
 #fx-flash{background:#fff;mix-blend-mode:screen}
 #tip{white-space:pre-line;text-align:center;max-width:240px;position:fixed;z-index:6;pointer-events:none;background:#0d1a23ee;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font:700 13px system-ui;transform:translate(-50%,-130%);opacity:0;transition:opacity .2s}
 #tip.on{opacity:1}
+
+.chip i{width:40px;height:34px}
+.chip b{font-size:17px}.chip small{font-size:9.5px}
+.top{align-items:stretch}
+#players{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;pointer-events:auto}
+.pl{background:#0d1a23dd;border:1px solid var(--line);border-top:3px solid var(--pc);border-radius:11px;padding:4px 3px 5px;text-align:center;backdrop-filter:blur(6px);transition:.25s}
+.pl small{display:block;font:700 11px/1.1 system-ui;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl b{display:block;font:900 17px/1.15 Cinzel,Georgia,serif}
+.pl b em{font:600 9px system-ui;color:var(--muted);font-style:normal;margin-left:2px}
+.pl.on{background:#1b3347;border-color:var(--pc);box-shadow:0 0 0 1px var(--pc),0 0 14px -2px var(--pc);transform:translateY(2px)}
+.pl.on small{color:var(--ink)}
+.tbtn{pointer-events:auto;flex:0 0 52px;background:#0d1a23dd;border:1px solid var(--line);border-radius:11px;color:var(--ink);padding:3px 0;backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:inherit}
+.tbtn b{font-size:18px;line-height:1}.tbtn small{font:600 9px system-ui;color:var(--muted)}
+.tbtn.on{background:var(--gold);color:#241a05;border-color:var(--gold)}.tbtn.on small{color:#4a3508}
+#drawer{position:fixed;z-index:6;left:10px;right:10px;top:calc(66px + env(safe-area-inset-top));background:#10222ff2;border:1px solid var(--line);border-radius:16px;padding:12px;display:none;flex-direction:column;gap:10px;backdrop-filter:blur(10px);box-shadow:0 10px 30px #000a;max-width:440px;margin-left:auto}
+#drawer.on{display:flex}
+#drawer h5{margin:0 0 5px;font:700 11px system-ui;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+#drawer #evbar{position:static;flex-wrap:wrap;overflow:visible;padding:0}
+#drawer .row{display:flex;gap:8px;flex-wrap:wrap}
+.btn.alt{background:linear-gradient(#27465f,#1b3347);border-color:#3b6283;color:var(--ink);box-shadow:0 3px 0 #0f2030,0 8px 18px #0008}
+.act .btn{font-size:15px;min-height:50px;padding:0 4px}
+.act .btn#roll{flex:1.35}
+.act .btn.alt small{display:block;font:600 9px system-ui;color:var(--muted);margin-top:3px;letter-spacing:.2px}
+#sheet{display:none;pointer-events:auto;background:#10222ff5;border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:8px;backdrop-filter:blur(8px);box-shadow:0 -6px 24px #0007}
+#sheet.on{display:block;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(14px);opacity:0}}
+#sheet h4{margin:0 0 8px;font:800 15px Cinzel,Georgia,serif;display:flex;justify-content:space-between;align-items:center}
+#sheet h4 button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:50%;width:30px;height:30px;font-size:15px}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bcard{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:8px 9px;text-align:left;color:var(--ink);font:inherit}
+.bcard b{font:800 15px/1.1 Cinzel,Georgia,serif;display:flex;justify-content:space-between}
+.bcard b em{font:700 11px system-ui;color:var(--gold);font-style:normal}
+.bcard small{display:block;color:var(--muted);font-size:11px;margin:3px 0 6px}
+.cost{display:flex;gap:7px;flex-wrap:wrap}
+.cost span{display:inline-flex;align-items:center;font:700 12px system-ui}
+.cost i{width:22px;height:20px;background-size:contain;background-repeat:no-repeat;background-position:center;display:inline-block}
+.cost span.lack{color:#ff9a88}
+.bcard.off{opacity:.5}
+.bcard:not(.off):active{border-color:var(--gold);transform:scale(.98)}
+.rlab{font:700 11px system-ui;color:var(--muted);margin:6px 0 4px;letter-spacing:.5px}
+.rpick{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.rpick button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:3px 0 4px;color:var(--ink);font:700 11px system-ui}
+.rpick button i{display:block;width:32px;height:28px;margin:0 auto;background-size:contain;background-repeat:no-repeat;background-position:center}
+.rpick button.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.rpick button.dis{opacity:.35}
+.trow{display:flex;gap:8px;margin-top:9px}
+.trow .btn{min-height:44px;font-size:14px}
+#hint{bottom:calc(150px + env(safe-area-inset-bottom))}
 </style>
 <script type="importmap">{"imports":{"three":"./vendor/three.module.min.js","three/addons/":"./vendor/"}}</script>
 </head>
 <body>
 <canvas id="c" tabindex="-1"></canvas>
 <div id="fx-storm" class="fxl"></div><div id="fx-heat" class="fxl"></div><div id="fx-flood" class="fxl"></div><div id="fx-rays" class="fxl"></div><div id="fx-frost" class="fxl"></div><div id="fx-snowy" class="fxl"></div><div id="fx-flash" class="fxl"></div>
-<div id="evbar" role="group" aria-label="Eventos climáticos"><button data-e="none" class="on">Despejado</button><button data-e="sequia">☀ Sequía</button><button data-e="temporal">⛈ Temporal</button><button data-e="helada">❄ Helada</button><button data-e="crecida">🌊 Crecida</button><button data-e="ventisca">🌨 Ventisca</button><button data-e="cosecha">🌾 Cosecha</button><button data-e="festival">🎉 Festival</button></div>
 <div id="load"><div>Tierra Austral</div><div class="bar"><i id="lb"></i></div><small id="lt">Preparando la isla…</small></div>
 
 <div class="hud top">
-  <div class="brand"><b>Tierra Austral</b><span>Prototipo 3D · gráficos procedurales</span><button class="pill" id="isl" style="margin-top:8px;pointer-events:auto">🏝 Ver isla aparte</button></div>
-  <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
-    <button class="pill" id="q" aria-label="Calidad gráfica">Calidad: …</button>
-    <div class="seg" id="tod" role="group" aria-label="Hora del día">
-      <button data-t="amanecer">Alba</button><button data-t="dia" class="on">Día</button><button data-t="atardecer">Ocaso</button><button data-t="noche">Noche</button>
-    </div>
-  </div>
+  <div id="players"></div>
+  <button class="tbtn" id="top3d" aria-label="Vista cenital"><b>⌖</b><small>Cenital</small></button>
+  <button class="tbtn" id="gear" aria-label="Ajustes"><b>⚙</b><small>Ajustes</small></button>
+</div>
+<div id="drawer">
+  <div><h5>Hora del día</h5><div class="seg" id="tod" role="group" aria-label="Hora del día" style="display:inline-flex"><button data-t="amanecer">Alba</button><button data-t="dia" class="on">Día</button><button data-t="atardecer">Ocaso</button><button data-t="noche">Noche</button></div></div>
+  <div><h5>Clima (eventos de partida)</h5><div id="evbar" role="group" aria-label="Eventos climáticos"><button data-e="none" class="on">Despejado</button><button data-e="sequia">☀ Sequía</button><button data-e="temporal">⛈ Temporal</button><button data-e="helada">❄ Helada</button><button data-e="crecida">🌊 Crecida</button><button data-e="ventisca">🌨 Ventisca</button><button data-e="cosecha">🌾 Cosecha</button><button data-e="festival">🎉 Festival</button></div></div>
+  <div class="row"><button class="pill" id="q" aria-label="Calidad gráfica">Calidad: …</button><button class="pill" id="cam">⌖ Centrar cámara</button><button class="pill" id="isl">🏝 Ver isla aparte</button></div>
 </div>
 <div id="hint">Arrastra para girar · pellizca para acercar · toca un terreno</div>
 <div id="fps"></div>
 <div id="toast"></div>
 <div id="tip"></div>
 <div class="hud bot">
+  <div id="sheet"></div>
   <div class="chips" id="chips"></div>
-  <div class="act"><button class="btn" id="roll" disabled>Tirar dados</button><button class="btn sec" id="cam">Centrar</button></div>
+  <div class="act"><button class="btn alt" id="bBuild" disabled>🔨 Construir</button><button class="btn alt" id="bTrade" disabled>⇄ Negocios</button><button class="btn" id="roll" disabled>Tirar dados</button></div>
 </div>
 
 <script type="module">
@@ -530,7 +579,7 @@ async function buildIsland(){
   const roofMat=(col)=>roofMats[col]||(roofMats[col]=(()=>{const t=shingleTex(col,false).clone();t.repeat.set(2.4,1.6);t.needsUpdate=true;return new THREE.MeshStandardMaterial({map:t,roughness:.78});})());
   const trimM=flatMat(0xf3ead2,.8),shutM=flatMat(0x2f4f5c,.8);
   const smokeM=new THREE.MeshBasicMaterial({color:0xe8e8ee,transparent:true,opacity:.5,depthWrite:false});
-  function house(col){
+  function house0(col){
     const g=new THREE.Group(),RM=roofMat(col);
     // cimiento de piedra con escalón
     bx(.31,.028,.25,stoneM,0,.014,0,g);bx(.09,.014,.05,stoneM,0,.007,.14,g);
@@ -567,7 +616,7 @@ async function buildIsland(){
     smokes.push({g,sm,ph:Math.random()*6});
     return g;
   }
-  function castle(col){
+  function castle0(col){
     const g=new THREE.Group(),roof=roofMat(col),st2=flatMat(0xa7a294,1),st3=flatMat(0x77736a,1);
     // plataforma y muralla con almenas
     bx(.56,.035,.42,stoneM,0,.0175,0,g);
@@ -602,6 +651,52 @@ async function buildIsland(){
     const flag=new THREE.Mesh(fg,new THREE.MeshStandardMaterial({color:col,roughness:.7,side:THREE.DoubleSide}));flag.position.set(.004,top+.145,0);g.add(flag);flags.push(flag);
     g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;
   }
+  /* detalle propio por jugador: cada color tiene su oficio */
+  const VAR=(()=>{const A=(g,geo,mat,x,y,z)=>{const o=new THREE.Mesh(geo,mat);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o;};
+    const cyl=(r,h,n=8)=>new THREE.CylinderGeometry(r,r,h,n),logM=flatMat(0x7a4f2a,.9),endM=flatMat(0xd9b27a,.8),leaf=flatMat(0x4f9a4a,.8),soil=flatMat(0x5a3f26,1),fishM=flatMat(0x7fb7e6,.4),metal=flatMat(0xc9d1da,.4),glass=new THREE.MeshStandardMaterial({color:0x9fe0b0,transparent:true,opacity:.45,roughness:.2}),domeM=flatMat(0x6b6fa8,.5);
+    const banner=(g,col,x,y,z,ry,h=.12)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(.045,h),new THREE.MeshStandardMaterial({color:col,roughness:.7,side:THREE.DoubleSide}));m.position.set(x,y,z);m.rotation.y=ry;g.add(m);return m;};
+    return {
+      house(g,p,col){
+        if(p===0){ // leñador: pila de troncos y tocón con hacha
+          for(const [x,y,z] of [[0,.018,0],[.032,.018,0],[.016,.05,0]]){const l=A(g,cyl(.016,.12),logM,.19+x,y+.01,.03+z);l.rotation.x=Math.PI/2;A(g,new THREE.CircleGeometry(.014,8),endM,.19+x,y+.01,.093+z);}
+          A(g,cyl(.026,.035),logM,-.17,.02,.14);const ax=A(g,new THREE.BoxGeometry(.012,.07,.008),flatMat(0x4a3520,.9),-.17,.075,.14);ax.rotation.z=.35;A(g,new THREE.BoxGeometry(.03,.02,.008),metal,-.158,.1,.14);
+        }else if(p===1){ // pescador: tendedero de pescado y barril
+          for(const sx of [-1,1])A(g,cyl(.006,.12),poleM,-.22+sx*.04,.06,.02);
+          const bar=A(g,cyl(.004,.09),poleM,-.22,.115,.02);bar.rotation.z=Math.PI/2;
+          for(const k of [-1,0,1]){const f=A(g,new THREE.SphereGeometry(.014,8,6),fishM,-.22+k*.028,.085,.02);f.scale.set(.6,1.7,.4);}
+          A(g,cyl(.026,.05,10),logM,-.15,.027,.16);A(g,cyl(.027,.008,10),darkM,-.15,.045,.16);
+        }else if(p===2){ // huerto: cerco con plantitas
+          A(g,new THREE.BoxGeometry(.11,.012,.07),soil,-.19,.012,.12);
+          for(let i=0;i<6;i++){const c=A(g,new THREE.ConeGeometry(.012,.04,5),leaf,-.225+(i%3)*.035,.04,.1+Math.floor(i/3)*.035);}
+          for(const px of [-.245,-.135])for(const pz of [.085,.155])A(g,cyl(.004,.04),poleM,px,.03,pz);
+          A(g,new THREE.SphereGeometry(.022,8,6),flatMat(0xe05a3a,.6),-.2,.035,.17);
+        }else{ // mirador: torreta redonda con estrella y banderines
+          A(g,cyl(.04,.2,10),stoneM,-.16,.12,-.1);const tc=A(g,new THREE.ConeGeometry(.055,.1,10),flatMat(new THREE.Color(col).getHex(),.7),-.16,.27,-.1);
+          A(g,new THREE.BoxGeometry(.016,.03,.006),lampM,-.16,.17,-.056);
+          const st=A(g,new THREE.OctahedronGeometry(.016),new THREE.MeshStandardMaterial({color:0xf2c14e,emissive:0xf2c14e,emissiveIntensity:.5}),-.16,.34,-.1);st.scale.y=1.4;
+        }
+      },
+      castle(g,p,col){
+        const W=.5,D=.36;
+        if(p===0){ // estandartes y leña
+          for(const x of [-.14,0,.14])banner(g,0xc23a2c,x,.13,D/2+.004,0,.13);
+          for(const [x,y] of [[0,.0],[.03,0],[.015,.03]]){const l=A(g,cyl(.014,.1),logM,.14+x,.06+y,.06);l.rotation.x=Math.PI/2;}
+        }else if(p===1){ // mástil de puerto con redes y barriles
+          A(g,cyl(.008,.3),poleM,.18,.2,.13);const sp=A(g,cyl(.005,.16),poleM,.18,.3,.13);sp.rotation.z=Math.PI/2;
+          for(const k of [-1,0,1])banner(g,0x4aa3ff,.18+k*.05,.27,.13,0,.07);
+          A(g,cyl(.03,.06,10),logM,-.12,.06,.19);A(g,cyl(.03,.06,10),logM,-.05,.06,.2);
+        }else if(p===2){ // invernadero y árboles
+          const gh=A(g,new THREE.SphereGeometry(.075,14,10,0,Math.PI*2,0,Math.PI/2),glass,-.12,.07,.07);gh.castShadow=false;
+          A(g,new THREE.BoxGeometry(.16,.01,.1),soil,-.12,.045,.07);
+          for(const [x,z] of [[-.2,.16],[.2,.16]]){A(g,cyl(.01,.06),logM,x,.07,z);A(g,new THREE.ConeGeometry(.04,.09,7),leaf,x,.14,z);}
+        }else{ // observatorio con cúpula y telescopio
+          A(g,cyl(.05,.12,12),stoneM,.2,.1,.1);A(g,new THREE.SphereGeometry(.058,14,10,0,Math.PI*2,0,Math.PI/2),domeM,.2,.16,.1);
+          const te=A(g,cyl(.008,.09),metal,.215,.22,.1);te.rotation.z=-.7;
+          const st=A(g,new THREE.OctahedronGeometry(.018),new THREE.MeshStandardMaterial({color:0xf2c14e,emissive:0xf2c14e,emissiveIntensity:.5}),.2,.3,.1);st.scale.y=1.4;
+        }
+      }};})();
+  function house(col,p=0){const g=house0(col);VAR.house(g,p,col);return g;}
+  function castle(col,p=0){const g=castle0(col);VAR.castle(g,p,col);return g;}
   const roadTex={};
   function roadMat(col,len){
     if(!roadTex[col]){const c=document.createElement('canvas');c.width=64;c.height=64;const x=c.getContext('2d');const pc=new THREE.Color(col);
@@ -612,8 +707,9 @@ async function buildIsland(){
       const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;roadTex[col]=t;}
     const t=roadTex[col].clone();t.needsUpdate=true;t.repeat.set(len*2.6,1);return new THREE.MeshStandardMaterial({map:t,roughness:.82});
   }
+  MK.house=house;MK.castle=castle;{const c0=chosen[0];EDGE=Math.min(...[...c0.nb].map(k=>cmap.get(k)).map(o=>Math.hypot(o.x-c0.x,o.z-c0.z)));spotsAll=[...cmap.values()].filter(o=>o.tiles.length>=2&&!chosen.includes(o));}
   chosen.forEach((c,i)=>{const p=i%4,city=i===2;
-    const g=city?castle(PCOL[p]):house(PCOL[p]);const top=Math.max(...c.tiles.map(ti=>tiles[ti].top));
+    const g=city?castle(PCOL[p],p):house(PCOL[p],p);const top=Math.max(...c.tiles.map(ti=>tiles[ti].top));
     g.position.set(c.x,top,c.z);g.rotation.y=hash2(i,3,9)*6;g.scale.setScalar(city?1.0:1.45);world.add(g);
     buildings.push({g,p,city,tiles:c.tiles,x:c.x,z:c.z,top});
     const nb=[...c.nb].map(k=>cmap.get(k)).filter(o=>o.tiles.length>=2);const o=nb[Math.floor(hash2(i,7,2)*nb.length)%nb.length];
@@ -912,6 +1008,7 @@ function resIcon(r){if(ICON[r])return ICON[r];const c=document.createElement('ca
   x.fillStyle='#f3e7c3';x.beginPath();x.arc(64,64,58,0,7);x.fill();x.strokeStyle=RCOL[r];x.lineWidth=9;x.beginPath();x.arc(64,64,52,0,7);x.stroke();
   glyph(x,r,64,64,1.08);return ICON[r]=`url(${c.toDataURL()})`;}
 const chips={};
+let spotsAll=[],EDGE=1;const MK={};
 function buildChips(){
   renderResIcons();
   const box=$('#chips');
@@ -1148,7 +1245,7 @@ function loop(){
     todSet('dia');
     try{await Promise.all([document.fonts.load('900 100px Cinzel'),document.fonts.load('700 20px Cinzel')]);}catch(e){}
     buildChips();
-    await buildIsland();
+    await buildIsland();renderPlayers();
     setProgress(.95,'Último ajuste de luces…');await sleep(30);
     todSet('dia');
     controls.enabled=false;intro={t:0};camPlace(fit*1.55,.55,.5);
@@ -1161,10 +1258,90 @@ function loop(){
 document.querySelectorAll('#tod button').forEach(b=>b.onclick=()=>todGo(b.dataset.t));
 $('#isl').textContent=ARCH?'🏝 Volver a una isla':'🏝 Ver isla aparte';
 $('#isl').onclick=()=>{location.href=location.pathname+(ARCH?'':'?islas=1');};
-$('#roll').onclick=()=>roll();
-$('#cam').onclick=()=>{const from=camera.position.clone(),tg=controls.target.clone();const sph=new THREE.Spherical().setFromVector3(from.clone().sub(tg));const tgt={r:fit,p:.9,t:0};
-  controls.enabled=false;tween(.8,u=>{const e=ease(u);camPlace(lerp(sph.radius,tgt.r,e),lerp(sph.phi,tgt.p,e),lerp(sph.theta,tgt.t,e));},()=>{controls.enabled=true;controls.update();});};
-window.TA3D={get robber(){return robber;},piers,boats,roll,todGo,applyQuality,get q(){return Q;},tiles,buildings,camera,controls};
+$('#cam').onclick=()=>{if(topView)goCam(fit*.97,.02,0);else goCam(fit,.9,0);};
+
+/* ---------- partida simulada: panel compacto ---------- */
+const PNAME=['Tú','Vale','Mati','Cami'];
+const COST={road:{wood:1,brick:1},town:{wood:1,brick:1,wool:1,grain:1},castle:{grain:2,ore:3},card:{wool:1,grain:1,ore:1}};
+const BDEF=[['road','Sendero','Une tus pueblos'],['town','Pueblo','+1 punto · produce'],['castle','Castillo','+2 puntos · produce x2'],['card','Carta','Desarrollo sorpresa']];
+const RES=['wood','brick','wool','grain','ore'];
+const G={turn:0,phase:'roll',extra:[0,0,0,0],n:1,sheet:null,give:'wood',get:'ore',busy:false};
+function setChip(r,n){const c=chips[r];c.n=n;c.el.querySelector('b').textContent=n;c.el.classList.remove('bump');void c.el.offsetWidth;c.el.classList.add('bump');}
+function vpOf(p){return buildings.filter(b=>b.p===p).reduce((a,b)=>a+(b.city?2:1),0)+G.extra[p];}
+function renderPlayers(){
+  $('#players').innerHTML=PNAME.map((n,p)=>`<div class="pl${G.turn===p?' on':''}" style="--pc:${PCOL[p]}"><small>${n}</small><b>${vpOf(p)}<em>pts</em></b></div>`).join('');
+}
+function costHTML(k){return '<div class="cost">'+Object.entries(COST[k]).map(([r,n])=>`<span class="${chips[r].n<n?'lack':''}"><i style="background-image:${resIcon(r)}"></i>×${n}</span>`).join('')+'</div>';}
+const canPay=k=>Object.entries(COST[k]).every(([r,n])=>chips[r].n>=n);
+function findSpot(){
+  const mine=buildings.filter(b=>b.p===0);let best=null,bd=1e9;
+  for(const s of spotsAll){if(s.used)continue;if(buildings.some(b=>Math.hypot(b.x-s.x,b.z-s.z)<EDGE*1.6))continue;
+    const d=Math.min(...mine.map(b=>Math.hypot(b.x-s.x,b.z-s.z)));if(d<bd){bd=d;best=s;}}
+  return best;
+}
+const upgradable=()=>buildings.find(b=>b.p===0&&!b.city);
+function pop(g,s1){tween(.55,u=>{const e=u<1?1-Math.pow(1-u,3)*Math.cos(u*9):1;g.scale.setScalar(Math.max(.001,s1*e));},()=>g.scale.setScalar(s1));}
+function doBuild(k){
+  if(!canPay(k))return;
+  if(k==='town'&&!findSpot()){toast('No quedan vértices libres',1500);return;}
+  if(k==='castle'&&!upgradable()){toast('Primero necesitas un pueblo para mejorar',1700);return;}
+  for(const [r,n] of Object.entries(COST[k]))setChip(r,chips[r].n-n);
+  if(k==='road'){G.extra[0]+=0;toast('Sendero construido<small>Se une a tus pueblos</small>',1700);}
+  if(k==='town'){const s=findSpot();s.used=true;const top=Math.max(...s.tiles.map(ti=>tiles[ti].top));const g=MK.house(PCOL[0],0);g.position.set(s.x,top,s.z);g.rotation.y=Math.random()*6;world.add(g);pop(g,1.45);
+    buildings.push({g,p:0,city:false,tiles:s.tiles,x:s.x,z:s.z,top});const p=screenOf(new THREE.Vector3(s.x,top+.4,s.z));ring&&floatPlus(p,'+1',PCOL[0],0);toast('Pueblo nuevo<small>+1 punto de victoria</small>',1800);}
+  if(k==='castle'){const b=upgradable();world.remove(b.g);const g=MK.castle(PCOL[0],0);g.position.copy(b.g.position);g.rotation.y=b.g.rotation.y;world.add(g);pop(g,1.0);b.g=g;b.city=true;
+    floatPlus(screenOf(new THREE.Vector3(b.x,b.top+.5,b.z)),'+1',PCOL[0],0);toast('¡Castillo!<small>Tu pueblo se mejora: produce el doble</small>',1900);}
+  if(k==='card'){const c=[['Caballero','Mueve al bandido',0],['Punto de victoria','+1 punto',1],['Cosecha','2 recursos gratis',0]][Math.floor(Math.random()*3)];G.extra[0]+=c[2];toast(c[0]+'<small>'+c[1]+'</small>',1900);}
+  renderPlayers();renderSheet();
+}
+function renderSheet(){
+  const sh=$('#sheet');if(!G.sheet){sh.classList.remove('on');sh.innerHTML='';$('#bBuild').classList.remove('on');$('#bTrade').classList.remove('on');return;}
+  sh.classList.add('on');$('#bBuild').style.outline=G.sheet==='build'?'2px solid var(--gold)':'none';$('#bTrade').style.outline=G.sheet==='trade'?'2px solid var(--gold)':'none';
+  if(G.sheet==='build'){
+    sh.innerHTML='<h4>Construir<button data-x>✕</button></h4><div class="bgrid">'+BDEF.map(([k,n,d])=>`<button class="bcard${canPay(k)?'':' off'}" data-b="${k}"><b>${n}</b><small>${d}</small>${costHTML(k)}</button>`).join('')+'</div>';
+    sh.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>doBuild(b.dataset.b));
+  }else{
+    const pick=(id,cur)=>`<div class="rpick" id="${id}">`+RES.map(r=>`<button data-r="${r}" class="${cur===r?'on':''}${id==='pg'&&chips[r].n<4?' dis':''}"><i style="background-image:${resIcon(r)}"></i>${id==='pg'?chips[r].n:''}</button>`).join('')+'</div>';
+    const ok=chips[G.give].n>=4&&G.give!==G.get;
+    sh.innerHTML=`<h4>Negocios<button data-x>✕</button></h4><div class="rlab">BANCO 4:1 — DAS 4 DE</div>${pick('pg',G.give)}<div class="rlab">RECIBES 1 DE</div>${pick('pr',G.get)}<div class="trow"><button class="btn" id="doBank"${ok?'':' disabled'}>Cambiar 4 → 1</button><button class="btn alt" id="doDeal">Trato con jugador</button></div>`;
+    sh.querySelectorAll('#pg [data-r]').forEach(b=>b.onclick=()=>{G.give=b.dataset.r;renderSheet();});
+    sh.querySelectorAll('#pr [data-r]').forEach(b=>b.onclick=()=>{G.get=b.dataset.r;renderSheet();});
+    $('#doBank').onclick=()=>{if(!ok)return;setChip(G.give,chips[G.give].n-4);setChip(G.get,chips[G.get].n+1);toast('Intercambio hecho<small>4 '+RNAME[G.give]+' → 1 '+RNAME[G.get]+'</small>',1600);renderSheet();};
+    $('#doDeal').onclick=()=>toast('Trato propuesto<small>Vale, Mati y Cami reciben tu oferta (demo)</small>',1900);
+  }
+  const x=sh.querySelector('[data-x]');if(x)x.onclick=()=>{G.sheet=null;renderSheet();};
+}
+function openSheet(k){if(G.phase!=='act')return;G.sheet=G.sheet===k?null:k;renderSheet();}
+function setPhase(ph){G.phase=ph;const act=ph==='act';
+  $('#bBuild').disabled=!act;$('#bTrade').disabled=!act;const r=$('#roll');r.disabled=(ph==='wait');r.textContent=ph==='roll'?'Tirar dados':'Terminar turno';
+  if(!act){G.sheet=null;renderSheet();}}
+async function primary(){
+  if(G.phase==='roll'){await roll();setPhase('act');return;}
+  if(G.phase!=='act')return;
+  setPhase('wait');
+  for(let i=1;i<4;i++){G.turn=i;renderPlayers();const a=1+Math.floor(Math.random()*6),b=1+Math.floor(Math.random()*6);
+    toast(`<span style="color:${PCOL[i]}">${PNAME[i]}</span> tira <span style="color:var(--gold)">${a+b}</span>`+(Math.random()<.5?'<small>y construye un sendero</small>':''),950);await sleep(1050);}
+  G.turn=0;G.n++;renderPlayers();toast('Tu turno',900);setPhase('roll');
+}
+renderPlayers();
+$('#roll').onclick=primary;
+$('#bBuild').onclick=()=>openSheet('build');$('#bTrade').onclick=()=>openSheet('trade');
+$('#gear').onclick=()=>{$('#drawer').classList.toggle('on');$('#gear').classList.toggle('on',$('#drawer').classList.contains('on'));};
+/* recursos de partida (demo) */
+setTimeout(()=>{if(chips.wood){setChip('wood',2);setChip('brick',2);setChip('wool',1);setChip('grain',2);setChip('ore',1);}},0);
+
+/* ---------- vista cenital ---------- */
+let topView=false;
+function goCam(r,p,t,done){const from=camera.position.clone(),tg=controls.target.clone();const sph=new THREE.Spherical().setFromVector3(from.clone().sub(tg));
+  let dt=t;while(dt-sph.theta>Math.PI)dt-=2*Math.PI;while(dt-sph.theta<-Math.PI)dt+=2*Math.PI;
+  controls.enabled=false;tween(.9,u=>{const e=ease(u);camPlace(lerp(sph.radius,r,e),lerp(sph.phi,p,e),lerp(sph.theta,dt,e));},()=>{controls.enabled=true;if(done)done();controls.update();});}
+$('#top3d').onclick=()=>{
+  if(intro||!controls.enabled)return;topView=!topView;$('#top3d').classList.toggle('on',topView);
+  $('#top3d').innerHTML=topView?'<b>◐</b><small>Vista 3D</small>':'<b>⌖</b><small>Cenital</small>';$('#hint').style.opacity=0;
+  if(topView){controls.minPolarAngle=0;goCam(fit*.97,.02,0,()=>{controls.minPolarAngle=controls.maxPolarAngle=.02;});}
+  else{controls.minPolarAngle=0;controls.maxPolarAngle=1.18;goCam(fit,.9,0,()=>{controls.minPolarAngle=.35;});}
+};
+window.TA3D={G,doBuild,primary,setChip,get topView(){return topView;},get robber(){return robber;},piers,boats,roll,todGo,applyQuality,get q(){return Q;},tiles,buildings,camera,controls};
 </script>
 </body>
 </html>
