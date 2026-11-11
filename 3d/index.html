@@ -111,7 +111,8 @@ html,body{margin:0;height:100%;background:#0b1620;color:var(--ink);font-family:s
 .trow{display:flex;gap:8px;margin-top:9px}
 .trow .btn{min-height:44px;font-size:14px}
 #stat{pointer-events:none;text-align:center;font:600 13px/1.25 system-ui;color:#dbe8f2;text-shadow:0 1px 6px #000;margin:0 0 7px;min-height:16px}
-body.live .act,body.live #sheet,body.live #isl{display:none!important}
+body.live:not(.mine) .act,body.live:not(.mine) #sheet,body.live #isl{display:none!important}
+#back2d{display:none}body.embed #back2d{display:flex}body.embed .tbtn{flex-basis:50px}#back2d small{font-size:8px!important}
 #hint{bottom:calc(150px + env(safe-area-inset-bottom))}
 </style>
 <script type="importmap">{"imports":{"three":"../proto/vendor/three.module.min.js","three/addons/":"../proto/vendor/"}}</script>
@@ -123,6 +124,7 @@ body.live .act,body.live #sheet,body.live #isl{display:none!important}
 
 <div class="hud top">
   <div id="players"></div>
+  <button class="tbtn" id="back2d" aria-label="Volver al 2D"><b>↩</b><small>Tablero 2D</small></button>
   <button class="tbtn" id="top3d" aria-label="Vista cenital"><b>⌖</b><small>Cenital</small></button>
   <button class="tbtn" id="gear" aria-label="Ajustes"><b>⚙</b><small>Ajustes</small></button>
 </div>
@@ -180,7 +182,7 @@ const RCOL={wood:'#4a9a57',brick:'#c86a47',wool:'#9ccf63',grain:'#e9c548',ore:'#
 const PCOL=['#ef6a5b','#4aa3ff','#8fd14f','#b78cff'];
 const TOP={wool:.40,wood:.40,grain:.40,brick:.40,ore:.40,desert:.40},Y0=-.25,BEV=.035;
 const ARCH0=/[?&]islas/.test(location.search);
-let READY=false,LVNEXT=null;let LV=null,LVST=null;try{if(!/[?&]demo/.test(location.search)){const t=localStorage.getItem('ta-3d');if(t)LV=JSON.parse(t);}}catch(e){}
+const EMBED=/[?&]embed/.test(location.search);let READY=false,LVNEXT=null,LVNUI=null;let LV=null,LVST=null;try{if(!/[?&]demo/.test(location.search)){const t=localStorage.getItem('ta-3d');if(t)LV=JSON.parse(t);}}catch(e){}
 const ARCH=!LV&&ARCH0;
 const tiles=[];
 if(LV){const NM=LV.G.big?37:19;for(const h of LV.B.H){const q=h.q,r=h.r;tiles.push({q,r,type:h.type,num:h.num||0,x:S*SQ3*(q+r/2),z:S*1.5*r,top:Y0+TOP[h.type]+BEV,isle:h.id>=NM?1:0,hid:h.id});}}
@@ -1110,6 +1112,7 @@ canvas.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY,performance.
 canvas.addEventListener('pointerup',e=>{
   if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>8||performance.now()-down[2]>450)return;
   mp.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(mp,camera);
+  if(hlHits.length){const hh=ray.intersectObjects(hlHits,false)[0];if(hh){cmd('onBoard',hh.object.userData.k,hh.object.userData.id);return;}}
   const hit=ray.intersectObjects([...tileMeshes,...portSprites,...routeHits],false)[0];const tip=$('#tip');
   if(!hit){tip.classList.remove('on');sel=null;return;}
   if(hit.object.userData.route){tip.textContent='Barco · sendero marítimo\nUna ruta sobre el mar, igual que un sendero:\nune dos costas';const wp=new THREE.Vector3();hit.object.getWorldPosition(wp);wp.y+=.5;const pp=screenOf(wp);tip.style.left=pp[0]+'px';tip.style.top=pp[1]+'px';tip.classList.add('on');setTimeout(()=>tip.classList.remove('on'),3400);sel=null;return;}
@@ -1289,7 +1292,7 @@ function loop(){
     todSet('dia');
     try{await Promise.all([document.fonts.load('900 100px Cinzel'),document.fonts.load('700 20px Cinzel')]);}catch(e){}
     buildChips();
-    await buildIsland();if(LV){LVST=LV;MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}}else{renderPlayers();$('#hint').textContent='Vista de demostración · abre una partida en otra pestaña y aparecerá aquí en 3D';$('#hint').style.opacity=1;}
+    await buildIsland();if(LV){LVST=LV;MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}if(LVNUI)applyUI(LVNUI);if(EMBED){document.body.classList.add('embed');parent.postMessage({t:'ready'},location.origin);}}else{renderPlayers();$('#hint').textContent='Vista de demostración · abre una partida en otra pestaña y aparecerá aquí en 3D';$('#hint').style.opacity=1;}
     setProgress(.95,'Último ajuste de luces…');await sleep(30);
     todSet('dia');
     controls.enabled=false;intro={t:0};camPlace(fit*1.55,.55,.5);
@@ -1394,9 +1397,70 @@ function liveHUD(st){
   if(pl)for(const r of RES)if(chips[r]&&chips[r].n!==pl.res[r])setChip(r,pl.res[r]);
   const cur=st.G.players[st.G.cur];$('#stat').textContent=st.G.over?'Partida terminada':((cur?cur.name+' · ':'')+(st.G.msg||'')).slice(0,140);
 }
-addEventListener('storage',e=>{if(e.key!=='ta-3d'||!e.newValue)return;
+addEventListener('storage',e=>{if(EMBED||e.key!=='ta-3d'||!e.newValue)return;
   try{const st=JSON.parse(e.newValue);if(!LV||st.G.id!==LV.G.id||st.B.H.length!==LV.B.H.length){location.reload();return;}if(!READY){LVNEXT=st;return;}LVST=st;MK.apply(st,false);liveHUD(st);}catch(err){console.error(err);}});
-window.TA3D={G,doBuild,primary,setChip,get topView(){return topView;},get robber(){return robber;},piers,boats,roll,todGo,applyQuality,get q(){return Q;},tiles,buildings,camera,controls};
+
+/* ---- acciones reales desde el 3D (dentro del juego) ---- */
+let UI=null,lvSheet=null;const hlHits=[],hlGroup=new THREE.Group();world.add(hlGroup);
+function cmd(fn,...args){if(!EMBED){toast('Para jugar desde aquí abre el 3D con el botón «3D» del juego.',2600);return;}parent.postMessage({t:'cmd',fn,args},location.origin);}
+const hexTop=ids=>{const t=ids.map(h=>tiles.find(t=>t.hid===h)).filter(Boolean).map(t=>t.top);return t.length?Math.max(...t):.1;};
+function setHL(hl){
+  while(hlGroup.children.length)hlGroup.remove(hlGroup.children[0]);hlHits.length=0;
+  if(!hl||!hl.k||!LVST)return;
+  const pc=(LVST.G.players[UI.cur]||{}).color||'#ffffff',col=new THREE.Color(pc),glow=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.78,depthWrite:false}),white=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.95,depthWrite:false}),inv=()=>new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
+  const Vs=LVST.B.V,Es=LVST.B.E;
+  for(const id of hl.ids){
+    const g=new THREE.Group();g.userData.pul=1;let hit;
+    if(hl.k==='v'){const v=Vs[id];g.position.set(v.x/54,hexTop(v.hexes)+.03,v.y/54);
+      const d=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.04,24),glow);g.add(d);const r=new THREE.Mesh(new THREE.TorusGeometry(.3,.04,8,28),white);r.rotation.x=Math.PI/2;r.position.y=.03;g.add(r);
+      hit=new THREE.Mesh(new THREE.SphereGeometry(.36,8,6),inv());hit.position.y=.1;}
+    else if(hl.k==='e'){const e=Es[id],a=Vs[e.a],b=Vs[e.b],ax=a.x/54,az=a.y/54,bx=b.x/54,bz=b.y/54,L=Math.hypot(bx-ax,bz-az);
+      g.position.set((ax+bx)/2,hexTop(a.hexes.concat(b.hexes))+.05,(az+bz)/2);g.rotation.y=-Math.atan2(bz-az,bx-ax);
+      g.add(new THREE.Mesh(new THREE.BoxGeometry(L*.8,.03,.27),white));const c=new THREE.Mesh(new THREE.BoxGeometry(L*.74,.05,.18),glow);c.position.y=.02;g.add(c);
+      hit=new THREE.Mesh(new THREE.BoxGeometry(L*.85,.4,.42),inv());hit.position.y=.1;}
+    else{const t=tiles.find(t=>t.hid===id);if(!t)continue;g.position.set(t.x,t.top+.04,t.z);
+      const r=new THREE.Mesh(new THREE.RingGeometry(.55,.68,36),white);r.rotation.x=-Math.PI/2;g.add(r);const d=new THREE.Mesh(new THREE.CircleGeometry(.55,36),glow);d.rotation.x=-Math.PI/2;g.add(d);
+      hit=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,.3,6),inv());hit.position.y=.1;}
+    hit.userData={k:hl.k,id};g.add(hit);hlHits.push(hit);hlGroup.add(g);
+  }
+}
+anims.push(()=>{const s=1+Math.sin(uTime.value*5.5)*.09;for(const g of hlGroup.children){g.scale.set(s,1,s);}return false;});
+const lvNeed=(k,u)=>{const pl=LVST.G.players[u.hs],c=u.cost[k]||{};return RES.some(r=>(c[r]||0)>pl.res[r]);};
+function lvCost(k,u){const pl=LVST.G.players[u.hs];return '<div class="cost">'+Object.entries(u.cost[k]||{}).filter(([r,n])=>n>0).map(([r,n])=>`<span class="${pl.res[r]<n?'lack':''}"><i style="background-image:${resIcon(r)}"></i>×${n}</span>`).join('')+'</div>';}
+function renderLive(){
+  const u=UI,sh=$('#sheet');if(!u||u.hs<0||!LVST){document.body.classList.remove('mine');return;}
+  document.body.classList.add('mine');
+  const bm=(u.mode||'').startsWith('build'),r=$('#roll');
+  r.textContent=bm?'Cancelar':u.roll?'Tirar dados':u.main?'Terminar turno':(u.hl&&u.hl.k?'Toca un punto brillante':(u.ht?'…':'Turno rival'));
+  r.disabled=!(bm||u.roll||u.main);$('#bBuild').disabled=!u.main;$('#bTrade').disabled=!u.main;
+  if(!u.main)lvSheet=null;
+  sh.classList.toggle('on',!!lvSheet);
+  if(lvSheet==='build'){
+    const items=[['road','Sendero','Une tus pueblos'],['settle','Pueblo','+1 punto · produce'],['city','Castillo','+2 puntos · produce x2']];if(u.exp)items.push(['ship','Barco','Une tus costas']);if(u.aff.dev!==undefined)items.push(['dev','Carta','Desarrollo sorpresa']);
+    sh.innerHTML='<h4>Construir<button data-x>✕</button></h4><div class="bgrid">'+items.map(([k,n,d])=>`<button class="bcard${u.aff[k]?'':' off'}" data-b="${k}"><b>${n}</b><small>${d}</small>${lvCost(k,u)}</button>`).join('')+'</div>';
+    sh.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const k=b.dataset.b;if(!u.aff[k]){toast('No puedes construirlo ahora<small>Faltan recursos o no hay dónde ponerlo</small>',1800);return;}lvSheet=null;if(k==='dev')cmd('uiBuyDev');else cmd('setMode','build-'+k);});
+  }else if(lvSheet==='trade'){
+    sh.innerHTML='<h4>Negocios<button data-x>✕</button></h4><div class="trow" style="margin-top:0"><button class="btn" id="tBank">Banco</button>'+(u.trade?'<button class="btn alt" id="tDeal">Trato con jugadores</button>':'')+'</div>';
+    $('#tBank').onclick=()=>{lvSheet=null;cmd('openBank');};const dl=$('#tDeal');if(dl)dl.onclick=()=>{lvSheet=null;cmd('openTrade');};
+  }
+  const x=sh.querySelector('[data-x]');if(x)x.onclick=()=>{lvSheet=null;renderLive();};
+}
+function applyUI(u){UI=u;setHL(u.hl);renderLive();}
+if(LV&&EMBED){
+  $('#roll').onclick=()=>{const u=UI;if(!u)return;if((u.mode||'').startsWith('build'))cmd('setMode',u.mode);else if(u.roll)cmd('uiRoll');else if(u.main)cmd('uiEnd');};
+  $('#bBuild').onclick=()=>{lvSheet=lvSheet==='build'?null:'build';renderLive();};
+  $('#bTrade').onclick=()=>{lvSheet=lvSheet==='trade'?null:'trade';renderLive();};
+  $('#back2d').onclick=()=>parent.postMessage({t:'close'},location.origin);
+  addEventListener('message',e=>{
+    if(e.origin!==location.origin||e.source!==parent)return;const d=e.data;if(!d||d.t!=='state')return;
+    try{const st=JSON.parse(d.ser);
+      if(!LV||st.G.id!==LV.G.id||st.B.H.length!==LV.B.H.length){try{localStorage.setItem('ta-3d',d.ser);}catch(x){}location.reload();return;}
+      if(!READY){LVNEXT=st;LVNUI=d.ui;return;}
+      LVST=st;MK.apply(st,false);liveHUD(st);applyUI(d.ui);
+    }catch(err){console.error(err);}
+  });
+}
+window.TA3D={get hl(){return hlHits;},get UI(){return UI;},get hl(){return hlHits;},get UI(){return UI;},G,doBuild,primary,setChip,get topView(){return topView;},get robber(){return robber;},piers,boats,roll,todGo,applyQuality,get q(){return Q;},tiles,buildings,camera,controls};
 </script>
 </body>
 </html>

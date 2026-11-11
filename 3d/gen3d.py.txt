@@ -103,7 +103,7 @@ rep("window.TA3D={","""function liveHUD(st){
 }
 addEventListener('storage',e=>{if(e.key!=='ta-3d'||!e.newValue)return;
   try{const st=JSON.parse(e.newValue);if(!LV||st.G.id!==LV.G.id||st.B.H.length!==LV.B.H.length){location.reload();return;}LVST=st;MK.apply(st,false);liveHUD(st);}catch(err){console.error(err);}});
-window.TA3D={""")
+window.TA3D={get hl(){return hlHits;},get UI(){return UI;},""")
 # barra de estado + css
 rep('<div class="chips" id="chips"></div>','<div id="stat"></div>\n  <div class="chips" id="chips"></div>')
 rep('#hint{bottom:','''#stat{pointer-events:none;text-align:center;font:600 13px/1.25 system-ui;color:#dbe8f2;text-shadow:0 1px 6px #000;margin:0 0 7px;min-height:16px}
@@ -113,5 +113,77 @@ rep("function mkInst(geo,mat,cap){const m=new THREE.InstancedMesh(geo,mat,cap);"
 rep("let LV=null,LVST=null;","let READY=false,LVNEXT=null;let LV=null,LVST=null;")
 rep("MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');}","MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}}")
 rep("LVST=st;MK.apply(st,false);liveHUD(st);}catch(err)","if(!READY){LVNEXT=st;return;}LVST=st;MK.apply(st,false);liveHUD(st);}catch(err)")
+
+# ================= ETAPA 2: jugar desde el 3D =================
+rep("let READY=false,LVNEXT=null;","const EMBED=/[?&]embed/.test(location.search);let READY=false,LVNEXT=null,LVNUI=null;")
+rep("READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}}","READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}if(LVNUI)applyUI(LVNUI);if(EMBED){document.body.classList.add('embed');parent.postMessage({t:'ready'},location.origin);}}")
+rep("addEventListener('storage',e=>{if(e.key!=='ta-3d'||!e.newValue)return;","addEventListener('storage',e=>{if(EMBED||e.key!=='ta-3d'||!e.newValue)return;")
+rep("mp.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(mp,camera);","mp.set(e.clientX/innerWidth*2-1,-e.clientY/innerHeight*2+1);ray.setFromCamera(mp,camera);\n  if(hlHits.length){const hh=ray.intersectObjects(hlHits,false)[0];if(hh){cmd('onBoard',hh.object.userData.k,hh.object.userData.id);return;}}")
+rep('<button class="tbtn" id="top3d"','<button class="tbtn" id="back2d" aria-label="Volver al 2D"><b>↩</b><small>Tablero 2D</small></button>\n  <button class="tbtn" id="top3d"')
+rep("body.live .act,body.live #sheet,body.live #isl{display:none!important}","body.live:not(.mine) .act,body.live:not(.mine) #sheet,body.live #isl{display:none!important}\n#back2d{display:none}body.embed #back2d{display:flex}body.embed .tbtn{flex-basis:50px}#back2d small{font-size:8px!important}")
+rep("body.live #isl","body.live #isl")
+rep("window.TA3D={",r"""
+/* ---- acciones reales desde el 3D (dentro del juego) ---- */
+let UI=null,lvSheet=null;const hlHits=[],hlGroup=new THREE.Group();world.add(hlGroup);
+function cmd(fn,...args){if(!EMBED){toast('Para jugar desde aquí abre el 3D con el botón «3D» del juego.',2600);return;}parent.postMessage({t:'cmd',fn,args},location.origin);}
+const hexTop=ids=>{const t=ids.map(h=>tiles.find(t=>t.hid===h)).filter(Boolean).map(t=>t.top);return t.length?Math.max(...t):.1;};
+function setHL(hl){
+  while(hlGroup.children.length)hlGroup.remove(hlGroup.children[0]);hlHits.length=0;
+  if(!hl||!hl.k||!LVST)return;
+  const pc=(LVST.G.players[UI.cur]||{}).color||'#ffffff',col=new THREE.Color(pc),glow=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.78,depthWrite:false}),white=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.95,depthWrite:false}),inv=()=>new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
+  const Vs=LVST.B.V,Es=LVST.B.E;
+  for(const id of hl.ids){
+    const g=new THREE.Group();g.userData.pul=1;let hit;
+    if(hl.k==='v'){const v=Vs[id];g.position.set(v.x/54,hexTop(v.hexes)+.03,v.y/54);
+      const d=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.04,24),glow);g.add(d);const r=new THREE.Mesh(new THREE.TorusGeometry(.3,.04,8,28),white);r.rotation.x=Math.PI/2;r.position.y=.03;g.add(r);
+      hit=new THREE.Mesh(new THREE.SphereGeometry(.36,8,6),inv());hit.position.y=.1;}
+    else if(hl.k==='e'){const e=Es[id],a=Vs[e.a],b=Vs[e.b],ax=a.x/54,az=a.y/54,bx=b.x/54,bz=b.y/54,L=Math.hypot(bx-ax,bz-az);
+      g.position.set((ax+bx)/2,hexTop(a.hexes.concat(b.hexes))+.05,(az+bz)/2);g.rotation.y=-Math.atan2(bz-az,bx-ax);
+      g.add(new THREE.Mesh(new THREE.BoxGeometry(L*.8,.03,.27),white));const c=new THREE.Mesh(new THREE.BoxGeometry(L*.74,.05,.18),glow);c.position.y=.02;g.add(c);
+      hit=new THREE.Mesh(new THREE.BoxGeometry(L*.85,.4,.42),inv());hit.position.y=.1;}
+    else{const t=tiles.find(t=>t.hid===id);if(!t)continue;g.position.set(t.x,t.top+.04,t.z);
+      const r=new THREE.Mesh(new THREE.RingGeometry(.55,.68,36),white);r.rotation.x=-Math.PI/2;g.add(r);const d=new THREE.Mesh(new THREE.CircleGeometry(.55,36),glow);d.rotation.x=-Math.PI/2;g.add(d);
+      hit=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,.3,6),inv());hit.position.y=.1;}
+    hit.userData={k:hl.k,id};g.add(hit);hlHits.push(hit);hlGroup.add(g);
+  }
+}
+anims.push(()=>{const s=1+Math.sin(uTime.value*5.5)*.09;for(const g of hlGroup.children){g.scale.set(s,1,s);}return false;});
+const lvNeed=(k,u)=>{const pl=LVST.G.players[u.hs],c=u.cost[k]||{};return RES.some(r=>(c[r]||0)>pl.res[r]);};
+function lvCost(k,u){const pl=LVST.G.players[u.hs];return '<div class="cost">'+Object.entries(u.cost[k]||{}).filter(([r,n])=>n>0).map(([r,n])=>`<span class="${pl.res[r]<n?'lack':''}"><i style="background-image:${resIcon(r)}"></i>×${n}</span>`).join('')+'</div>';}
+function renderLive(){
+  const u=UI,sh=$('#sheet');if(!u||u.hs<0||!LVST){document.body.classList.remove('mine');return;}
+  document.body.classList.add('mine');
+  const bm=(u.mode||'').startsWith('build'),r=$('#roll');
+  r.textContent=bm?'Cancelar':u.roll?'Tirar dados':u.main?'Terminar turno':(u.hl&&u.hl.k?'Toca un punto brillante':(u.ht?'…':'Turno rival'));
+  r.disabled=!(bm||u.roll||u.main);$('#bBuild').disabled=!u.main;$('#bTrade').disabled=!u.main;
+  if(!u.main)lvSheet=null;
+  sh.classList.toggle('on',!!lvSheet);
+  if(lvSheet==='build'){
+    const items=[['road','Sendero','Une tus pueblos'],['settle','Pueblo','+1 punto · produce'],['city','Castillo','+2 puntos · produce x2']];if(u.exp)items.push(['ship','Barco','Une tus costas']);if(u.aff.dev!==undefined)items.push(['dev','Carta','Desarrollo sorpresa']);
+    sh.innerHTML='<h4>Construir<button data-x>✕</button></h4><div class="bgrid">'+items.map(([k,n,d])=>`<button class="bcard${u.aff[k]?'':' off'}" data-b="${k}"><b>${n}</b><small>${d}</small>${lvCost(k,u)}</button>`).join('')+'</div>';
+    sh.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const k=b.dataset.b;if(!u.aff[k]){toast('No puedes construirlo ahora<small>Faltan recursos o no hay dónde ponerlo</small>',1800);return;}lvSheet=null;if(k==='dev')cmd('uiBuyDev');else cmd('setMode','build-'+k);});
+  }else if(lvSheet==='trade'){
+    sh.innerHTML='<h4>Negocios<button data-x>✕</button></h4><div class="trow" style="margin-top:0"><button class="btn" id="tBank">Banco</button>'+(u.trade?'<button class="btn alt" id="tDeal">Trato con jugadores</button>':'')+'</div>';
+    $('#tBank').onclick=()=>{lvSheet=null;cmd('openBank');};const dl=$('#tDeal');if(dl)dl.onclick=()=>{lvSheet=null;cmd('openTrade');};
+  }
+  const x=sh.querySelector('[data-x]');if(x)x.onclick=()=>{lvSheet=null;renderLive();};
+}
+function applyUI(u){UI=u;setHL(u.hl);renderLive();}
+if(LV&&EMBED){
+  $('#roll').onclick=()=>{const u=UI;if(!u)return;if((u.mode||'').startsWith('build'))cmd('setMode',u.mode);else if(u.roll)cmd('uiRoll');else if(u.main)cmd('uiEnd');};
+  $('#bBuild').onclick=()=>{lvSheet=lvSheet==='build'?null:'build';renderLive();};
+  $('#bTrade').onclick=()=>{lvSheet=lvSheet==='trade'?null:'trade';renderLive();};
+  $('#back2d').onclick=()=>parent.postMessage({t:'close'},location.origin);
+  addEventListener('message',e=>{
+    if(e.origin!==location.origin||e.source!==parent)return;const d=e.data;if(!d||d.t!=='state')return;
+    try{const st=JSON.parse(d.ser);
+      if(!LV||st.G.id!==LV.G.id||st.B.H.length!==LV.B.H.length){try{localStorage.setItem('ta-3d',d.ser);}catch(x){}location.reload();return;}
+      if(!READY){LVNEXT=st;LVNUI=d.ui;return;}
+      LVST=st;MK.apply(st,false);liveHUD(st);applyUI(d.ui);
+    }catch(err){console.error(err);}
+  });
+}
+window.TA3D={get hl(){return hlHits;},get UI(){return UI;},""")
+
 open('/home/claude/tierra-austral/3d/index.html','w').write(s)
 print('ok',len(s))

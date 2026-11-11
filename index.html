@@ -85,6 +85,7 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .flash{animation:flash .5s ease-in-out 3}
 @keyframes flash{0%,100%{stroke-width:2.5;stroke:#0e1a22}50%{stroke-width:6;stroke:#fff}}
 @media(prefers-reduced-motion:reduce){.hl,.flash{animation:none}}
+#v3d{position:fixed;inset:0;z-index:9;display:none;background:#0b1620}#v3d.on{display:block}#v3f{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b1620}
 #modal{position:fixed;inset:0;background:#02080cb8;display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 #modal.open{display:flex}
 #modal.kb{align-items:flex-start;padding-top:8px}
@@ -359,7 +360,7 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
       <button class="btn" id="cbbtn" onclick="setPalette(!CBP.on)" aria-pressed="false" title="Colores y símbolos pensados para daltonismo">Daltonismo: no</button>
       <button class="btn" onclick="tutHeader()">Tutorial</button>
       <button class="btn" onclick="showRules()">Reglas y costos</button>
-      <button class="btn" onclick="window.open('/3d/','_blank')" title="Abre esta partida en 3D en otra pestaña">Visor 3D (beta)</button>
+      <button class="btn" onclick="open3d(true)" title="Juega esta partida en 3D">Jugar en 3D (beta)</button>
       <button class="btn primary" onclick="showMenu()">Menú</button>
     </div>
   </header>
@@ -367,12 +368,13 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
   <main class="boardwrap">
     <div id="msg" role="status" aria-live="polite"></div>
     <div id="dicepos" aria-live="polite"></div>
-    <div class="zoomc" role="group" aria-label="Zoom del tablero"><button class="btn" onclick="zoomBy(1.35)" aria-label="Acercar">+</button><button class="btn" onclick="zoomBy(1/1.35)" aria-label="Alejar">−</button><button class="btn" onclick="zoomReset()" aria-label="Ajustar tablero a la pantalla">⤢</button></div>
+    <div class="zoomc" role="group" aria-label="Zoom del tablero"><button class="btn" onclick="open3d(true)" aria-label="Ver en 3D" title="Jugar en 3D (beta)" style="font-size:15px;font-weight:800">3D</button><button class="btn" onclick="zoomBy(1.35)" aria-label="Acercar">+</button><button class="btn" onclick="zoomBy(1/1.35)" aria-label="Alejar">−</button><button class="btn" onclick="zoomReset()" aria-label="Ajustar tablero a la pantalla">⤢</button></div>
     <div id="board"></div>
   </main>
 
   <div class="sidecol"><div id="tut" style="display:none" role="region" aria-label="Tutorial"></div><aside class="side" id="side"></aside></div>
 </div>
+<div id="v3d"><iframe id="v3f" title="Vista 3D"></iframe></div>
 <div id="modal" role="dialog" aria-modal="true"></div>
 <div id="editor" role="dialog" aria-modal="true" aria-label="Creador de mapa"></div>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -2227,13 +2229,56 @@ function sideHTML(){
   return h;
 }
 function placeDice(){const d=document.querySelector('#side .dicecard'),t=$('#dicepos');if(t)t.innerHTML=d?d.outerHTML:'';}
-/* copia del estado para el visor 3D (otra pestaña del mismo navegador lo lee y se actualiza solo) */
+/* visor 3D: copia del estado (otra pestaña lo lee) y, si está abierto encima, se le envía al instante */
 let _s3=0,_s3t=null;
+function ui3d(){
+  const hs=HS(),pid=G.cur,ht=humanTurn(),m=G.mode,hl={k:null,ids:[]},hu=hs>=0?G.players[hs]:null,o={hs,cur:pid,ht,phase:G.phase,mode:m,msg:G.msg||'',hl,exp:!!G.rules.expansion,over:!!G.over,aff:{},cost:{}};
+  if(ht){
+    if(m==='setupS'||m==='build-settle'){hl.k='v';hl.ids=legalSettle(pid,m==='setupS');}
+    else if(m==='build-city'){hl.k='v';hl.ids=myVerts(pid,'s');}
+    else if(m==='setupR'||m==='build-road'||m==='freeroad'||m==='build-ship'){hl.k='e';hl.ids=legalRoads(pid,m==='setupR'?G.lastSettle:undefined,m==='build-ship'?'ship':undefined);}
+    else if(m==='robber'){hl.k='h';hl.ids=H.filter(h=>h.id!==G.robber).map(h=>h.id);}
+  }
+  o.roll=ht&&G.phase==='roll';o.main=canMain();
+  if(hu){
+    o.cost={road:costOf('road',hs),settle:COST.settle,city:COST.city,ship:COST.ship,dev:COST.dev};
+    if(o.main){
+      o.aff.road=hu.left.road>=1&&canPay(hu,costOf('road',hs))&&legalRoads(hs).length>0;
+      o.aff.settle=hu.left.settle>=1&&canPay(hu,COST.settle)&&legalSettle(hs,false).length>0;
+      o.aff.city=hu.left.city>=1&&canPay(hu,COST.city)&&myVerts(hs,'s').length>0;
+      o.aff.ship=!!G.rules.expansion&&hu.left.ship>=1&&canPay(hu,COST.ship)&&legalRoads(hs,undefined,'ship').length>0;
+      o.aff.dev=!!(G.rules.dev&&G.deck.length&&canPay(hu,COST.dev));
+      o.trade=!!G.rules.trade;
+    }
+  }
+  return o;
+}
+function push3d(){const f=$('#v3f');if(!f||!f.contentWindow)return;try{f.contentWindow.postMessage({t:'state',ser:ser(),ui:ui3d()},location.origin);}catch(e){}}
 function sync3d(){
   if(!G.players||!G.players.length||!H.length)return;
-  const go=()=>{try{localStorage.setItem('ta-3d',ser());}catch(e){}_s3=Date.now();};
-  clearTimeout(_s3t);if(Date.now()-_s3>450)go();else _s3t=setTimeout(go,450);
+  const open=$('#v3d').classList.contains('on'),gap=open?110:450;
+  const go=()=>{_s3=Date.now();try{localStorage.setItem('ta-3d',ser());}catch(e){}if(open||$('#v3d').classList.contains('on'))push3d();};
+  clearTimeout(_s3t);if(Date.now()-_s3>gap)go();else _s3t=setTimeout(go,gap);
 }
+function open3d(on){
+  const w=$('#v3d'),f=$('#v3f');
+  if(!on){w.classList.remove('on');render();return;}
+  if(NET.role==='guest'){showToast('Vista 3D','Todavía no está disponible para invitados en línea.');return;}
+  try{localStorage.setItem('ta-3d',ser());}catch(e){}
+  if(!f.getAttribute('src'))f.setAttribute('src','/3d/?embed=1');
+  w.classList.add('on');setTimeout(push3d,60);
+}
+const ALLOW3D=['uiRoll','uiEnd','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg'];
+addEventListener('message',e=>{
+  if(e.origin!==location.origin||!e.data||e.source!==$('#v3f').contentWindow)return;
+  const d=e.data;
+  if(d.t==='ready')push3d();
+  else if(d.t==='close')open3d(false);
+  else if(d.t==='cmd'&&ALLOW3D.includes(d.fn)&&Array.isArray(d.args)&&d.args.every(x=>typeof x==='string'||typeof x==='number')){
+    const fn=window[d.fn];if(typeof fn==='function'){try{const r=fn(...d.args);if(r&&r.catch)r.catch(()=>{});}catch(err){console.error(err);}}
+    setTimeout(push3d,30);
+  }
+});
 function render(){if(NET.role==='guest')return;NETH.touch();try{sync3d();}catch(e){}musicRefresh();renderBoard();$('#side').innerHTML=sideHTML();placeDice();$('#msg').textContent=G.msg||' ';updateClocks();tutHL();renderMbar();bumpRes();}
 
 /* ===================== Modales ===================== */
@@ -3378,7 +3423,7 @@ Registro|Log|Registro
 Reglas de esta partida|Rules of this game|Regras desta partida
 Reglas de la partida|Game rules|Regras da partida
 Reglas y costos|Rules and costs|Regras e custos
-Visor 3D (beta)|3D viewer (beta)|Visualizador 3D (beta)
+Jugar en 3D (beta)|Play in 3D (beta)|Jogar em 3D (beta)
 Rellenar al azar|Fill randomly|Preencher ao acaso
 Repetición de la partida|Game replay|Repetição da partida
 Repetición|Replay|Repetição
