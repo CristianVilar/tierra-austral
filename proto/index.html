@@ -36,7 +36,7 @@ html,body{margin:0;height:100%;background:#0b1620;color:var(--ink);font-family:s
 #toast{position:fixed;left:50%;top:34%;transform:translate(-50%,-10px);z-index:6;background:#0d1a23ee;border:1px solid var(--gold);border-radius:16px;padding:12px 18px;font:700 17px/1.25 Georgia,serif;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;max-width:88vw}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #toast small{display:block;font:500 12px/1.3 system-ui;color:var(--muted);margin-top:3px}
-#hint{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4;font-size:12px;color:#d7e4ee;background:#0d1a23b8;border-radius:14px;padding:6px 12px;pointer-events:none;white-space:nowrap;transition:opacity .6s}
+#hint{position:fixed;left:50%;bottom:calc(235px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:4;font-size:12px;color:#d7e4ee;background:#0d1a23b8;border-radius:14px;padding:6px 12px;pointer-events:none;white-space:nowrap;transition:opacity .6s}
 #load{position:fixed;inset:0;z-index:20;background:#0b1620;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font:700 20px Georgia,serif;transition:opacity .6s}
 #load small{font:500 13px system-ui;color:var(--muted)}
 #load .bar{width:180px;height:5px;border-radius:3px;background:#1d3347;overflow:hidden}
@@ -209,7 +209,9 @@ const WATER=new THREE.ShaderMaterial({
    float nz(vec2 p){p=mat2(.8,.6,-.6,.8)*p+vec2(3.7,1.3);vec2 i=floor(p),f=fract(p);f=f*f*f*(f*(f*6.-15.)+10.);return mix(mix(hs(i),hs(i+vec2(1,0)),f.x),mix(hs(i+vec2(0,1)),hs(i+vec2(1,1)),f.x),f.y);}
    float hgt(vec2 p){float t=uTime;
     float h=sin(p.x*1.1+t*.8+nz(p*.4)*3.)*.5+sin(p.y*1.4-t*.6+p.x*.5)*.35;
-    h+=nz(p*2.2+vec2(t*.35,-t*.25))*.5+nz(p*5.1-vec2(t*.5,t*.3))*.22*(1.-uLite);return h*(1.+uStorm*1.2);}
+    if(uLite>.5){h+=(sin(p.x*2.3+p.y*1.1+t*.9)*sin(p.y*2.1-p.x*.7-t*.7))*.4;}
+    else h+=nz(p*2.2+vec2(t*.35,-t*.25))*.5+nz(p*5.1-vec2(t*.5,t*.3))*.22;
+    return h*(1.+uStorm*1.2);}
    void main(){
     vec2 p=vW.xz;float e=.06;
     float h0=hgt(p),hx=hgt(p+vec2(e,0.)),hz=hgt(p+vec2(0.,e));
