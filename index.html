@@ -50,6 +50,18 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .btn.primary:hover:not(:disabled){background:#ffc85c}
 .btn.on{outline:2px solid var(--accent)}
 .btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@font-face{font-family:Cinzel;font-weight:700;font-display:swap;src:url(/proto/fonts/cinzel-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:Cinzel;font-weight:900;font-display:swap;src:url(/proto/fonts/cinzel-latin-900-normal.woff2) format('woff2')}
+/* botones con el estilo del prototipo 3D */
+.btn{background:linear-gradient(#27465f,#1b3347);border:1px solid #3b6283;color:var(--ink);border-radius:13px;font:800 13.5px/1.15 Cinzel,Georgia,serif;letter-spacing:.3px;box-shadow:0 3px 0 #0f2030,0 8px 16px #0006}
+.btn:hover:not(:disabled){background:linear-gradient(#2f5673,#21405a)}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #0f2030}
+.btn:disabled{opacity:.5;filter:grayscale(.5) brightness(.85)}
+.btn.primary{background:linear-gradient(#f6c862,#d79a2b);border-color:#6a4d12;color:#2a1d04;box-shadow:0 3px 0 #8a6215,0 8px 16px #0006}
+.btn.primary:hover:not(:disabled){background:linear-gradient(#ffd278,#e0a535)}
+.btn.primary:active:not(:disabled){box-shadow:0 1px 0 #8a6215}
+img.ico,image.ico{filter:drop-shadow(0 2px 2px #0008)}
+.hbtns .btn{font-size:12.5px;padding:7px 11px}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 .row>.btn{flex:1 1 auto}
 .players{display:flex;flex-direction:column;gap:6px}
@@ -1949,22 +1961,9 @@ function shade(hex,k){
   return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
 function icon(res,s=18,attrs=''){
-  const g={
-    wood:`<ellipse cx="12" cy="21" rx="10" ry="1.6" fill="#0003"/>
-      <g stroke="#4a2f18" stroke-width="1"><circle cx="7.6" cy="16.2" r="4.6" fill="#b87a40"/><circle cx="16.4" cy="16.2" r="4.6" fill="#b87a40"/><circle cx="12" cy="8.8" r="4.6" fill="#c98c4e"/></g>
-      <g fill="none" stroke="#7a4d25" stroke-width=".9"><circle cx="7.6" cy="16.2" r="2.6"/><circle cx="16.4" cy="16.2" r="2.6"/><circle cx="12" cy="8.8" r="2.6"/></g>
-      <g fill="#7a4d25"><circle cx="7.6" cy="16.2" r=".8"/><circle cx="16.4" cy="16.2" r=".8"/><circle cx="12" cy="8.8" r=".8"/></g>`,
-    brick:`<rect x="2" y="5" width="20" height="15" rx="1.5" fill="#6e2f1c"/>
-      <g fill="#cf6d49"><rect x="3" y="6" width="9" height="4" rx=".8"/><rect x="13" y="6" width="8" height="4" rx=".8"/><rect x="3" y="11" width="5" height="4" rx=".8"/><rect x="9" y="11" width="9" height="4" rx=".8"/><rect x="19" y="11" width="2" height="4" rx=".8"/><rect x="3" y="16" width="9" height="3" rx=".8"/><rect x="13" y="16" width="8" height="3" rx=".8"/></g>
-      <path d="M3 6.6H12M13 6.6H21" stroke="#ffffff44" stroke-width=".8"/>`,
-    wool:`<g fill="#f6f2e6" stroke="#b9b29c" stroke-width=".7"><circle cx="8" cy="10.5" r="4"/><circle cx="12.5" cy="8.5" r="4"/><circle cx="16.5" cy="11.5" r="4"/><circle cx="9.5" cy="14.5" r="4"/><circle cx="14.5" cy="15" r="4"/></g>
-      <g fill="#2a2a30"><ellipse cx="19.2" cy="8" rx="2.4" ry="2.9"/><circle cx="19.6" cy="7.6" r=".5" fill="#fff"/></g><path d="M8.5 19V22M15 19V22" stroke="#2a2a30" stroke-width="1.6" stroke-linecap="round"/>`,
-    grain:`<path d="M12 22V8" stroke="#8a6d1a" stroke-width="1.5"/>
-      <g fill="#f0cf5f" stroke="#a8841f" stroke-width=".6"><ellipse cx="12" cy="4.6" rx="2" ry="3.3"/><ellipse cx="8" cy="8.6" rx="2" ry="3.3" transform="rotate(-30 8 8.6)"/><ellipse cx="16" cy="8.6" rx="2" ry="3.3" transform="rotate(30 16 8.6)"/><ellipse cx="8" cy="14" rx="2" ry="3.3" transform="rotate(-30 8 14)"/><ellipse cx="16" cy="14" rx="2" ry="3.3" transform="rotate(30 16 14)"/></g>`,
-    ore:`<path d="M12 2.5 L20.5 9.5 L17 21 H7 L3.5 9.5 Z" fill="#9aa8b8"/><path d="M12 2.5 L20.5 9.5 H12Z" fill="#c5d0dc"/><path d="M12 9.5 H20.5 L17 21 H12Z" fill="#6f7d8e"/><path d="M12 2.5 L3.5 9.5 H12Z" fill="#b2bfcc"/>
-      <path d="M7.5 13 L10.5 17 M14 12 L15.8 16.5" stroke="#d9873f" stroke-width="1.5" stroke-linecap="round"/><path d="M3.5 9.5 H20.5 M12 9.5 V21" stroke="#0004" stroke-width=".7" fill="none"/>`
-  };
-  return `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" ${attrs}>${g[res]}</svg>`;
+  const src='/assets/res-'+res+'.png';
+  if(/(^|\s)x=/.test(attrs))return `<image class="ico" width="${s}" height="${s}" href="${src}" aria-hidden="true" ${attrs}/>`;
+  return `<img class="ico" width="${s}" height="${s}" src="${src}" alt="" aria-hidden="true" draggable="false" ${attrs}>`;
 }
 function dieSVG(n,i=0){
   const el=G.rollAt?Date.now()-G.rollAt:9999,roll=el<1000&&!RM();
@@ -2134,7 +2133,7 @@ function bumpRes(){
 function mbarHTML(){
   if(G.cfg.humanSeat<0||G.phase==='idle'||G.over||!G.players.length)return '';
   const hu=G.players[HS()];
-  const mres=hu?`<div class="mres" role="group" aria-label="Tus recursos">${RES.map(r=>`<span class="mr${hu.res[r]?'':' z'}" style="--rc:${RCOL[r]}" title="${RFULL[r]}">${icon(r,20)}<b>${hu.res[r]}</b></span>`).join('')}</div>`:'';
+  const mres=hu?`<div class="mres" role="group" aria-label="Tus recursos">${RES.map(r=>`<span class="mr${hu.res[r]?'':' z'}" style="--rc:${RCOL[r]}" title="${RFULL[r]}">${icon(r,30)}<b>${hu.res[r]}</b></span>`).join('')}</div>`:'';
   let mbld='';
   if(hu&&humanTurn()&&canMain()){
     const pid=HS(),o=[];
@@ -2207,7 +2206,7 @@ function sideHTML(){
   // dados
   if(G.dice)h+=`<section class="card dicecard"><div class="dice">${dieSVG(G.dice[0],0)}${dieSVG(G.dice[1],1)}<span class="sum${G.rollAt&&Date.now()-G.rollAt<1100&&!RM()?' roll':''}">${G.dice[0]+G.dice[1]}</span><span class="dwho" style="color:var(--muted);font-size:13px;margin-left:auto">${G.phase!=='idle'?'Turno de '+pn(G.cur):''}</span></div></section>`;
   if(hu){
-    h+=`<section class="card" id="sec-res"><h3>Tus recursos</h3><div class="hand">${RES.map(r=>`<div class="chip" data-r="${r}" style="--rc:${RCOL[r]}" title="${RFULL[r]}">${icon(r,32)}<b>${hu.res[r]}</b><span>${RNAME[r]}</span></div>`).join('')}</div></section>`;
+    h+=`<section class="card" id="sec-res"><h3>Tus recursos</h3><div class="hand">${RES.map(r=>`<div class="chip" data-r="${r}" style="--rc:${RCOL[r]}" title="${RFULL[r]}">${icon(r,46)}<b>${hu.res[r]}</b><span>${RNAME[r]}</span></div>`).join('')}</div></section>`;
     const ht=humanTurn(),main=canMain();
     const can=(c,left)=>main&&canPay(hu,c)&&left>0;
     const costIcons=c=>Object.keys(c).map(r=>`<span class="ci">${c[r]>1?c[r]:''}${icon(r,13)}</span>`).join('');
