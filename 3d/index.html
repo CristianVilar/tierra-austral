@@ -747,7 +747,7 @@ async function buildIsland(){
 
   /* ---- estado real del juego: construcciones, senderos, bandido y dados ---- */
   const LB=new Map(),LRD=new Map();let lastRoll=null;
-  const PCs=o=>(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4];
+  const PCs=o=>{const c=(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4],k=new THREE.Color(c),h={};k.getHSL(h);k.setHSL(h.h,Math.min(1,h.s*1.08),h.l*.66);return '#'+k.getHexString();};
   const nearC=(x,z)=>{let b=null,bd=1e9;for(const c of cmap.values()){const d=Math.hypot(c.x-x,c.z-z);if(d<bd){bd=d;b=c;}}return bd<.3?b:null;};
   const popIn=(g,s1)=>tween(.55,u=>{const e=u<1?1-Math.pow(1-u,3)*Math.cos(u*9):1;g.scale.setScalar(Math.max(.001,s1*e));},()=>g.scale.setScalar(s1));
   const _om={};
