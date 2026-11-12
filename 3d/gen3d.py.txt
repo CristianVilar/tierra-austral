@@ -207,5 +207,7 @@ rep("  MK.apply=(st,first)=>{",r"""  const _om={};
   }
   MK.apply=(st,first)=>{""")
 rep("const s1=city?1.0:1.45;world.add(g);","const s1=city?1.0:1.45;ownMark(g,col,city,(st.G.players[p]||{}).name);world.add(g);")
+rep('if(!/[?&]embed/.test(location.search))return;function r(m)','if(!/[?&]embed/.test(location.search))return;document.documentElement.classList.add("bare");function r(m)')
+rep('#hint{bottom:calc(150px + env(safe-area-inset-bottom))}','#hint{bottom:calc(150px + env(safe-area-inset-bottom))}\nhtml.bare #players,html.bare #back2d,html.bare #gear,html.bare #drawer,html.bare .hud.bot,html.bare #endp,html.bare #fps{display:none!important}html.bare .hud.top{display:flex;justify-content:flex-end;padding:8px}html.bare #hint{bottom:12px}')
 open('/home/claude/tierra-austral/3d/index.html','w').write(s)
 print('ok',len(s))

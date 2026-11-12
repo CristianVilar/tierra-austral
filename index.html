@@ -85,7 +85,7 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .flash{animation:flash .5s ease-in-out 3}
 @keyframes flash{0%,100%{stroke-width:2.5;stroke:#0e1a22}50%{stroke-width:6;stroke:#fff}}
 @media(prefers-reduced-motion:reduce){.hl,.flash{animation:none}}
-#v3d{position:fixed;inset:0;z-index:9;display:none;background:#0b1620}#v3d.on{display:block}#v3f{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b1620}#v3s{position:absolute;inset:0;z-index:2;background:#0b1620;color:#e8eef2;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:600 16px/1.4 system-ui,sans-serif}#v3s.off{display:none}.v3m p{font-weight:400;font-size:13px;opacity:.75;margin:8px 0 14px;word-break:break-word}.v3b{display:flex;flex-direction:column;gap:10px;align-items:center}.v3b .btn{text-decoration:none}
+#v3d{position:relative;display:none;background:#0b1620;border-radius:16px;overflow:hidden;height:clamp(430px,76svh,860px);box-shadow:0 0 0 3px #0b1a24,0 0 0 5px #8a6a3b}#v3d.on{display:block}body.m3d #board{display:none}body.m3d .zoomc .btn:not(:first-child){display:none}#v3f{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b1620;touch-action:none}#v3s{position:absolute;inset:0;z-index:2;background:#0b1620;color:#e8eef2;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:600 16px/1.4 system-ui,sans-serif}#v3s.off{display:none}.v3m p{font-weight:400;font-size:13px;opacity:.75;margin:8px 0 14px;word-break:break-word}.v3b{display:flex;flex-direction:column;gap:10px;align-items:center}.v3b .btn{text-decoration:none}
 #modal{position:fixed;inset:0;background:#02080cb8;display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 #modal.open{display:flex}
 #modal.kb{align-items:flex-start;padding-top:8px}
@@ -360,7 +360,7 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
       <button class="btn" id="cbbtn" onclick="setPalette(!CBP.on)" aria-pressed="false" title="Colores y símbolos pensados para daltonismo">Daltonismo: no</button>
       <button class="btn" onclick="tutHeader()">Tutorial</button>
       <button class="btn" onclick="showRules()">Reglas y costos</button>
-      <button class="btn" onclick="open3d(true)" title="Juega esta partida en 3D">Jugar en 3D (beta)</button>
+      <button class="btn" id="b3h" onclick="open3d(!$('#v3d').classList.contains('on'))" title="Cambia el tablero entre 2D y 3D">Jugar en 3D (beta)</button>
       <button class="btn primary" onclick="showMenu()">Menú</button>
     </div>
   </header>
@@ -368,13 +368,13 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
   <main class="boardwrap">
     <div id="msg" role="status" aria-live="polite"></div>
     <div id="dicepos" aria-live="polite"></div>
-    <div class="zoomc" role="group" aria-label="Zoom del tablero"><button class="btn" onclick="open3d(true)" aria-label="Ver en 3D" title="Jugar en 3D (beta)" style="font-size:15px;font-weight:800">3D</button><button class="btn" onclick="zoomBy(1.35)" aria-label="Acercar">+</button><button class="btn" onclick="zoomBy(1/1.35)" aria-label="Alejar">−</button><button class="btn" onclick="zoomReset()" aria-label="Ajustar tablero a la pantalla">⤢</button></div>
+    <div class="zoomc" role="group" aria-label="Zoom del tablero"><button class="btn" id="b3z" onclick="open3d(!$('#v3d').classList.contains('on'))" aria-label="Cambiar entre 2D y 3D" title="Cambiar entre tablero 2D y 3D" style="font-size:15px;font-weight:800">3D</button><button class="btn" onclick="zoomBy(1.35)" aria-label="Acercar">+</button><button class="btn" onclick="zoomBy(1/1.35)" aria-label="Alejar">−</button><button class="btn" onclick="zoomReset()" aria-label="Ajustar tablero a la pantalla">⤢</button></div>
     <div id="board"></div>
+    <div id="v3d"><iframe id="v3f" title="Vista 3D"></iframe><div id="v3s"><div class="v3m"><b id="v3t">Cargando vista 3D…</b><p id="v3p"></p><div class="v3b"><a class="btn primary" id="v3o" href="/3d/" target="_blank" rel="noopener" style="display:none">Abrir 3D en pestaña nueva</a><button class="btn" onclick="open3d(false)">Volver al tablero 2D</button></div></div></div></div>
   </main>
 
   <div class="sidecol"><div id="tut" style="display:none" role="region" aria-label="Tutorial"></div><aside class="side" id="side"></aside></div>
 </div>
-<div id="v3d"><iframe id="v3f" title="Vista 3D"></iframe><div id="v3s"><div class="v3m"><b id="v3t">Cargando vista 3D…</b><p id="v3p"></p><div class="v3b"><a class="btn primary" id="v3o" href="/3d/" target="_blank" rel="noopener" style="display:none">Abrir 3D en pestaña nueva</a><button class="btn" onclick="open3d(false)">Volver al tablero 2D</button></div></div></div></div>
 <div id="modal" role="dialog" aria-modal="true"></div>
 <div id="editor" role="dialog" aria-modal="true" aria-label="Creador de mapa"></div>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -2262,9 +2262,10 @@ function sync3d(){
 }
 function open3d(on){
   const w=$('#v3d'),f=$('#v3f');
-  if(!on){w.classList.remove('on');render();return;}
+  const lab=v=>{document.body.classList.toggle('m3d',v);const a=$('#b3z'),b=$('#b3h');if(a)a.textContent=v?'2D':'3D';if(b)b.textContent=v?'Volver al tablero 2D':'Jugar en 3D (beta)';};
+  if(!on){w.classList.remove('on');lab(false);render();return;}
   if(NET.role==='guest'){showToast('Vista 3D','Todavía no está disponible para invitados en línea.');return;}
-  try{localStorage.setItem('ta-3d',ser());}catch(e){}
+  lab(true);try{localStorage.setItem('ta-3d',ser());}catch(e){}
   const st=$('#v3s');
   if(R3&&f.getAttribute('src')){st.classList.add('off');clearTimeout(T3);w.classList.add('on');push3d();setTimeout(push3d,120);return;}
   st.classList.remove('off');$('#v3t').textContent='Cargando vista 3D…';$('#v3p').textContent='';$('#v3o').style.display='none';
@@ -3431,6 +3432,8 @@ Reglas de esta partida|Rules of this game|Regras desta partida
 Reglas de la partida|Game rules|Regras da partida
 Reglas y costos|Rules and costs|Regras e custos
 Jugar en 3D (beta)|Play in 3D (beta)|Jogar em 3D (beta)
+Volver al tablero 2D|Back to the 2D board|Voltar ao tabuleiro 2D
+Vista 3D|3D view|Vista 3D
 Rellenar al azar|Fill randomly|Preencher ao acaso
 Repetición de la partida|Game replay|Repetição da partida
 Repetición|Replay|Repetição
