@@ -11,7 +11,7 @@
 
 :root{--bg:#0d1a23;--panel:#14283a;--line:#2a4560;--gold:#f2b84b;--ink:#eef3f7;--muted:#9fb2c2}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#0b1620;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;overscroll-behavior:none}
+*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}button,.pill,.tbtn,.chip{touch-action:manipulation}html,body{margin:0;height:100%;background:#0b1620;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;overscroll-behavior:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
 .hud{position:fixed;left:0;right:0;z-index:5;pointer-events:none;padding:0 10px}
 .top{top:calc(8px + env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -1451,7 +1451,7 @@ if(LV&&EMBED){
   $('#roll').onclick=()=>{const u=UI;if(!u)return;if((u.mode||'').startsWith('build'))cmd('setMode',u.mode);else if(u.roll)cmd('uiRoll');else if(u.main)cmd('uiEnd');};
   $('#bBuild').onclick=()=>{lvSheet=lvSheet==='build'?null:'build';renderLive();};
   $('#bTrade').onclick=()=>{lvSheet=lvSheet==='trade'?null:'trade';renderLive();};
-  $('#back2d').onclick=()=>parent.postMessage({t:'close'},location.origin);
+  {let _bk=0;const bk=ev=>{ev.preventDefault();if(Date.now()-_bk<500)return;_bk=Date.now();parent.postMessage({t:'close'},location.origin);};const b2=$('#back2d');b2.addEventListener('pointerup',bk);b2.addEventListener('touchend',bk,{passive:false});b2.addEventListener('click',bk);}
   addEventListener('message',e=>{
     if(e.origin!==location.origin||e.source!==parent)return;const d=e.data;if(!d||d.t!=='state')return;
     try{const st=JSON.parse(d.ser);
