@@ -115,7 +115,7 @@ body.live:not(.mine) .act,body.live:not(.mine) #sheet,body.live #isl{display:non
 #back2d{display:none}body.embed #back2d{display:flex}body.embed .tbtn{flex-basis:50px}#back2d small{font-size:8px!important}
 #hint{bottom:calc(150px + env(safe-area-inset-bottom))}
 </style>
-<script type="importmap">{"imports":{"three":"../proto/vendor/three.module.min.js","three/addons/":"../proto/vendor/"}}</script>
+<script>(function(){if(!/[?&]embed/.test(location.search))return;function r(m){try{parent.postMessage({t:"err",m:String(m)},location.origin);}catch(e){}}addEventListener("error",function(e){r((e.message||"error")+(e.filename?" @"+e.filename.split("/").pop()+":"+e.lineno:""));});addEventListener("unhandledrejection",function(e){r("promesa: "+(e.reason&&e.reason.message||e.reason));});})();</script><script type="importmap">{"imports":{"three":"../proto/vendor/three.module.min.js","three/addons/":"../proto/vendor/"}}</script>
 </head>
 <body>
 <canvas id="c" tabindex="-1"></canvas>
