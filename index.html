@@ -85,7 +85,7 @@ header.top p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .flash{animation:flash .5s ease-in-out 3}
 @keyframes flash{0%,100%{stroke-width:2.5;stroke:#0e1a22}50%{stroke-width:6;stroke:#fff}}
 @media(prefers-reduced-motion:reduce){.hl,.flash{animation:none}}
-#v3d{position:relative;display:none;background:#0b1620;border-radius:16px;overflow:hidden;height:clamp(430px,76svh,860px);box-shadow:0 0 0 3px #0b1a24,0 0 0 5px #8a6a3b}#v3d.on{display:block}body.m3d #board{display:none}body.m3d .zoomc .btn:not(:first-child){display:none}#v3f{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b1620;touch-action:none}#v3s{position:absolute;inset:0;z-index:2;background:#0b1620;color:#e8eef2;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:600 16px/1.4 system-ui,sans-serif}#v3s.off{display:none}.v3m p{font-weight:400;font-size:13px;opacity:.75;margin:8px 0 14px;word-break:break-word}.v3b{display:flex;flex-direction:column;gap:10px;align-items:center}.v3b .btn{text-decoration:none}
+#v3d{position:relative;display:none;background:#0b1620;border-radius:16px;overflow:hidden;height:clamp(430px,76svh,860px);box-shadow:0 0 0 3px #0b1a24,0 0 0 5px #8a6a3b}#v3d.on{display:block}@media(max-width:920px){#v3d{height:clamp(340px,calc(100svh - 262px),760px)}}body.m3d #board{display:none}body.m3d .zoomc .btn:not(:first-child){display:none}#v3f{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b1620;touch-action:none}#v3s{position:absolute;inset:0;z-index:2;background:#0b1620;color:#e8eef2;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:600 16px/1.4 system-ui,sans-serif}#v3s.off{display:none}.v3m p{font-weight:400;font-size:13px;opacity:.75;margin:8px 0 14px;word-break:break-word}.v3b{display:flex;flex-direction:column;gap:10px;align-items:center}.v3b .btn{text-decoration:none}
 #modal{position:fixed;inset:0;background:#02080cb8;display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 #modal.open{display:flex}
 #modal.kb{align-items:flex-start;padding-top:8px}
@@ -2262,7 +2262,7 @@ function sync3d(){
 }
 function open3d(on){
   const w=$('#v3d'),f=$('#v3f');
-  const lab=v=>{document.body.classList.toggle('m3d',v);const a=$('#b3z'),b=$('#b3h');if(a)a.textContent=v?'2D':'3D';if(b)b.textContent=v?'Volver al tablero 2D':'Jugar en 3D (beta)';};
+  const lab=v=>{document.body.classList.toggle('m3d',v);try{localStorage.setItem('ta-view',v?'3d':'2d');}catch(e){}const a=$('#b3z'),b=$('#b3h');if(a)a.textContent=v?'2D':'3D';if(b)b.textContent=v?'Volver al tablero 2D':'Jugar en 3D (beta)';};
   if(!on){w.classList.remove('on');lab(false);render();return;}
   if(NET.role==='guest'){showToast('Vista 3D','Todavía no está disponible para invitados en línea.');return;}
   lab(true);try{localStorage.setItem('ta-3d',ser());}catch(e){}
@@ -2275,6 +2275,9 @@ function open3d(on){
   w.classList.add('on');setTimeout(push3d,60);
 }
 let T3=null,E3='',R3=false;
+function view3d(){try{return localStorage.getItem('ta-view')==='3d';}catch(e){return false;}}
+function auto3d(){if(view3d()&&NET.role!=='guest'&&!$('#v3d').classList.contains('on'))setTimeout(()=>open3d(true),350);}
+function setView(v){try{localStorage.setItem('ta-view',v);}catch(e){}if(v==='3d')open3d(true);else if($('#v3d').classList.contains('on'))open3d(false);showMenu();}
 const ALLOW3D=['uiRoll','uiEnd','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg','showMenu'];
 addEventListener('message',e=>{
   if(e.origin!==location.origin||!e.data||e.source!==$('#v3f').contentWindow)return;
@@ -2428,7 +2431,7 @@ function launch(cfg,opts){
   updateSub();
   G.phase='setupBot';
   if(opts.tutorial)tutStart('full');
-  render();setupStep();
+  render();setupStep();auto3d();
 }
 function updateSub(){
   const r=G.rules,a=[];
@@ -2951,7 +2954,7 @@ function resumeGame(){
   G.cur=0;
   if(G.rules.timer){G.turnEnd=Date.now()+(G.turnLimit||60)*1000;G.timerOn=true;}
   G.msg=G.phase==='roll'?'Partida retomada: tira los dados.':'Partida retomada: construye, comercia o termina tu turno.';
-  render();sfx('turn');
+  render();sfx('turn');auto3d();
 }
 
 /* ===================== Deshacer ===================== */
@@ -3433,6 +3436,10 @@ Reglas de la partida|Game rules|Regras da partida
 Reglas y costos|Rules and costs|Regras e custos
 Jugar en 3D (beta)|Play in 3D (beta)|Jogar em 3D (beta)
 Volver al tablero 2D|Back to the 2D board|Voltar ao tabuleiro 2D
+Vista del tablero: 2D|Board view: 2D|Vista do tabuleiro: 2D
+Vista del tablero: 3D|Board view: 3D|Vista do tabuleiro: 3D
+Las partidas se abren con el tablero en 3D. Toca para volver al 2D.|Games open with the 3D board. Tap to go back to 2D.|As partidas abrem com o tabuleiro em 3D. Toque para voltar ao 2D.
+Las partidas se abren con el tablero 2D. Toca para jugar en 3D (beta).|Games open with the 2D board. Tap to play in 3D (beta).|As partidas abrem com o tabuleiro 2D. Toque para jogar em 3D (beta).
 Vista 3D|3D view|Vista 3D
 Rellenar al azar|Fill randomly|Preencher ao acaso
 Repetición de la partida|Game replay|Repetição da partida
@@ -4048,6 +4055,7 @@ function showMenu(){
    <button class="mcard" onclick="showStats()"><b>${mi('trophy')}Estadísticas y logros</b><small>${st.games} partidas, ${st.wins} victorias, ${ACH.filter(a=>st.ach[a.id]).length} de ${ACH.length} logros.</small></button>
    <button class="mcard" onclick="replayLast()" ${last?'':'disabled'}><b>${mi('replay')}Repetición</b><small>${last?'Mira turno a turno la última partida terminada.':'Aparece al terminar tu primera partida.'}</small></button>
    <button class="mcard" onclick="playTutorial()"><b>${mi('book')}Tutorial guiado</b><small>Una partida corta contra rivales fáciles, acompañada paso a paso.</small></button>
+   <button class="mcard" onclick="setView(view3d()?'2d':'3d')"><b>${mi('palette')}Vista del tablero: ${view3d()?'3D':'2D'}</b><small>${view3d()?'Las partidas se abren con el tablero en 3D. Toca para volver al 2D.':'Las partidas se abren con el tablero 2D. Toca para jugar en 3D (beta).'}</small></button>
    <button class="mcard" onclick="showPersonalize()"><b>${mi('palette')}Personalizar</b><small>Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.</small></button>
    <button class="mcard" onclick="showRules()"><b>${mi('list')}Reglas y costos</b><small>Cómo se juega y cuánto cuesta cada construcción.</small></button>
    <button class="mcard" onclick="showNetMenu()"><b>${mi('users')}Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.</small></button>
