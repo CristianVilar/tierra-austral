@@ -732,6 +732,7 @@ async function buildIsland(){
       }
       for(const sx of [-1,1]){const pile=new THREE.Mesh(new THREE.CylinderGeometry(.016,.02,.1,7),darkM);pile.position.set(sx*(L/2-.02),-.01,0);rd.add(pile);}
       rd.traverse(q=>{if(q.isMesh){q.castShadow=true;q.receiveShadow=true;}});
+      if(LV){const gl=new THREE.Mesh(new THREE.BoxGeometry(L+.08,.01,.27),new THREE.MeshBasicMaterial({color:pcn.getHex(),transparent:true,opacity:.6,toneMapped:false,depthWrite:false}));gl.position.y=.006;rd.add(gl);const gb=new THREE.Mesh(new THREE.BoxGeometry(L+.1,.008,.31),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,toneMapped:false,depthWrite:false}));gb.position.y=.004;rd.add(gb);}
       rd.position.set(mx,tt+.005,mz);rd.rotation.y=-Math.atan2(o.z-c.z,o.x-c.x);world.add(rd);return rd;}
   MK.house=house;MK.castle=castle;if(chosen.length){const c0=chosen[0];EDGE=Math.min(...[...c0.nb].map(k=>cmap.get(k)).map(o=>Math.hypot(o.x-c0.x,o.z-c0.z)));spotsAll=[...cmap.values()].filter(o=>o.tiles.length>=2&&!chosen.includes(o));}
   if(!LV)chosen.forEach((c,i)=>{const p=i%4,city=i===2;
@@ -748,13 +749,27 @@ async function buildIsland(){
   const PCs=o=>(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4];
   const nearC=(x,z)=>{let b=null,bd=1e9;for(const c of cmap.values()){const d=Math.hypot(c.x-x,c.z-z);if(d<bd){bd=d;b=c;}}return bd<.3?b:null;};
   const popIn=(g,s1)=>tween(.55,u=>{const e=u<1?1-Math.pow(1-u,3)*Math.cos(u*9):1;g.scale.setScalar(Math.max(.001,s1*e));},()=>g.scale.setScalar(s1));
+  const _om={};
+  function ownMark(g,col,city,name){
+    const ch=(String(name||'?').trim()[0]||'?').toUpperCase(),key=col+ch+city;
+    if(!_om[key]){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+      x.fillStyle='rgba(0,0,0,.35)';x.beginPath();x.arc(64,68,56,0,7);x.fill();
+      x.fillStyle=col;x.beginPath();x.arc(64,64,54,0,7);x.fill();x.lineWidth=city?12:8;x.strokeStyle=city?'#f2c14e':'#ffffff';x.stroke();
+      x.fillStyle='#fff';x.strokeStyle='rgba(0,0,0,.55)';x.lineWidth=7;x.font='800 64px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.strokeText(ch,64,city?72:68);x.fillText(ch,64,city?72:68);
+      if(city){x.fillStyle='#f2c14e';x.font='700 30px system-ui';x.fillText('★',64,24);}
+      const tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;_om[key]=tx;}
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:_om[key],depthTest:false,transparent:true}));sp.renderOrder=6;
+    const k=city?.5:.38;sp.scale.set(k,k,1);sp.position.set(0,city?.8:.62,0);g.add(sp);
+    const r=city?.42:.3,disc=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.016,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.7,toneMapped:false,depthWrite:false}));disc.position.y=.01;g.add(disc);
+    const rg=new THREE.Mesh(new THREE.RingGeometry(r,r+(city?.05:.035),28),new THREE.MeshBasicMaterial({color:city?0xf2c14e:0xffffff,side:THREE.DoubleSide,toneMapped:false,depthWrite:false}));rg.rotation.x=-Math.PI/2;rg.position.y=.022;g.add(rg);
+  }
   MK.apply=(st,first)=>{
     const Vs=st.B.V,Es=st.B.E,own=new Set();
     for(const v of Vs){if(!v.b)continue;own.add(v.id);const cur=LB.get(v.id);if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner)continue;
       const c=nearC(v.x/54,v.y/54);if(!c)continue;const p=v.b.owner,col=PCs(p),city=v.b.type==='c';
       if(cur){world.remove(cur.g);const i=buildings.indexOf(cur.rec);if(i>=0)buildings.splice(i,1);}
       const g=city?castle(col,p%4):house(col,p%4),top=Math.max(...c.tiles.map(ti=>tiles[ti].top));
-      g.position.set(c.x,top,c.z);g.rotation.y=hash2(v.id,3,9)*6;const s1=city?1.0:1.45;world.add(g);
+      g.position.set(c.x,top,c.z);g.rotation.y=hash2(v.id,3,9)*6;const s1=city?1.0:1.45;ownMark(g,col,city,(st.G.players[p]||{}).name);world.add(g);
       if(first)g.scale.setScalar(s1);else popIn(g,s1);
       const rec={g,p:p%4,owner:p,city,tiles:c.tiles,x:c.x,z:c.z,top};buildings.push(rec);LB.set(v.id,{g,type:v.b.type,owner:p,rec});}
     for(const e of Es){if(e.owner==null||!e.kind||LRD.has(e.id))continue;

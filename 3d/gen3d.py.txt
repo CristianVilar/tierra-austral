@@ -190,5 +190,22 @@ rep("$('#stat').textContent=st.G.over?'Partida terminada'","if(EMBED){let ep=$('
 rep('#back2d{display:none}','#endp{display:none;position:fixed;left:50%;top:38%;transform:translateX(-50%);z-index:8;flex-direction:column;gap:10px;align-items:stretch;text-align:center;background:#0d1a23ee;border:1px solid var(--gold);border-radius:18px;padding:16px 20px;font:700 17px Cinzel,Georgia,serif;color:var(--ink);box-shadow:0 14px 40px #000a}#endp .pill{font-size:15px;min-height:44px}#back2d{display:none}')
 rep('html,body{margin:0;height:100%;','*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}button,.pill,.tbtn,.chip{touch-action:manipulation}html,body{margin:0;height:100%;')
 rep("$('#back2d').onclick=()=>parent.postMessage({t:'close'},location.origin);","{let _bk=0;const bk=ev=>{ev.preventDefault();if(Date.now()-_bk<500)return;_bk=Date.now();parent.postMessage({t:'close'},location.origin);};const b2=$('#back2d');b2.addEventListener('pointerup',bk);b2.addEventListener('touchend',bk,{passive:false});b2.addEventListener('click',bk);}")
+rep("      rd.position.set(mx,tt+.005,mz);rd.rotation.y","      if(LV){const gl=new THREE.Mesh(new THREE.BoxGeometry(L+.08,.01,.27),new THREE.MeshBasicMaterial({color:pcn.getHex(),transparent:true,opacity:.6,toneMapped:false,depthWrite:false}));gl.position.y=.006;rd.add(gl);const gb=new THREE.Mesh(new THREE.BoxGeometry(L+.1,.008,.31),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,toneMapped:false,depthWrite:false}));gb.position.y=.004;rd.add(gb);}\n      rd.position.set(mx,tt+.005,mz);rd.rotation.y")
+rep("  MK.apply=(st,first)=>{",r"""  const _om={};
+  function ownMark(g,col,city,name){
+    const ch=(String(name||'?').trim()[0]||'?').toUpperCase(),key=col+ch+city;
+    if(!_om[key]){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+      x.fillStyle='rgba(0,0,0,.35)';x.beginPath();x.arc(64,68,56,0,7);x.fill();
+      x.fillStyle=col;x.beginPath();x.arc(64,64,54,0,7);x.fill();x.lineWidth=city?12:8;x.strokeStyle=city?'#f2c14e':'#ffffff';x.stroke();
+      x.fillStyle='#fff';x.strokeStyle='rgba(0,0,0,.55)';x.lineWidth=7;x.font='800 64px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.strokeText(ch,64,city?72:68);x.fillText(ch,64,city?72:68);
+      if(city){x.fillStyle='#f2c14e';x.font='700 30px system-ui';x.fillText('★',64,24);}
+      const tx=new THREE.CanvasTexture(c);tx.colorSpace=THREE.SRGBColorSpace;_om[key]=tx;}
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:_om[key],depthTest:false,transparent:true}));sp.renderOrder=6;
+    const k=city?.5:.38;sp.scale.set(k,k,1);sp.position.set(0,city?.8:.62,0);g.add(sp);
+    const r=city?.42:.3,disc=new THREE.Mesh(new THREE.CylinderGeometry(r,r,.016,28),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.7,toneMapped:false,depthWrite:false}));disc.position.y=.01;g.add(disc);
+    const rg=new THREE.Mesh(new THREE.RingGeometry(r,r+(city?.05:.035),28),new THREE.MeshBasicMaterial({color:city?0xf2c14e:0xffffff,side:THREE.DoubleSide,toneMapped:false,depthWrite:false}));rg.rotation.x=-Math.PI/2;rg.position.y=.022;g.add(rg);
+  }
+  MK.apply=(st,first)=>{""")
+rep("const s1=city?1.0:1.45;world.add(g);","const s1=city?1.0:1.45;ownMark(g,col,city,(st.G.players[p]||{}).name);world.add(g);")
 open('/home/claude/tierra-austral/3d/index.html','w').write(s)
 print('ok',len(s))
