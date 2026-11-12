@@ -2272,7 +2272,7 @@ function open3d(on){
   w.classList.add('on');setTimeout(push3d,60);
 }
 let T3=null,E3='';
-const ALLOW3D=['uiRoll','uiEnd','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg'];
+const ALLOW3D=['uiRoll','uiEnd','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg','showMenu'];
 addEventListener('message',e=>{
   if(e.origin!==location.origin||!e.data||e.source!==$('#v3f').contentWindow)return;
   const d=e.data;
