@@ -2265,18 +2265,20 @@ function open3d(on){
   if(!on){w.classList.remove('on');render();return;}
   if(NET.role==='guest'){showToast('Vista 3D','Todavía no está disponible para invitados en línea.');return;}
   try{localStorage.setItem('ta-3d',ser());}catch(e){}
-  const st=$('#v3s');st.classList.remove('off');$('#v3t').textContent='Cargando vista 3D…';$('#v3p').textContent='';$('#v3o').style.display='none';
+  const st=$('#v3s');
+  if(R3&&f.getAttribute('src')){st.classList.add('off');clearTimeout(T3);w.classList.add('on');push3d();setTimeout(push3d,120);return;}
+  st.classList.remove('off');$('#v3t').textContent='Cargando vista 3D…';$('#v3p').textContent='';$('#v3o').style.display='none';
   clearTimeout(T3);T3=setTimeout(()=>{if(st.classList.contains('off'))return;$('#v3t').textContent='La vista 3D no responde';$('#v3p').textContent=(E3?'Error: '+E3:'El visor no terminó de cargar en este navegador.')+' Puedes abrirla en una pestaña aparte o volver al tablero.';$('#v3o').style.display='';},9000);
-  f.onload=()=>{try{push3d();}catch(e){}};
+  f.onload=()=>{R3=false;try{push3d();}catch(e){}};
   if(!f.getAttribute('src'))f.setAttribute('src','/3d/?embed=1');
   w.classList.add('on');setTimeout(push3d,60);
 }
-let T3=null,E3='';
+let T3=null,E3='',R3=false;
 const ALLOW3D=['uiRoll','uiEnd','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg','showMenu'];
 addEventListener('message',e=>{
   if(e.origin!==location.origin||!e.data||e.source!==$('#v3f').contentWindow)return;
   const d=e.data;
-  if(d.t==='ready'){clearTimeout(T3);$('#v3s').classList.add('off');push3d();}
+  if(d.t==='ready'){R3=true;clearTimeout(T3);$('#v3s').classList.add('off');push3d();}
   else if(d.t==='err'){E3=String(d.m||'').slice(0,160);if($('#v3s').classList.contains('off')===false){$('#v3t').textContent='La vista 3D falló al cargar';$('#v3p').textContent='Error: '+E3;$('#v3o').style.display='';}}
   else if(d.t==='close')open3d(false);
   else if(d.t==='cmd'&&ALLOW3D.includes(d.fn)&&Array.isArray(d.args)&&d.args.every(x=>typeof x==='string'||typeof x==='number')){
