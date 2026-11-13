@@ -79,6 +79,22 @@ img.ico,image.ico{filter:drop-shadow(0 2px 2px #0008)}
 .chip b{display:block;font:800 21px var(--font-display);font-variant-numeric:tabular-nums;text-shadow:0 1px 0 #0008}
 .chip span{font-size:11px;color:#c9d7df}
 .chip.sel{outline:2px solid var(--accent)}
+.tpgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.tpc{--rc:#6d7b8b;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 30%,#10222f) 0%,#10222f 80%);border:1px solid color-mix(in srgb,var(--rc) 50%,#10222f);border-top:4px solid var(--rc);border-radius:10px;padding:6px 2px 5px;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 6px 12px -8px #000c}
+.tpc.on{box-shadow:0 0 0 2px var(--rc),0 6px 12px -8px #000c;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 55%,#10222f) 0%,#10222f 85%)}
+.tpc.off{opacity:.38}
+.tpn{font:700 20px/1 Cinzel,serif;min-height:20px;color:#fff;text-shadow:0 2px 3px #000a}
+.tpl{font-size:10px;line-height:1.1;opacity:.85}
+.tpb{display:flex;gap:4px;margin-top:3px}
+.tpbtn{width:30px;height:30px;border-radius:8px;border:1px solid #0008;background:linear-gradient(180deg,#3d6a94,#274a69);color:#fff;font:700 20px/1 system-ui;cursor:pointer;touch-action:manipulation;padding:0}
+.tpbtn:last-child{background:linear-gradient(180deg,#e6c25a,#b88a22);color:#2a1d05}
+.tpbtn:disabled{filter:grayscale(1);opacity:.35;cursor:default}
+.tpsw{text-align:center;font-size:20px;opacity:.6;margin:-4px 0}
+.tpto{display:flex;flex-wrap:wrap;gap:6px}
+.tpr{border:1px solid #fff3;background:#10222f;color:inherit;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.tpr i{width:10px;height:10px;border-radius:50%;background:var(--pc,#aaa);display:inline-block}
+.tpr.sel{border-color:#e6c25a;box-shadow:0 0 0 2px #e6c25a88;background:#1b3447}
+@media(max-width:420px){.tpl{font-size:9px}.tpbtn{width:26px;height:28px}}
 .chip.btnchip{cursor:pointer}
 .ico{display:block;margin:0 auto 2px}
 .dice{display:flex;gap:8px;align-items:center}
@@ -1642,28 +1658,47 @@ async function askTrade(o){
 }
 function openTrade(){
   if(!canMain()||!G.rules.trade)return;
-  const opts=RES.map(r=>`<option value="${r}">${RFULL[r]}</option>`).join('');
-  const to=G.players.filter(p=>p.id!==G.cur).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  G.tp={give:{},get:{},to:'any'};drawTrade();
+}
+function tpAdj(w,r,d){
+  const t=G.tp,m=t[w],p=G.players[G.cur];let n=(m[r]||0)+d;
+  if(w==='give')n=Math.min(n,p.res[r]);
+  n=Math.max(0,Math.min(n,9));
+  if(n){m[r]=n;if(w==='give')delete t.get[r];else delete t.give[r];}else delete m[r];
+  drawTrade();
+}
+function tpTo(v){G.tp.to=v;drawTrade();}
+function tpRow(w){
+  const p=G.players[G.cur],m=G.tp[w];
+  return `<div class="tpgrid">${RES.map(r=>{
+    const n=m[r]||0,own=p.res[r],blocked=!!(G.tp[w==='give'?'get':'give'][r]);
+    const plus=(w==='give'&&n>=own)||n>=9||blocked,minus=n<=0;
+    return `<div class="tpc ${n?'on':''} ${blocked?'off':''}" style="--rc:${RCOL[r]}">${icon(r,30)}<span class="tpn">${n||''}</span><span class="tpl">${RNAME[r]}${w==='give'?` (${own})`:''}</span>
+      <div class="tpb"><button class="tpbtn" ${minus?'disabled':''} onclick="tpAdj('${w}','${r}',-1)" aria-label="Menos">−</button><button class="tpbtn" ${plus?'disabled':''} onclick="tpAdj('${w}','${r}',1)" aria-label="Más">+</button></div></div>`;}).join('')}</div>`;
+}
+function drawTrade(){
+  const t=G.tp,rivals=G.players.filter(p=>p.id!==G.cur);
+  const ok=RES.some(r=>t.give[r])&&RES.some(r=>t.get[r]);
   openModal(`<h2>Proponer un trato</h2>
-   <p>Los rivales responden según lo que necesiten. Pueden aceptar o rechazar.</p>
-   <div class="field"><label for="t-to">Proponer a</label><select id="t-to"><option value="any">Cualquier rival</option>${to}</select></div>
-   <div class="field"><label>Entregas</label><div class="row"><input id="t-gn" type="number" min="1" max="9" value="1" style="width:70px"><select id="t-g" style="flex:1">${opts}</select></div></div>
-   <div class="field"><label>Pides</label><div class="row"><input id="t-rn" type="number" min="1" max="9" value="1" style="width:70px"><select id="t-r" style="flex:1">${opts}</select></div></div>
-   <div class="mact"><button class="btn" onclick="closeModal()">Cerrar</button><button class="btn primary" onclick="propose()">Proponer</button></div>`);
-  $('#t-r').value='brick';
+   <p>Elige qué entregas y qué pides, con uno o varios recursos en cada lado. Los rivales responden según lo que necesiten.</p>
+   <div class="field"><label>Proponer a</label><div class="tpto"><button class="tpr ${t.to==='any'?'sel':''}" onclick="tpTo('any')">Cualquier rival</button>${rivals.map(p=>`<button class="tpr ${String(t.to)===String(p.id)?'sel':''}" style="--pc:${p.color}" onclick="tpTo(${p.id})"><i></i>${p.name}</button>`).join('')}</div></div>
+   <div class="field"><label>Entregas</label>${tpRow('give')}</div>
+   <div class="tpsw">⇅</div>
+   <div class="field"><label>Pides</label>${tpRow('get')}</div>
+   <div class="mact"><button class="btn" onclick="closeModal()">Cerrar</button><button class="btn primary" ${ok?'':'disabled'} onclick="propose()">Proponer</button></div>`);
 }
 async function propose(){
-  const g=$('#t-g').value,r=$('#t-r').value,gn=Math.max(1,+$('#t-gn').value||1),rn=Math.max(1,+$('#t-rn').value||1),to=$('#t-to').value;
+  const t=G.tp,give={...t.give},get={...t.get},to=t.to;
   const me=G.cur,mp=G.players[me];
-  if(g===r){alert_('Elige recursos distintos.');return;}
-  if(mp.res[g]<gn){alert_(`No tienes ${gn} de ${RNAME[g]}.`);return;}
+  if(!RES.some(r=>give[r])||!RES.some(r=>get[r]))return;
+  for(const r of RES)if((give[r]||0)>mp.res[r]){alert_(`No tienes ${give[r]} de ${RNAME[r]}.`);return;}
   closeModal();
   const targets=to==='any'?G.players.filter(p=>p.id!==me).map(p=>p.id):[+to];
   G.busy=true;G.msg='Esperando respuestas…';render();
   try{
     for(const pid of targets){
-      const o={from:me,to:pid,give:{[g]:gn},get:{[r]:rn}};
-      if(!tradeValid(o)){say(`${pn(pid)} no tiene ${rn} ${RNAME[r]}.`);continue;}
+      const o={from:me,to:pid,give:{...give},get:{...get}};
+      if(!tradeValid(o)){say(`${pn(pid)} no tiene lo que pides (${resTxt(get)}).`);continue;}
       say(`${mp.name} propone a ${pn(pid)}: ${offerTxt(o)}.`);render();
       if(await askTrade(o)){
         applyTrade(o);say(`${pn(pid)} acepta el trato.`);sfx('coin');G.msg=`${pn(pid)} aceptó tu trato.`;G.busy=false;render();return;
@@ -3415,6 +3450,7 @@ Producción|Production|Produção
 Produce los 5 recursos distintos con tus edificios.|Produce all 5 different resources with your buildings.|Produza os 5 recursos diferentes com suas construções.
 Proponer a|Propose to|Propor a
 Proponer un trato|Propose a deal|Propor um acordo
+Elige qué entregas y qué pides, con uno o varios recursos en cada lado. Los rivales responden según lo que necesiten.|Choose what you give and what you ask for, with one or several resources on each side. Rivals reply depending on what they need.|Escolha o que entrega e o que pede, com um ou vários recursos de cada lado. Os rivais respondem conforme o que precisam.
 Proponer|Propose|Propor
 Propuesta de trato|Deal proposal|Proposta de acordo
 Propón un trato a los rivales|Propose a deal to the rivals|Proponha um acordo aos rivais
