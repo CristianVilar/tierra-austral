@@ -7,7 +7,7 @@
   for(const t of tiles){
     const rand=rng(1000+t.q*31+t.r*57+11),y=t.top;
     if(t.type==='wood'){
-      scatter(t,Math.round(13*CF),rand,.3,.76,.17).forEach(([px,pz],i)=>{
+      scatter(t,Math.round(13*CF),rand,.36,.76,.17).forEach(([px,pz],i)=>{
         const s=.72+rand()*.6,leafy=i%3===2;
         put(treeTrunk,t.x+px,y,t.z+pz,leafy?.026*s:.022*s,(leafy?.15:.1)*s,leafy?.026*s:.022*s,0,'#5a3d22');
         if(leafy){const g=new THREE.Color().setHSL(.29+rand()*.07,.42+rand()*.16,.25+rand()*.09);
@@ -46,8 +46,8 @@
         fence(t,y,p[0],p[1],q[0],q[1],'#7a5c33',.11);}
       for(const [px,pz] of scatter(t,Math.round(6*CF),rand,.36,.76,.14))put(brickI,t.x+px,y+.07,t.z+pz,.018,.02,.018,0,rand()<.5?'#e05a4a':'#e8d24a');
     }else if(t.type==='ore'){
-      const pk=scatter(t,4,rand,.36,.64,.32);
-      pk.forEach(([px,pz])=>{const h=.3+rand()*.3,r=.16+rand()*.1;
+      const pk=scatter(t,4,rand,.46,.68,.3);
+      pk.forEach(([px,pz])=>{const h=.3+rand()*.3,r=.15+rand()*.09;
         put(peak,t.x+px,y-.02,t.z+pz,r,h,r,rand()*6);put(snow,t.x+px,y-.02+h*.62,t.z+pz,r*.42,h*.38,r*.42,0);
         for(let b=0;b<3;b++){const a=rand()*6.28,d=r*(1.0+rand()*.7),s=.028+rand()*.03;
           put(boulder,t.x+px+Math.cos(a)*d,y+s*.4,t.z+pz-Math.sin(a)*d,s*1.3,s,s*1.1,rand()*6,'#8a95a3');}});
@@ -56,9 +56,9 @@
         return put(inst||brickI,t.x+X,yy,t.z+Z,sx,sy,sz,ma,col);};
       put(boulder,t.x+ex-Math.cos(ma)*.14,y+.02,t.z+ez+Math.sin(ma)*.14,.34,.3,.3,rand()*6,'#8f9aa6');
       P(0,0,y+.1,.2,.2,.09,'#14110e');
-      for(const s of[-1,1])P(.04,s*.12,y+.12,.042,.24,.05,'#7a5230');
-      P(.04,0,y+.255,.33,.05,.07,'#7a5230');
-      P(-.01,0,y+.295,.37,.035,.06,'#5a3f24');
+      for(const s of[-1,1])P(.04,s*.115,y+.11,.032,.22,.04,'#7a5230');
+      P(.04,0,y+.23,.3,.038,.055,'#7a5230');
+      P(-.01,0,y+.262,.33,.028,.05,'#5a3f24');
       for(const s of[-1,1])P(.46,s*.06,y+.016,.68,.02,.022,'#7b828a');
       for(let i=0;i<7;i++)P(.18+i*.11,0,y+.007,.03,.016,.19,'#6b4a2a');
       P(.62,0,y+.085,.17,.12,.14,'#7a4f2a');P(.62,0,y+.155,.18,.025,.15,'#5a3a1c');P(.62,0,y+.175,.1,.03,.1,'#8a95a3');
@@ -66,26 +66,30 @@
         put(beam,t.x+X,y+.025,t.z+Z,.026,.03,.026,ma+Math.PI/2,'#3a3f46',0,Math.PI/2);}
       for(const [px,pz] of scatter(t,4,rand,.3,.66,.22)){const s=.028+rand()*.022,c=['#8fd6ff','#ffd36b','#c9a0ff','#8ff0c0'][Math.floor(rand()*4)];
         put(gem,t.x+px,y+s*1.1,t.z+pz,s,s*1.9,s,rand()*6,c);}
-      P(.12,.2,y+.1,.022,.2,.022,'#3a3f46');P(.12,.2,y+.215,.055,.06,.055,'#ffe08a');
+      P(.14,.22,y+.09,.018,.18,.018,'#3a3f46');P(.14,.22,y+.185,.042,.05,.042,'#ffe08a');
       for(const [px,pz] of scatter(t,Math.round(5*CF),rand,.34,.76,.16))put(tuft,t.x+px,y,t.z+pz,.028,.05+rand()*.04,.028,rand()*6,'#7d8a74');
     }else if(t.type==='wool'){
       for(const [px,pz] of scatter(t,5,rand,.36,.72,.24)){const a=rand()*6.28,s=.075+rand()*.02;
+        const bi=sheepBody.count,hi=sheepHead.count;
         put(sheepBody,t.x+px,y+s*.95,t.z+pz,s*1.25,s*.9,s*.9,a);
         put(sheepHead,t.x+px+Math.cos(a)*s*1.3,y+s*1.05,t.z+pz-Math.sin(a)*s*1.3,s*.42,s*.42,s*.42,0);
-        for(const sx of [-.5,.5])put(brickI,t.x+px+Math.cos(a)*sx*s*1.5-Math.sin(a)*s*.4,y+s*.28,t.z+pz-Math.sin(a)*sx*s*1.5-Math.cos(a)*s*.4,.02,s*.55,.02,0,'#2c2a27');}
+        const lg=[];for(const sx of [-.5,.5]){lg.push(brickI.count);put(brickI,t.x+px+Math.cos(a)*sx*s*1.5-Math.sin(a)*s*.4,y+s*.28,t.z+pz-Math.sin(a)*sx*s*1.5-Math.cos(a)*s*.4,.02,s*.55,.02,0,'#2c2a27');}
+        sheepA.push({m:sheepBody,i:bi,hm:sheepHead,hi,lm:brickI,lg,x:t.x+px,z:t.z+pz,y,s,a,busy:0});}
       for(const [px,pz] of scatter(t,2,rand,.3,.6,.3)){const a=rand()*6.28,s=.045;
+        const bi=sheepBody.count,hi=sheepHead.count;
         put(sheepBody,t.x+px,y+s*.95,t.z+pz,s*1.25,s*.9,s*.9,a);
-        put(sheepHead,t.x+px+Math.cos(a)*s*1.3,y+s*1.05,t.z+pz-Math.sin(a)*s*1.3,s*.42,s*.42,s*.42,0);}
+        put(sheepHead,t.x+px+Math.cos(a)*s*1.3,y+s*1.05,t.z+pz-Math.sin(a)*s*1.3,s*.42,s*.42,s*.42,0);
+        sheepA.push({m:sheepBody,i:bi,hm:sheepHead,hi,x:t.x+px,z:t.z+pz,y,s,a,busy:0});}
       {const a0=Math.floor(rand()*6)*Math.PI/3,p=ring(a0,.78),q=ring(a0+Math.PI/3,.78),r2=ring(a0+2*Math.PI/3,.78);
         fence(t,y,p[0],p[1],q[0],q[1],'#8a6a42');fence(t,y,q[0],q[1],r2[0],r2[1],'#8a6a42');}
       for(const [px,pz] of scatter(t,1,rand,.4,.6,.1)){const a=rand()*6.28;
         put(brickI,t.x+px,y+.045,t.z+pz,.24,.07,.11,a,'#7a5c33');put(brickI,t.x+px,y+.07,t.z+pz,.2,.03,.08,a,'#5f8fa8');}
-      for(const [px,pz] of scatter(t,Math.round(14*CF),rand,.3,.78,.1))put(brickI,t.x+px,y+.035,t.z+pz,.016,.018,.016,0,['#f2f0e2','#f2d24a','#e08ab0'][Math.floor(rand()*3)]);
+      for(const [px,pz] of scatter(t,Math.round(14*CF),rand,.3,.78,.1))put(brickI,t.x+px,y+.03,t.z+pz,.012,.014,.012,0,['#f2f0e2','#f2d24a','#e08ab0'][Math.floor(rand()*3)]);
       for(const [px,pz] of scatter(t,Math.round(3*CF),rand,.34,.72,.3)){const s=.05+rand()*.03;
         put(blob,t.x+px,y+s*.5,t.z+pz,s*1.5,s,s*1.4,rand()*6,new THREE.Color().setHSL(.3+rand()*.05,.42,.3+rand()*.06));}
       for(const [px,pz] of scatter(t,Math.round(10*CF),rand,.3,.78,.12))put(tuft,t.x+px,y,t.z+pz,.035,.07+rand()*.05,.035,rand()*6,'#89ad5c');
     }else if(t.type==='brick'){
-      for(const [px,pz] of scatter(t,3,rand,.38,.64,.34)){const a=rand()*3,rows=[[3,0],[3,1],[2,2],[1,3]];
+      for(const [px,pz] of scatter(t,3,rand,.42,.66,.32)){const a=rand()*3,rows=[[3,0],[3,1],[2,2],[1,3]];
         for(const [n,L] of rows)for(let b=0;b<n;b++){const off=(b-(n-1)/2)*.115;
           put(brickI,t.x+px+Math.cos(a)*off,y+.03+L*.058,t.z+pz-Math.sin(a)*off,.105,.052,.07,a,L%2?'#c9744a':'#a8522f');}}
       for(const [px,pz] of scatter(t,2,rand,.3,.56,.4)){const s=.17+rand()*.06;

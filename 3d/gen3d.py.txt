@@ -78,7 +78,8 @@ live='''
     const rt=tiles.find(t=>t.hid===st.G.robber);
     if(rt&&robber&&robber.userData.tile!==rt){
       if(first){robber.position.set(rt.x,rt.top,rt.z);robber.userData.tile=rt;}
-      else{const from=robber.userData.tile;robber.userData.tile=rt;tween(.9,u=>{const e=ease(u);robber.position.set(lerp(from.x,rt.x,e),lerp(from.top,rt.top,e)+Math.sin(u*Math.PI)*1.1,lerp(from.z,rt.z,e));},()=>robber.position.set(rt.x,rt.top,rt.z));}}
+      else{const from=robber.userData.tile;robber.userData.tile=rt;tween(.9,u=>{const e=ease(u);robber.position.set(lerp(from.x,rt.x,e),lerp(from.top,rt.top,e)+Math.sin(u*Math.PI)*1.1,lerp(from.z,rt.z,e));robber.rotation.y=u*6.283;},()=>{robber.position.set(rt.x,rt.top,rt.z);robber.rotation.y=0;dustPuff(rt.x,rt.top,rt.z);
+        tween(.25,u=>{robber.scale.set(1+Math.sin(u*Math.PI)*.2,1-Math.sin(u*Math.PI)*.15,1+Math.sin(u*Math.PI)*.2);},()=>robber.scale.set(1,1,1));});}}
     if(st.G.dice&&st.G.rollAt!==lastRoll){lastRoll=st.G.rollAt;const [a,b]=st.G.dice;
       if(first){throwDie(dice[0],a,0,.05);throwDie(dice[1],b,1,.05);}
       else{throwDie(dice[0],a,0,1.35);throwDie(dice[1],b,1,1.5).then(()=>toast(`<span style="color:var(--gold);font-size:26px">${a+b}</span> &nbsp;(${a} + ${b})`,2200));}}
@@ -208,7 +209,7 @@ rep("  MK.apply=(st,first)=>{",r"""  const _om={};
   MK.apply=(st,first)=>{""")
 rep("const s1=city?1.0:1.45;world.add(g);","const s1=city?1.0:1.45;ownMark(g,col,city,(st.G.players[p]||{}).name);world.add(g);")
 rep('if(!/[?&]embed/.test(location.search))return;function r(m)','if(!/[?&]embed/.test(location.search))return;document.documentElement.classList.add("bare");function r(m)')
-rep('#hint{bottom:calc(150px + env(safe-area-inset-bottom))}','#hint{bottom:calc(150px + env(safe-area-inset-bottom))}\nhtml.bare #players,html.bare #back2d,html.bare #gear,html.bare #drawer,html.bare .hud.bot,html.bare #endp,html.bare #fps{display:none!important}html.bare .hud.top{display:flex;justify-content:flex-end;padding:8px}html.bare #hint{bottom:12px}')
+rep('#hint{bottom:calc(150px + env(safe-area-inset-bottom))}','#hint{bottom:calc(150px + env(safe-area-inset-bottom))}\nhtml.bare #players,html.bare #back2d,html.bare .hud.bot,html.bare #endp,html.bare #fps{display:none!important}html.bare .hud.top{display:flex;justify-content:flex-end;padding:8px;gap:6px}html.bare #hint{bottom:12px}html.bare #drawer{top:calc(60px + env(safe-area-inset-top));left:8px;right:8px;max-height:calc(100% - 76px);overflow:auto;padding:10px}html.bare #drawer h5{margin:0 0 4px}html.bare #drawer .row{flex-wrap:wrap}')
 rep("const PCs=o=>(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4];","const PCs=o=>{const c=(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4],k=new THREE.Color(c),h={};k.getHSL(h);k.setHSL(h.h,Math.min(1,h.s*1.08),h.l*.66);return '#'+k.getHexString();};")
 
 STYJS=open('/home/claude/test/sty3d.js').read()
@@ -217,7 +218,7 @@ rep("if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner)continue;","const _sy=((
 rep("const g=city?castle(col,p%4):house(col,p%4),top=","const g=(city?(STYB.c[_sk]?STYB.c[_sk](col):castle(col,p%4)):(STYB.t[_sk]?STYB.t[_sk](col):house(col,p%4))),top=")
 rep("LB.set(v.id,{g,type:v.b.type,owner:p,rec});","LB.set(v.id,{g,type:v.b.type,owner:p,rec,sk:_sk});")
 
-rep("let spotsAll=[],EDGE=1;const MK={};","let spotsAll=[],EDGE=1;const MK={};window.__TA={scene,renderer,camera,world,MK,THREE};")
+rep("let spotsAll=[],EDGE=1;const MK={};","let spotsAll=[],EDGE=1;const MK={};window.__TA={scene,renderer,camera,world,MK,THREE,get sheepA(){return sheepA},get birds(){return birds},get foam(){return shoreFoam}};")
 rep("return {t:mk({en:H.en","MK.STYB=null;return {t:mk({en:H.en")
 rep("  MK.apply=(st,first)=>{","  MK.STYB=STYB;\n  MK.apply=(st,first)=>{")
 rep("then(()=>toast(`<span style=\"color:var(--gold);font-size:26px\">${a+b}</span> &nbsp;(${a} + ${b})`,2200));}}","then(()=>{toast(`<span style=\"color:var(--gold);font-size:26px\">${a+b}</span> &nbsp;(${a} + ${b})`,2200);diceFx(a+b,st);});}}")
@@ -228,7 +229,10 @@ rep("function giveChip(r,n=1){","""function diceFx(tot,st){if(tot===7)return;
       const pl=st&&st.G.players[bd.owner];floatPlus(from,'+'+(bd.city?2:1),(pl&&pl.color)||'#fff',250+j*120);});}
   if(!any)setTimeout(()=>toast('Nadie cosecha esta vez<small>Ninguna casa toca ese número</small>',1800),900);}
 function giveChip(r,n=1){""")
-DECOR_OLD="  for(const t of tiles){\n    const rand=rng(1000+t.q*31+t.r*57+11),y=t.top;\n    if(t.type==='wood'){\n      for(const [px,pz] of scatter(t,11,rand,.36,.74,.2)){\n        const s=.75+rand()*.6,g=new THREE.Color().setHSL(.36+rand()*.05,.5+rand()*.1,.2+rand()*.09);\n        put(treeTrunk,t.x+px,y,t.z+pz,.022*s,.1*s,.022*s,0,'#5a3d22');\n        for(let L=0;L<3;L++){put(treeCone,t.x+px,y+.06*s+L*.085*s,t.z+pz,(.15-L*.035)*s,.2*s,(.15-L*.035)*s,rand()*6,g);}\n      }\n    }else if(t.type==='grain'){\n      const pts=scatter(t,34,rand,.34,.78,.115);\n      for(const [px,pz] of pts)for(let j=0;j<4;j++)put(wheat,t.x+px+(rand()-.5)*.09,y,t.z+pz+(rand()-.5)*.09,1,.75+rand()*.5,1,rand()*6,null,(rand()-.5)*.12,(rand()-.5)*.12);\n    }else if(t.type==='ore'){\n      for(const [px,pz] of scatter(t,4,rand,.38,.62,.34)){const h=.28+rand()*.28,r=.15+rand()*.1;\n        put(peak,t.x+px,y-.02,t.z+pz,r,h,r,rand()*6);put(snow,t.x+px,y-.02+h*.62,t.z+pz,r*.42,h*.38,r*.42,0);}\n      for(const [px,pz] of scatter(t,7,rand,.34,.74,.16)){const s=.035+rand()*.04;put(boulder,t.x+px,y+s*.4,t.z+pz,s*1.2,s,s*1.1,rand()*6);}\n    }else if(t.type==='wool'){\n      for(const [px,pz] of scatter(t,5,rand,.36,.72,.24)){const a=rand()*6.28,s=.075+rand()*.02;\n        put(sheepBody,t.x+px,y+s*.95,t.z+pz,s*1.25,s*.9,s*.9,a);\n        put(sheepHead,t.x+px+Math.cos(a)*s*1.3,y+s*1.05,t.z+pz-Math.sin(a)*s*1.3,s*.42,s*.42,s*.42,0);\n        for(const sx of [-.5,.5]){put(brickI,t.x+px+Math.cos(a)*sx*s*1.5-Math.sin(a)*s*.4,y+s*.28,t.z+pz-Math.sin(a)*sx*s*1.5-Math.cos(a)*s*.4,.02,s*.55,.02,0,'#2c2a27');}\n      }\n      for(const [px,pz] of scatter(t,10,rand,.3,.76,.12)){put(tuft,t.x+px,y,t.z+pz,.035,.08+rand()*.05,.035,rand()*6);}\n    }else if(t.type==='brick'){\n      for(const [px,pz] of scatter(t,4,rand,.38,.62,.36)){const a=rand()*3;\n        const rows=[[3,0],[2,1],[1,2]];\n        for(const [n,L] of rows)for(let b=0;b<n;b++){const off=(b-(n-1)/2)*.115;put(brickI,t.x+px+Math.cos(a)*off,y+.03+L*.058,t.z+px*0+pz-Math.sin(a)*off,.105,.052,.07,a,L%2?'#c9744a':'#a8522f');}}\n      for(const [px,pz] of scatter(t,5,rand,.34,.75,.2)){const s=.03+rand()*.03;put(boulder,t.x+px,y+s*.4,t.z+pz,s*1.3,s,s,rand()*6);}\n    }else{\n      for(const [px,pz] of scatter(t,16,rand,.18,.74,.14)){put(tuft,t.x+px,y,t.z+pz,.03,.07+rand()*.06,.03,rand()*6);}\n    }\n  }\n"
+_P=open('/home/claude/tierra-austral/proto/index.html').read()
+_a=_P.index("  for(const t of tiles){\n    const rand=rng(1000+t.q*31")
+_b=_P.index("  for(const m of [treeCone,treeTrunk,wheat,peak,snow,boulder,sheepBody,sheepHead,brickI,tuft]")
+DECOR_OLD=_P[_a:_b]
 DECOR_NEW=open('/home/claude/tierra-austral/3d/decor.js.txt').read()
 
 rep("let treeCone,treeTrunk,wheat,peak,snow,boulder,sheepBody,sheepHead,brickI,tuft;","let treeCone,treeTrunk,wheat,peak,snow,boulder,sheepBody,sheepHead,brickI,tuft,blob,beam,gem;")
