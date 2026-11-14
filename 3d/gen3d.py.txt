@@ -218,7 +218,7 @@ rep("const g=city?castle(col,p%4):house(col,p%4),top=","const g=(city?(STYB.c[_s
 rep("LB.set(v.id,{g,type:v.b.type,owner:p,rec});","LB.set(v.id,{g,type:v.b.type,owner:p,rec,sk:_sk});")
 
 rep("let spotsAll=[],EDGE=1;const MK={};","let spotsAll=[],EDGE=1;const MK={};window.__TA={scene,renderer,camera,world,MK,THREE};")
-rep("return {t:mk({en:H.ingles","MK.STYB=null;return {t:mk({en:H.ingles")
+rep("return {t:mk({en:H.en","MK.STYB=null;return {t:mk({en:H.en")
 rep("  MK.apply=(st,first)=>{","  MK.STYB=STYB;\n  MK.apply=(st,first)=>{")
 rep("then(()=>toast(`<span style=\"color:var(--gold);font-size:26px\">${a+b}</span> &nbsp;(${a} + ${b})`,2200));}}","then(()=>{toast(`<span style=\"color:var(--gold);font-size:26px\">${a+b}</span> &nbsp;(${a} + ${b})`,2200);diceFx(a+b,st);});}}")
 rep("function giveChip(r,n=1){","""function diceFx(tot,st){if(tot===7)return;
