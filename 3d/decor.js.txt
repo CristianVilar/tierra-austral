@@ -1,0 +1,118 @@
+  const CF=COARSE?.75:1;
+  const fence=(t,y,ax,az,bx,bz,col,h)=>{h=h||.12;const dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz),a=Math.atan2(-dz,dx),n=Math.max(2,Math.round(L/.26));
+    for(let i=0;i<=n;i++)put(brickI,t.x+ax+dx*i/n,y+h/2,t.z+az+dz*i/n,.026,h,.026,a,col);
+    for(const q of[.45,.82])put(brickI,t.x+(ax+bx)/2,y+h*q,t.z+(az+bz)/2,L,.016,.013,a,col);};
+  const logLay=(t,y,x,z,len,r,a,col)=>put(beam,t.x+x,y+r,t.z+z,r,len,r,a,col,0,Math.PI/2);
+  const ring=(a,r)=>[Math.cos(a)*r,-Math.sin(a)*r];
+  for(const t of tiles){
+    const rand=rng(1000+t.q*31+t.r*57+11),y=t.top;
+    if(t.type==='wood'){
+      scatter(t,Math.round(13*CF),rand,.3,.76,.17).forEach(([px,pz],i)=>{
+        const s=.72+rand()*.6,leafy=i%3===2;
+        put(treeTrunk,t.x+px,y,t.z+pz,leafy?.026*s:.022*s,(leafy?.15:.1)*s,leafy?.026*s:.022*s,0,'#5a3d22');
+        if(leafy){const g=new THREE.Color().setHSL(.29+rand()*.07,.42+rand()*.16,.25+rand()*.09);
+          for(let b=0;b<3;b++)put(blob,t.x+px+(rand()-.5)*.05*s,y+(.17+b*.05)*s,t.z+pz+(rand()-.5)*.05*s,(.125-b*.02)*s,(.1-b*.012)*s,(.125-b*.02)*s,rand()*6,g);
+        }else{const g=new THREE.Color().setHSL(.36+rand()*.05,.5+rand()*.1,.2+rand()*.09);
+          for(let L=0;L<3;L++)put(treeCone,t.x+px,y+.06*s+L*.085*s,t.z+pz,(.15-L*.035)*s,.2*s,(.15-L*.035)*s,rand()*6,g);}});
+      for(const [px,pz] of scatter(t,Math.round(6*CF),rand,.26,.74,.19)){const s=.045+rand()*.035;
+        put(blob,t.x+px,y+s*.5,t.z+pz,s*1.6,s*1.1,s*1.5,rand()*6,new THREE.Color().setHSL(.32+rand()*.05,.45,.22+rand()*.07));}
+      for(const [px,pz] of scatter(t,2,rand,.34,.6,.36)){
+        put(treeTrunk,t.x+px,y,t.z+pz,.042,.055,.042,0,'#6b4a2a');put(blob,t.x+px,y+.06,t.z+pz,.044,.011,.044,rand()*6,'#c8a97a');
+        const a=rand()*6.28;logLay(t,y,px+Math.cos(a)*.24,pz-Math.sin(a)*.24,.32,.027,a+1.3,'#6b4a2a');}
+      for(const [px,pz] of scatter(t,Math.round(9*CF),rand,.3,.78,.12))put(tuft,t.x+px,y,t.z+pz,.032,.06+rand()*.05,.032,rand()*6,'#55803e');
+    }else if(t.type==='grain'){
+      const fa=rand()*3.14,ca=Math.cos(fa),sa=Math.sin(fa),gap=COARSE?.17:.13,step=COARSE?.11:.085;
+      let rw=0;
+      for(let v=-.82;v<=.82;v+=gap,rw++){let f=null,l=null;
+        for(let u=-.94;u<=.94;u+=step){
+          const x=u*ca-v*sa,z=u*sa+v*ca;
+          if(hexDist(x,z)/(SQ3/2)>.76||Math.hypot(x,z)<.34)continue;
+          if(!f)f=[x,z];l=[x,z];
+          put(wheat,t.x+x+(rand()-.5)*.05,y,t.z+z+(rand()-.5)*.05,1,.44+rand()*.22,1,rand()*6,null,(rand()-.5)*.1,(rand()-.5)*.1);
+          if(rand()<.55)put(wheat,t.x+x+(rand()-.5)*.07,y,t.z+z+(rand()-.5)*.07,1,.4+rand()*.2,1,rand()*6,null,(rand()-.5)*.1,(rand()-.5)*.1);}
+        if(f&&l){const dx=l[0]-f[0],dz=l[1]-f[1],L=Math.hypot(dx,dz);
+          if(L>.22&&rw%2===0)put(brickI,t.x+(f[0]+l[0])/2,y+.008,t.z+(f[1]+l[1])/2,L,.014,.05,Math.atan2(-dz,dx),'#7d5c33');}}
+      for(const [px,pz] of scatter(t,3,rand,.42,.7,.42)){const s=.14+rand()*.05;
+        put(treeCone,t.x+px,y,t.z+pz,s,s*1.75,s,rand()*6,'#d9b45a');
+        put(brickI,t.x+px,y+s*1.85,t.z+pz,.02,.07,.02,0,'#8a6a2a');}
+      for(const [px,pz] of scatter(t,1,rand,.45,.6,.1)){
+        put(brickI,t.x+px,y+.17,t.z+pz,.022,.34,.022,0,'#6b4a2a');
+        put(brickI,t.x+px,y+.26,t.z+pz,.28,.018,.018,fa,'#6b4a2a');
+        put(brickI,t.x+px+Math.cos(fa)*.12,y+.25,t.z+pz-Math.sin(fa)*.12,.05,.1,.03,fa,'#9a7a4a');
+        put(brickI,t.x+px-Math.cos(fa)*.12,y+.25,t.z+pz+Math.sin(fa)*.12,.05,.1,.03,fa,'#9a7a4a');
+        put(sheepHead,t.x+px,y+.37,t.z+pz,.05,.05,.05,0,'#d9c08a');
+        put(treeCone,t.x+px,y+.39,t.z+pz,.085,.07,.085,rand()*6,'#6b4a2a');}
+      {const a0=Math.floor(rand()*6)*Math.PI/3,p=ring(a0,.76),q=ring(a0+Math.PI/3,.76);
+        fence(t,y,p[0],p[1],q[0],q[1],'#7a5c33',.11);}
+      for(const [px,pz] of scatter(t,Math.round(6*CF),rand,.36,.76,.14))put(brickI,t.x+px,y+.07,t.z+pz,.018,.02,.018,0,rand()<.5?'#e05a4a':'#e8d24a');
+    }else if(t.type==='ore'){
+      const pk=scatter(t,4,rand,.36,.64,.32);
+      pk.forEach(([px,pz])=>{const h=.3+rand()*.3,r=.16+rand()*.1;
+        put(peak,t.x+px,y-.02,t.z+pz,r,h,r,rand()*6);put(snow,t.x+px,y-.02+h*.62,t.z+pz,r*.42,h*.38,r*.42,0);
+        for(let b=0;b<3;b++){const a=rand()*6.28,d=r*(1.0+rand()*.7),s=.028+rand()*.03;
+          put(boulder,t.x+px+Math.cos(a)*d,y+s*.4,t.z+pz-Math.sin(a)*d,s*1.3,s,s*1.1,rand()*6,'#8a95a3');}});
+      const base=pk.length?pk[0]:[.5,0],ma=Math.atan2(-base[1],base[0]),ex=base[0]*.42,ez=base[1]*.42;
+      const P=(fw,sd,yy,sx,sy,sz,col,inst)=>{const X=ex+Math.cos(ma)*fw-Math.sin(ma)*sd,Z=ez-Math.sin(ma)*fw-Math.cos(ma)*sd;
+        return put(inst||brickI,t.x+X,yy,t.z+Z,sx,sy,sz,ma,col);};
+      put(boulder,t.x+ex-Math.cos(ma)*.14,y+.02,t.z+ez+Math.sin(ma)*.14,.34,.3,.3,rand()*6,'#8f9aa6');
+      P(0,0,y+.1,.2,.2,.09,'#14110e');
+      for(const s of[-1,1])P(.04,s*.12,y+.12,.042,.24,.05,'#7a5230');
+      P(.04,0,y+.255,.33,.05,.07,'#7a5230');
+      P(-.01,0,y+.295,.37,.035,.06,'#5a3f24');
+      for(const s of[-1,1])P(.46,s*.06,y+.016,.68,.02,.022,'#7b828a');
+      for(let i=0;i<7;i++)P(.18+i*.11,0,y+.007,.03,.016,.19,'#6b4a2a');
+      P(.62,0,y+.085,.17,.12,.14,'#7a4f2a');P(.62,0,y+.155,.18,.025,.15,'#5a3a1c');P(.62,0,y+.175,.1,.03,.1,'#8a95a3');
+      for(const s of[-1,1]){const X=ex+Math.cos(ma)*.62-Math.sin(ma)*s*.08,Z=ez-Math.sin(ma)*.62-Math.cos(ma)*s*.08;
+        put(beam,t.x+X,y+.025,t.z+Z,.026,.03,.026,ma+Math.PI/2,'#3a3f46',0,Math.PI/2);}
+      for(const [px,pz] of scatter(t,4,rand,.3,.66,.22)){const s=.028+rand()*.022,c=['#8fd6ff','#ffd36b','#c9a0ff','#8ff0c0'][Math.floor(rand()*4)];
+        put(gem,t.x+px,y+s*1.1,t.z+pz,s,s*1.9,s,rand()*6,c);}
+      P(.12,.2,y+.1,.022,.2,.022,'#3a3f46');P(.12,.2,y+.215,.055,.06,.055,'#ffe08a');
+      for(const [px,pz] of scatter(t,Math.round(5*CF),rand,.34,.76,.16))put(tuft,t.x+px,y,t.z+pz,.028,.05+rand()*.04,.028,rand()*6,'#7d8a74');
+    }else if(t.type==='wool'){
+      for(const [px,pz] of scatter(t,5,rand,.36,.72,.24)){const a=rand()*6.28,s=.075+rand()*.02;
+        put(sheepBody,t.x+px,y+s*.95,t.z+pz,s*1.25,s*.9,s*.9,a);
+        put(sheepHead,t.x+px+Math.cos(a)*s*1.3,y+s*1.05,t.z+pz-Math.sin(a)*s*1.3,s*.42,s*.42,s*.42,0);
+        for(const sx of [-.5,.5])put(brickI,t.x+px+Math.cos(a)*sx*s*1.5-Math.sin(a)*s*.4,y+s*.28,t.z+pz-Math.sin(a)*sx*s*1.5-Math.cos(a)*s*.4,.02,s*.55,.02,0,'#2c2a27');}
+      for(const [px,pz] of scatter(t,2,rand,.3,.6,.3)){const a=rand()*6.28,s=.045;
+        put(sheepBody,t.x+px,y+s*.95,t.z+pz,s*1.25,s*.9,s*.9,a);
+        put(sheepHead,t.x+px+Math.cos(a)*s*1.3,y+s*1.05,t.z+pz-Math.sin(a)*s*1.3,s*.42,s*.42,s*.42,0);}
+      {const a0=Math.floor(rand()*6)*Math.PI/3,p=ring(a0,.78),q=ring(a0+Math.PI/3,.78),r2=ring(a0+2*Math.PI/3,.78);
+        fence(t,y,p[0],p[1],q[0],q[1],'#8a6a42');fence(t,y,q[0],q[1],r2[0],r2[1],'#8a6a42');}
+      for(const [px,pz] of scatter(t,1,rand,.4,.6,.1)){const a=rand()*6.28;
+        put(brickI,t.x+px,y+.045,t.z+pz,.24,.07,.11,a,'#7a5c33');put(brickI,t.x+px,y+.07,t.z+pz,.2,.03,.08,a,'#5f8fa8');}
+      for(const [px,pz] of scatter(t,Math.round(14*CF),rand,.3,.78,.1))put(brickI,t.x+px,y+.035,t.z+pz,.016,.018,.016,0,['#f2f0e2','#f2d24a','#e08ab0'][Math.floor(rand()*3)]);
+      for(const [px,pz] of scatter(t,Math.round(3*CF),rand,.34,.72,.3)){const s=.05+rand()*.03;
+        put(blob,t.x+px,y+s*.5,t.z+pz,s*1.5,s,s*1.4,rand()*6,new THREE.Color().setHSL(.3+rand()*.05,.42,.3+rand()*.06));}
+      for(const [px,pz] of scatter(t,Math.round(10*CF),rand,.3,.78,.12))put(tuft,t.x+px,y,t.z+pz,.035,.07+rand()*.05,.035,rand()*6,'#89ad5c');
+    }else if(t.type==='brick'){
+      for(const [px,pz] of scatter(t,3,rand,.38,.64,.34)){const a=rand()*3,rows=[[3,0],[3,1],[2,2],[1,3]];
+        for(const [n,L] of rows)for(let b=0;b<n;b++){const off=(b-(n-1)/2)*.115;
+          put(brickI,t.x+px+Math.cos(a)*off,y+.03+L*.058,t.z+pz-Math.sin(a)*off,.105,.052,.07,a,L%2?'#c9744a':'#a8522f');}}
+      for(const [px,pz] of scatter(t,2,rand,.3,.56,.4)){const s=.17+rand()*.06;
+        put(blob,t.x+px,y+.004,t.z+pz,s*1.8,s*.16,s*1.7,rand()*6,'#6e4328');
+        put(blob,t.x+px,y+.014,t.z+pz,s*1.25,s*.12,s*1.2,rand()*6,'#8a5433');}
+      for(const [px,pz] of scatter(t,1,rand,.4,.62,.1)){const a=rand()*6.28;
+        for(const s of[-1,1])for(const f of[-1,1])put(brickI,t.x+px+Math.cos(a)*s*.16-Math.sin(a)*f*.07,y+.07,t.z+pz-Math.sin(a)*s*.16-Math.cos(a)*f*.07,.025,.14,.025,a,'#6b4a2a');
+        for(const f of[-1,1])put(brickI,t.x+px-Math.sin(a)*f*.07,y+.145,t.z+pz-Math.cos(a)*f*.07,.38,.018,.02,a,'#6b4a2a');
+        for(let i=0;i<4;i++)put(brickI,t.x+px+Math.cos(a)*(-.12+i*.08),y+.165,t.z+pz-Math.sin(a)*(-.12+i*.08),.07,.022,.14,a,i%2?'#c9744a':'#b5603a');}
+      for(const [px,pz] of scatter(t,1,rand,.42,.6,.1)){const a=rand()*6.28;
+        put(blob,t.x+px,y+.01,t.z+pz,.2,.22,.2,a,'#9a5a38');put(blob,t.x+px,y+.14,t.z+pz,.12,.1,.12,a,'#8a4f30');
+        put(brickI,t.x+px,y+.22,t.z+pz,.07,.1,.07,a,'#7a4228');
+        put(brickI,t.x+px+Math.cos(a)*.15,y+.05,t.z+pz-Math.sin(a)*.15,.07,.09,.08,a,'#2a1a12');}
+      for(const [px,pz] of scatter(t,Math.round(5*CF),rand,.34,.75,.2)){const s=.03+rand()*.03;put(boulder,t.x+px,y+s*.4,t.z+pz,s*1.3,s,s,rand()*6,'#9a7a62');}
+      for(const [px,pz] of scatter(t,Math.round(7*CF),rand,.3,.78,.13))put(tuft,t.x+px,y,t.z+pz,.03,.05+rand()*.04,.03,rand()*6,'#9a8a52');
+    }else{
+      for(const [px,pz] of scatter(t,4,rand,.28,.7,.3)){const s=.24+rand()*.14;
+        put(blob,t.x+px,y-.005,t.z+pz,s*1.9,s*.3,s*1.6,rand()*6,rand()<.5?'#e2cb98':'#c2a472');}
+      for(const [px,pz] of scatter(t,Math.round(16*CF),rand,.18,.74,.14))put(tuft,t.x+px,y,t.z+pz,.03,.07+rand()*.06,.03,rand()*6,'#b59a5f');
+      for(const [px,pz] of scatter(t,Math.round(6*CF),rand,.28,.74,.22))for(let i=0;i<5;i++){const a=rand()*6.28,d=.035+rand()*.03;
+        put(tuft,t.x+px+Math.cos(a)*d,y,t.z+pz-Math.sin(a)*d,.045,.13+rand()*.08,.045,rand()*6,rand()<.4?'#8a7a46':'#a89260');}
+      for(const [px,pz] of scatter(t,3,rand,.34,.7,.26)){const a=rand()*6.28;
+        logLay(t,y,px,pz,.22+rand()*.1,.018,a,'#b09a6a');logLay(t,y+.01,px+.04,pz+.03,.14,.013,a+1.1,'#a08a5c');}
+      for(const [px,pz] of scatter(t,Math.round(6*CF),rand,.3,.76,.18)){const s=.03+rand()*.035;
+        put(boulder,t.x+px,y+s*.4,t.z+pz,s*1.4,s,s*1.2,rand()*6,rand()<.4?'#8e7a58':'#b9a176');}
+      for(const [px,pz] of scatter(t,1,rand,.4,.62,.1)){const a=rand()*6.28;
+        for(const s of[-1,1])put(boulder,t.x+px+Math.cos(a)*s*.13,y+.07,t.z+pz-Math.sin(a)*s*.13,.07,.09,.07,rand()*6,'#c4ab7e');
+        put(brickI,t.x+px,y+.16,t.z+pz,.3,.05,.09,a,'#c4ab7e');}
+    }
+  }
