@@ -69,7 +69,7 @@ img.ico,image.ico{filter:drop-shadow(0 2px 2px #0008)}
 .pl.cur{border-color:var(--accent)}
 .dot{width:14px;height:14px;border-radius:50%;border:2px solid #0006}
 .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 14px var(--font-display);color:#10181e;border:2px solid #ffffff55;box-shadow:inset 0 -6px 10px #0003,0 2px 6px #0006}
-.logo{display:flex;gap:12px;align-items:center}.logo svg{width:46px;height:46px;flex:none;filter:drop-shadow(0 3px 6px #0008)}
+.logo{display:flex;gap:12px;align-items:center}.logo .lmark{width:46px;height:auto;flex:none;filter:drop-shadow(0 3px 6px #0008)}
 .pl .nm{font-weight:700}
 .pl .sub{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
 .pl .vp{font:800 22px var(--font-display);font-variant-numeric:tabular-nums}
@@ -119,7 +119,8 @@ img.ico,image.ico{filter:drop-shadow(0 2px 2px #0008)}
 #modal.open{display:flex}
 #modal.kb{align-items:flex-start;padding-top:8px}
 #modal.kb .mbox{max-height:calc(var(--vvh,100vh) - 16px)}
-#modal.kb .welcome .wl,#modal.kb .welcome>p{display:none}
+#modal.kb .welcome>p{display:none}
+#modal.kb .welcome .wl img{width:150px}
 #modal.kb .welcome h2{font-size:22px;margin:4px 0 10px}
 #modal.open.remote{display:none!important}
 .mbox{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}
@@ -298,7 +299,7 @@ body.th-dusk #sea stop:nth-child(1){stop-color:#cf7d63}body.th-dusk #sea stop:nt
   /* título compacto arriba; sonido, música y demás botones al final de la página */
   header.top{display:contents}
   header.top .logo{order:-1}
-  header.top .logo svg{width:34px;height:34px}
+  header.top .logo .lmark{width:32px}
   header.top h1{font-size:20px}
   #sub{display:none}
   header.top .hbtns{order:99;padding:8px 0 4px;border-top:1px solid var(--line);justify-content:center}
@@ -327,7 +328,8 @@ body.th-dusk #sea stop:nth-child(1){stop-color:#cf7d63}body.th-dusk #sea stop:nt
 .mcard b{font:800 17px var(--font-display);display:flex;align-items:center;gap:9px}
 .mi{width:22px;height:22px;flex:none;color:var(--accent);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .welcome{text-align:center;padding:6px 4px}
-.welcome .wl svg{width:92px;height:92px;filter:drop-shadow(0 8px 18px #0008)}
+.welcome .wl img,.mlogo{display:block;margin:0 auto;width:min(300px,78%);height:auto;filter:drop-shadow(0 8px 18px #0008)}
+.mlogo{width:min(230px,62%);margin:0 auto 6px}
 .welcome h2{font-size:28px;margin:10px 0 4px}
 .welcome p{color:var(--muted);margin:0 0 16px}
 .welcome .field{max-width:320px;margin:0 auto 14px;text-align:left}
@@ -379,7 +381,7 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
 <div class="app">
   <header class="top">
     <div class="logo">
-      <svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f7f9a"/><stop offset="1" stop-color="#14465c"/></linearGradient></defs><circle cx="24" cy="24" r="22" fill="url(#lg)" stroke="#e3b95c" stroke-width="2.5"/><circle cx="34" cy="14" r="4.6" fill="#f0b84a"/><path d="M5 33L17 14L25 26L30 19L43 33Z" fill="#dfe8ee"/><path d="M17 14L25 26L21 33H5Z" fill="#9db0bf"/><path d="M5 33H43V40Q24 46 5 40Z" fill="#1f5a33"/><path d="M12 36v-5l3 1.5zM18 37v-6l3 1.8z" fill="#2e7d46"/></svg>
+      <img class="lmark" src="/assets/logo-mark.png?v=1" width="46" height="49" alt="" decoding="async">
       <div><h1>Tierra Austral</h1>
       <p id="sub">Colonia una costa remota. Gana quien logre llegar primero a 10 puntos.</p></div>
     </div>
@@ -3748,7 +3750,7 @@ turno|turn|turno
 victorias,|wins,|vitórias,
 volvió a la partida.|came back to the game.|voltou à partida.
 y pasó de|and went from|e passou de
-¡Bienvenido a Tierra Austral!|Welcome to Tierra Austral!|Bem-vindo a Tierra Austral!
+¡Bienvenido!|Welcome!|Bem-vindo!
 ¡Buen golpe!|Nice move!|Belo golpe!
 ¡Ganaste la costa!|You won the coast!|Você conquistou a costa!
 ¡Ganó tu equipo!|Your team won!|Sua equipe venceu!
@@ -4109,8 +4111,7 @@ function installApp(){
 }
 try{PNAME=localStorage.getItem('ta-name')||'';}catch(e){}
 function showWelcome(){
-  const lg=document.querySelector('header.top .logo svg');
-  openModal(`<div class="welcome"><div class="wl">${lg?lg.outerHTML:''}</div><h2>¡Bienvenido a Tierra Austral!</h2>
+    openModal(`<div class="welcome"><div class="wl"><img src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></div><h2>¡Bienvenido!</h2>
    <div class="thm" role="group" aria-label="Language" style="justify-content:center">${Object.keys(LANGS).map(k=>`<button class="btn${k===LANG?' on':''}" onclick="setLang('${k}');showWelcome()">${LANGS[k]}</button>`).join('')}</div>
    <p>Coloniza una costa remota y gana quien llegue primero a los puntos de victoria. Juega solo, contra la IA o con amigos en línea.</p>
    <div class="field"><label for="w-name">¿Cómo te llamas?</label><input id="w-name" type="text" maxlength="14" value="${esc(PNAME)}" placeholder="Tu nombre" autocomplete="nickname" autocapitalize="words"></div>
@@ -4122,7 +4123,7 @@ function showWelcome(){
 function showMenu(){
   if(NET.role){if(NET.role==='host'&&NET.lobby&&!NET.started)showLobby();else showRoomMenu();return;}
   const sv=saveInfo(),last=!!LS.raw(LASTKEY),dk=todayKey(),dd=(LS.get('ta-daily',{})||{})[dk],st=loadStats();
-  openModal(`<h2>Tierra Austral</h2><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false" style="color:var(--accent)">Cambiar nombre</a>`:''}</p><div class="menu">
+  openModal(`<h2 style="margin:0"><img class="mlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></h2><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false" style="color:var(--accent)">Cambiar nombre</a>`:''}</p><div class="menu">
    ${sv?`<button class="mcard hero" onclick="resumeGame()"><b>${mi('play')}Reanudar partida</b><small>Turno ${sv.turn} · ${sv.names.join(', ')} · guardada ${fmtDate(sv.at)}</small></button>`:''}
    <button class="mcard" onclick="showStart()"><b>${mi('bolt')}Partida rápida</b><small>Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.</small></button>
    <button class="mcard" onclick="showCampaign()"><b>${mi('flag')}Campaña</b><small>Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.</small></button>
