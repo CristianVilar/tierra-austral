@@ -216,5 +216,17 @@ rep("  MK.apply=(st,first)=>{", STYJS+"\n  MK.apply=(st,first)=>{")
 rep("if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner)continue;","const _sy=((st.G.players[v.b.owner]||{}).sty)||{},_sk=v.b.type==='c'?(_sy.c||'def'):(_sy.t||'def');if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner&&cur.sk===_sk)continue;")
 rep("const g=city?castle(col,p%4):house(col,p%4),top=","const g=(city?(STYB.c[_sk]?STYB.c[_sk](col):castle(col,p%4)):(STYB.t[_sk]?STYB.t[_sk](col):house(col,p%4))),top=")
 rep("LB.set(v.id,{g,type:v.b.type,owner:p,rec});","LB.set(v.id,{g,type:v.b.type,owner:p,rec,sk:_sk});")
+
+rep("let spotsAll=[],EDGE=1;const MK={};","let spotsAll=[],EDGE=1;const MK={};window.__TA={scene,renderer,camera,world,MK,THREE};")
+rep("return {t:mk({en:H.ingles","MK.STYB=null;return {t:mk({en:H.ingles")
+rep("  MK.apply=(st,first)=>{","  MK.STYB=STYB;\n  MK.apply=(st,first)=>{")
+rep("then(()=>toast(`<span style=\"color:var(--gold);font-size:26px\">${a+b}</span> &nbsp;(${a} + ${b})`,2200));}}","then(()=>{toast(`<span style=\"color:var(--gold);font-size:26px\">${a+b}</span> &nbsp;(${a} + ${b})`,2200);diceFx(a+b,st);});}}")
+rep("function giveChip(r,n=1){","""function diceFx(tot,st){if(tot===7)return;
+  const prod=tiles.filter(t=>t.num===tot&&!(robber&&robber.userData.tile===t));let any=false;
+  for(const t of prod){ring(t);if(t.token)jump(t.token,t.top+.02,.25,.7);
+    buildings.filter(bd=>bd.tiles.some(ti=>tiles[ti]===t)).forEach((bd,j)=>{any=true;const from=screenOf(new THREE.Vector3(bd.x,bd.top+.25,bd.z));jump(bd.g,bd.top,.18,.6);
+      const pl=st&&st.G.players[bd.owner];floatPlus(from,'+'+(bd.city?2:1),(pl&&pl.color)||'#fff',250+j*120);});}
+  if(!any)setTimeout(()=>toast('Nadie cosecha esta vez<small>Ninguna casa toca ese número</small>',1800),900);}
+function giveChip(r,n=1){""")
 open('/home/claude/tierra-austral/3d/index.html','w').write(s)
 print('ok',len(s))

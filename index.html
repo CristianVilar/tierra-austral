@@ -79,6 +79,7 @@ img.ico,image.ico{filter:drop-shadow(0 2px 2px #0008)}
 .chip b{display:block;font:800 21px var(--font-display);font-variant-numeric:tabular-nums;text-shadow:0 1px 0 #0008}
 .chip span{font-size:11px;color:#c9d7df}
 .chip.sel{outline:2px solid var(--accent)}
+.stypv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.stypv figure{margin:0;background:#16303f;border-radius:12px;overflow:hidden;border:1px solid #fff2}.stypv img{display:block;width:100%;height:auto}.stypv figcaption{font-size:12px;text-align:center;padding:4px 2px 6px;color:var(--muted)}
 .tpgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .tpc{--rc:#6d7b8b;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 30%,#10222f) 0%,#10222f 80%);border:1px solid color-mix(in srgb,var(--rc) 50%,#10222f);border-top:4px solid var(--rc);border-radius:10px;padding:6px 2px 5px;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 6px 12px -8px #000c}
 .tpc.on{box-shadow:0 0 0 2px var(--rc),0 6px 12px -8px #000c;background:linear-gradient(180deg,color-mix(in srgb,var(--rc) 55%,#10222f) 0%,#10222f 85%)}
@@ -4081,7 +4082,7 @@ function styHTML(){
   const net=typeof NET!=='undefined'&&NET.role,seat=net?0:Math.min(STYSEAT,5),o=styOf(seat);
   const row=(k,lab)=>`<div class="styr"><small style="display:block;margin:4px 0 2px;color:var(--muted)">${lab}</small><div class="thm" role="group" aria-label="${lab}">${Object.keys(STYN).map(id=>`<button class="btn${o[k]===id?' on':''}" onclick="setSty(${seat},'${k}','${id}')" aria-pressed="${o[k]===id}">${STYN[id]}</button>`).join('')}</div></div>`;
   const tabs=net?'':`<div class="thm" role="group" aria-label="Jugador">${[0,1,2,3,4,5].map(i=>`<button class="btn${i===seat?' on':''}" onclick="setStySeat(${i})" aria-pressed="${i===seat}"><span class="sw" style="background:${PCOL[i]}"></span>${i===0?'Tú':'Jugador '+(i+1)}</button>`).join('')}</div>`;
-  return `<h3>Estilo de pueblo y castillo</h3><p style="color:var(--muted);font-size:13px;margin:0 0 6px">${net?'Tu estilo en la sala; los demás jugadores lo ven en la vista 3D.':'Elige cómo se ven los pueblos y castillos de cada jugador en la vista 3D. Los jugadores 2 a 6 son los rivales de la IA.'}</p>${tabs}${row('t','Pueblo')}${row('c','Castillo')}`;
+  return `<h3>Estilo de pueblo y castillo</h3><p style="color:var(--muted);font-size:13px;margin:0 0 6px">${net?'Tu estilo en la sala; los demás jugadores lo ven en la vista 3D.':'Elige cómo se ven los pueblos y castillos de cada jugador en la vista 3D. Los jugadores 2 a 6 son los rivales de la IA.'}</p>${tabs}<div class="stypv"><figure><img src="/assets/sty/t-${o.t}.jpg" alt="Pueblo ${STYN[o.t]}" width="320" height="240"><figcaption>Pueblo · ${STYN[o.t]}</figcaption></figure><figure><img src="/assets/sty/c-${o.c}.jpg" alt="Castillo ${STYN[o.c]}" width="320" height="240"><figcaption>Castillo · ${STYN[o.c]}</figcaption></figure></div>${row('t','Pueblo')}${row('c','Castillo')}`;
 }
 function showPersonalize(){
   openModal(`<h2>Personalizar</h2><p>Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.</p>

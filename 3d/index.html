@@ -824,8 +824,9 @@ C.aleman=p=>{const rk=new THREE.Mesh(new THREE.ConeGeometry(3.4,2.2,7),M(0x7a746
 
 const wrap=(f,sc)=>col=>{PC=new THREE.Color(col).getHex();const g=new THREE.Group(),inner=new THREE.Group();f(inner);inner.scale.setScalar(sc);g.add(inner);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return g;};
 const mk=(o,sc)=>{const r={};for(const k in o)r[k]=wrap(o[k],sc);return r;};
-return {t:mk({en:H.ingles,es:H.espanol,fr:H.frances,de:H.aleman},.1),c:mk({en:C.ingles,es:C.espanol,fr:C.frances,de:C.aleman},.085)};})();
+MK.STYB=null;return {t:mk({en:H.ingles,es:H.espanol,fr:H.frances,de:H.aleman},.1),c:mk({en:C.ingles,es:C.espanol,fr:C.frances,de:C.aleman},.085)};})();
 
+  MK.STYB=STYB;
   MK.apply=(st,first)=>{
     const Vs=st.B.V,Es=st.B.E,own=new Set();
     for(const v of Vs){if(!v.b)continue;own.add(v.id);const cur=LB.get(v.id);const _sy=((st.G.players[v.b.owner]||{}).sty)||{},_sk=v.b.type==='c'?(_sy.c||'def'):(_sy.t||'def');if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner&&cur.sk===_sk)continue;
@@ -848,7 +849,7 @@ return {t:mk({en:H.ingles,es:H.espanol,fr:H.frances,de:H.aleman},.1),c:mk({en:C.
       else{const from=robber.userData.tile;robber.userData.tile=rt;tween(.9,u=>{const e=ease(u);robber.position.set(lerp(from.x,rt.x,e),lerp(from.top,rt.top,e)+Math.sin(u*Math.PI)*1.1,lerp(from.z,rt.z,e));},()=>robber.position.set(rt.x,rt.top,rt.z));}}
     if(st.G.dice&&st.G.rollAt!==lastRoll){lastRoll=st.G.rollAt;const [a,b]=st.G.dice;
       if(first){throwDie(dice[0],a,0,.05);throwDie(dice[1],b,1,.05);}
-      else{throwDie(dice[0],a,0,1.35);throwDie(dice[1],b,1,1.5).then(()=>toast(`<span style="color:var(--gold);font-size:26px">${a+b}</span> &nbsp;(${a} + ${b})`,2200));}}
+      else{throwDie(dice[0],a,0,1.35);throwDie(dice[1],b,1,1.5).then(()=>{toast(`<span style="color:var(--gold);font-size:26px">${a+b}</span> &nbsp;(${a} + ${b})`,2200);diceFx(a+b,st);});}}
   };
   // bandido
   const desert=(LV&&tiles.find(t=>t.hid===LV.G.robber))||tiles.find(t=>t.type==='desert');
@@ -1132,12 +1133,18 @@ function resIcon(r){if(ICON[r])return ICON[r];const c=document.createElement('ca
   x.fillStyle='#f3e7c3';x.beginPath();x.arc(64,64,58,0,7);x.fill();x.strokeStyle=RCOL[r];x.lineWidth=9;x.beginPath();x.arc(64,64,52,0,7);x.stroke();
   glyph(x,r,64,64,1.08);return ICON[r]=`url(${c.toDataURL()})`;}
 const chips={};
-let spotsAll=[],EDGE=1;const MK={};
+let spotsAll=[],EDGE=1;const MK={};window.__TA={scene,renderer,camera,world,MK,THREE};
 function buildChips(){
   renderResIcons();
   const box=$('#chips');
   for(const r of ['wood','brick','wool','grain','ore']){const c=document.createElement('div');c.className='chip';c.style.setProperty('--tint',RCOL[r]+'66');c.innerHTML=`<i style="background-image:${resIcon(r)}"></i><b>0</b><small>${RNAME[r]}</small>`;box.append(c);chips[r]={el:c,n:0};}
 }
+function diceFx(tot,st){if(tot===7)return;
+  const prod=tiles.filter(t=>t.num===tot&&!(robber&&robber.userData.tile===t));let any=false;
+  for(const t of prod){ring(t);if(t.token)jump(t.token,t.top+.02,.25,.7);
+    buildings.filter(bd=>bd.tiles.some(ti=>tiles[ti]===t)).forEach((bd,j)=>{any=true;const from=screenOf(new THREE.Vector3(bd.x,bd.top+.25,bd.z));jump(bd.g,bd.top,.18,.6);
+      const pl=st&&st.G.players[bd.owner];floatPlus(from,'+'+(bd.city?2:1),(pl&&pl.color)||'#fff',250+j*120);});}
+  if(!any)setTimeout(()=>toast('Nadie cosecha esta vez<small>Ninguna casa toca ese número</small>',1800),900);}
 function giveChip(r,n=1){const c=chips[r];c.n+=n;c.el.querySelector('b').textContent=c.n;c.el.classList.remove('bump');void c.el.offsetWidth;c.el.classList.add('bump');}
 function screenOf(v){const p=v.clone().project(camera);return[(p.x*.5+.5)*innerWidth,(-p.y*.5+.5)*innerHeight];}
 function flyOrb(from,res,to,delay,done){
