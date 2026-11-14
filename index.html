@@ -419,6 +419,11 @@ const RCOL={wood:'#4a9a57',brick:'#c86a47',wool:'#9ccf63',grain:'#e9c548',ore:'#
 const HEXCOL={wood:'#2a6b3c',brick:'#a6523a',wool:'#86b95a',grain:'#d3ae3b',ore:'#6d7b8b',desert:'#c9b47c'};
 const PAL={std:['#ef6a5b','#4aa3ff','#8fd14f','#b78cff'],cb:['#E69F00','#56B4E9','#009E73','#CC79A7','#F0E442','#D55E00']};
 const MYCOLS=[['Rojo','#ef6a5b'],['Azul','#4aa3ff'],['Verde','#8fd14f'],['Violeta','#b78cff'],['Ámbar','#f2b84b'],['Turquesa','#2ec4b6']];
+const STYN={def:'Clásico',en:'Inglés',es:'Castellano',fr:'Francés',de:'Alemán'};
+let STYS={};try{STYS=JSON.parse(localStorage.getItem('ta-sty')||'{}')||{};}catch(e){STYS={};}
+const styOk=o=>({t:o&&STYN[o.t]?o.t:'def',c:o&&STYN[o.c]?o.c:'def'});
+const styOf=seat=>styOk(STYS[seat]);
+let STYSEAT=0;
 let MYCOL=0;try{MYCOL=Math.max(0,Math.min(5,parseInt(localStorage.getItem('ta-mycol'))||0));}catch(e){}
 const palStd=()=>{const b=MYCOLS.map(x=>x[1]);return [b[MYCOL],...b.filter((_,i)=>i!==MYCOL)];};
 const PCOL=palStd().slice(0,6);
@@ -929,6 +934,8 @@ function newGame(cfg){
   for(let i=0;i<nBots;i++)names.push(BOTNAMES[i%6]);
   if(cfg.spectate){G.cfg.humanSeat=-1;}else{G.cfg.humanSeat=0;if(hn>1){G.cfg.humans=[...Array(hn).keys()];G.cfg.net=true;}}
   G.players=names.map((name,i)=>({id:i,name,color:PCOL[i],res:{wood:0,brick:0,wool:0,grain:0,ore:0},dev:[],knights:0,left:{road:15,settle:5,city:4,ship:10}}));
+  G.players.forEach((p,i)=>{p.sty=styOf(i);});
+  if(G.cfg.net&&typeof NET!=='undefined'&&NET.roster){G.players.forEach(p=>{const r=NET.roster.find(x=>!x.spec&&x.seat===p.id);p.sty=r?(r.id===NET.id?styOf(0):styOk(r.sty)):styOk(null);});}
   G.prodStat=G.players.map(()=>({wood:0,brick:0,wool:0,grain:0,ore:0}));G.thief=G.players.map(()=>({stole:0,robbed:0}));ZOOM.s=1;ZOOM.cx=null;ZOOM.cy=null;
   G.limits=(cfg.limits&&cfg.limits.length===G.n)?cfg.limits.slice():Array(G.n).fill(60);
   const BK=G.big?24:19;G.bank={wood:BK,brick:BK,wool:BK,grain:BK,ore:BK};
@@ -3450,6 +3457,15 @@ Producción|Production|Produção
 Produce los 5 recursos distintos con tus edificios.|Produce all 5 different resources with your buildings.|Produza os 5 recursos diferentes com suas construções.
 Proponer a|Propose to|Propor a
 Proponer un trato|Propose a deal|Propor um acordo
+Estilo de pueblo y castillo|Town and castle style|Estilo de vila e castelo
+Clásico|Classic|Clássico
+Inglés|English|Inglês
+Castellano|Castilian|Castelhano
+Francés|French|Francês
+Alemán|German|Alemão
+Jugador|Player|Jogador
+Tu estilo en la sala; los demás jugadores lo ven en la vista 3D.|Your style in the room; other players see it in the 3D view.|Seu estilo na sala; os outros jogadores o veem na vista 3D.
+Elige cómo se ven los pueblos y castillos de cada jugador en la vista 3D. Los jugadores 2 a 6 son los rivales de la IA.|Choose how each player's towns and castles look in the 3D view. Players 2 to 6 are the AI rivals.|Escolha como as vilas e castelos de cada jogador aparecem na vista 3D. Os jogadores 2 a 6 são os rivais da IA.
 Elige qué entregas y qué pides, con uno o varios recursos en cada lado. Los rivales responden según lo que necesiten.|Choose what you give and what you ask for, with one or several resources on each side. Rivals reply depending on what they need.|Escolha o que entrega e o que pede, com um ou vários recursos de cada lado. Os rivais respondem conforme o que precisam.
 Proponer|Propose|Propor
 Propuesta de trato|Deal proposal|Proposta de acordo
@@ -4052,11 +4068,27 @@ function setMyColor(i){
   MYCOL=i;try{localStorage.setItem('ta-mycol',String(i));}catch(e){}
   setPalette(CBP.on,true);if(G&&G.players&&G.players.length&&!G.over)render();showPersonalize();
 }
+function setSty(seat,k,v){STYS[seat]=Object.assign(styOf(seat),{[k]:v});try{localStorage.setItem('ta-sty',JSON.stringify(STYS));}catch(e){}applySty();showPersonalize();}
+function setStySeat(i){STYSEAT=i;showPersonalize();}
+function applySty(){
+  if(typeof G==='undefined'||!G||!G.players||!G.players.length)return;
+  const net=typeof NET!=='undefined'&&NET.role;
+  if(net){if(NET.role==='host'&&G.players[0])G.players[0].sty=styOf(0);if(NET.role==='guest')try{netSend({t:'sty',id:NET.id,sty:styOf(0)});}catch(e){}}
+  else G.players.forEach((p,i)=>{p.sty=styOf(i);});
+  try{sync3d();}catch(e){}
+}
+function styHTML(){
+  const net=typeof NET!=='undefined'&&NET.role,seat=net?0:Math.min(STYSEAT,5),o=styOf(seat);
+  const row=(k,lab)=>`<div class="styr"><small style="display:block;margin:4px 0 2px;color:var(--muted)">${lab}</small><div class="thm" role="group" aria-label="${lab}">${Object.keys(STYN).map(id=>`<button class="btn${o[k]===id?' on':''}" onclick="setSty(${seat},'${k}','${id}')" aria-pressed="${o[k]===id}">${STYN[id]}</button>`).join('')}</div></div>`;
+  const tabs=net?'':`<div class="thm" role="group" aria-label="Jugador">${[0,1,2,3,4,5].map(i=>`<button class="btn${i===seat?' on':''}" onclick="setStySeat(${i})" aria-pressed="${i===seat}"><span class="sw" style="background:${PCOL[i]}"></span>${i===0?'Tú':'Jugador '+(i+1)}</button>`).join('')}</div>`;
+  return `<h3>Estilo de pueblo y castillo</h3><p style="color:var(--muted);font-size:13px;margin:0 0 6px">${net?'Tu estilo en la sala; los demás jugadores lo ven en la vista 3D.':'Elige cómo se ven los pueblos y castillos de cada jugador en la vista 3D. Los jugadores 2 a 6 son los rivales de la IA.'}</p>${tabs}${row('t','Pueblo')}${row('c','Castillo')}`;
+}
 function showPersonalize(){
   openModal(`<h2>Personalizar</h2><p>Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.</p>
    <h3>Idioma</h3>${langChips()}
    <h3>Tema del tablero</h3><div class="thm" role="group" aria-label="Tema del tablero">${THEMES.map(t=>`<button class="btn${t[0]===THEME?' on':''}" onclick="setTheme('${t[0]}')" aria-pressed="${t[0]===THEME}"><span class="sw" style="background:${t[2]}"></span>${t[1]}</button>`).join('')}</div>
    <h3>Tu color</h3><div class="cols" role="group" aria-label="Tu color">${MYCOLS.map((c,i)=>`<button class="btn${i===MYCOL?' on':''}" style="background:${c[1]}" onclick="setMyColor(${i})" aria-label="${c[0]}" aria-pressed="${i===MYCOL}"></button>`).join('')}</div>
+   ${styHTML()}
    <h3>Accesibilidad</h3><div class="optl">${[['big','Letra grande','Agranda textos y botones de los paneles.'],['hc','Alto contraste','Fondo negro, textos blancos y bordes marcados.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
    <label class="chk"><input type="checkbox" ${CBP.on?'checked':''} onchange="setPalette(this.checked);showPersonalize()"><span><b>Modo daltonismo</b><small>Colores y símbolos pensados para distinguirse sin depender del color.</small></span></label>
    <h3>Partidas en línea</h3><div class="optl">${[['chat','Chat y reacciones','Muestra el botón 💬 y los mensajes de la sala.'],['alert','Aviso de turno','Suena y cambia el título de la pestaña cuando te toca.'],['vib','Vibración','Vibra el teléfono al empezar tu turno (si el aviso está activo).'],['notif','Notificación del sistema','Muestra una notificación cuando te toca y la pestaña está en segundo plano.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
@@ -4437,7 +4469,7 @@ function netHostMsg(m){
   if(r)NET.seen[r.id]=Date.now();
   if(m.t==='hello'&&m.id&&NET.ban[m.id]){netSend({t:'reject',to:netTag(m.id,NET.code),why:'El anfitrión te sacó de esta sala.'});return;}
   if(m.t==='hello'){
-    if(r){r.online=true;r.name=r.name||m.name;
+    if(r){r.online=true;r.name=r.name||m.name;if(m.sty){r.sty=styOk(m.sty);if(NET.started&&G.players[r.seat]){G.players[r.seat].sty=r.sty;try{sync3d();}catch(e){}}}
       if(NET.started){NET.last={};if(!r.spec&&G.cfg.humans&&!G.cfg.humans.includes(r.seat)){NET.back[r.id]=true;if(G.cur!==r.seat)NETH.pending();}}
       netLobbyCast();if(NET.started)netPush(true);else if(NET.inLobby)showLobby();return;}
     if(NET.started){ // la partida ya empezó: entra como espectador
@@ -4448,11 +4480,12 @@ function netHostMsg(m){
       NET.seen[m.id]=Date.now();NET.last={};netLobbyCast();netPush(true);return;
     }
     if(netPlayers().length>=NETMAX){netSend({t:'reject',to:netTag(m.id,NET.code),why:'La sala está llena.'});return;}
-    NET.roster.push({id:m.id,name:String(m.name||'Jugador').replace(/[<>&"]/g,'').slice(0,14),seat:NET.roster.length,online:true});
+    NET.roster.push({id:m.id,name:String(m.name||'Jugador').replace(/[<>&"]/g,'').slice(0,14),seat:NET.roster.length,online:true,sty:styOk(m.sty)});
     NET.seen[m.id]=Date.now();netLobbyCast();if(NET.inLobby)showLobby();return;
   }
   if(!r)return;
   if(m.t==='ping')return;
+  if(m.t==='sty'){r.sty=styOk(m.sty);if(NET.started&&G.players[r.seat]){G.players[r.seat].sty=r.sty;try{sync3d();}catch(e){}}return;}
   if(m.t==='chat'){const n=NET.cht||(NET.cht={});if(Date.now()-(n[r.id]||0)<600)return;n[r.id]=Date.now();const tx=netChatClean(m.text);if(tx)netChatCast(r.seat,r.name,tx);return;}
   if(m.t==='leave'){
     if(r.spec){NET.roster=NET.roster.filter(x=>x.id!==r.id);netLobbyCast();return;}
@@ -4645,7 +4678,7 @@ function netDiff(a,b){
   let s=0;const m=n-p;while(s<m&&a.charCodeAt(a.length-1-s)===b.charCodeAt(b.length-1-s))s++;
   return [p,s,b.slice(p,b.length-s)];
 }
-function netResync(){const t=Date.now();if(t-(NET.rsAt||0)<2000)return;NET.rsAt=t;netSend({t:'hello',id:NET.id,name:NET.name});}
+function netResync(){const t=Date.now();if(t-(NET.rsAt||0)<2000)return;NET.rsAt=t;netSend({t:'hello',id:NET.id,name:NET.name,sty:styOf(0)});}
 function netEndHTML(seat){
   const ws=G.winners||[G.winner],names=ws.map(i=>G.players[i].name),me=ws.includes(seat);
   const tw=G.teams&&ws.length===2&&ws[0]%2===ws[1]%2;
@@ -4670,7 +4703,7 @@ async function netJoin(code,name,saved){
   if(!ok){netForget();showNetMenu(code,null,'No existe una sala abierta con ese código.');return;}
   Object.assign(NET,{role:'guest',code,id:cx?cx.id:((saved&&saved.id)||gidGet(code)||NETID()),cx,key:null,hk:'',hpriv:null,name,roster:[],started:false,lobby:false,hostSeen:Date.now(),seat:-1,bye:false,ended:false,rec:false});
   if(NET.gord)NET.gord.stop();
-  NET.gord=new NetOrd(netGuestMsg,()=>netSend({t:'hello',id:NET.id,name:NET.name}));NET.gseq=0;
+  NET.gord=new NetOrd(netGuestMsg,()=>netSend({t:'hello',id:NET.id,name:NET.name,sty:styOf(0)}));NET.gseq=0;
   try{NET.tp=await NETT.open(code,m=>{if(m&&m.h&&NET.gord)NET.gord.push(m);});}catch(e){NET.role=null;showNetMenu(code,null,'No se pudo abrir la sala en tiempo real.');return;}
   netSave();gidSet(code,NET.id);
   openModal(`<h2>Entrando a la sala ${code}…</h2><p>Esperando al anfitrión.</p><div class="mact"><button class="btn" data-local="netLeave()">Cancelar</button></div>`);
@@ -4680,12 +4713,12 @@ async function netJoin(code,name,saved){
     if(NET.role!=='guest'){clearInterval(NET.hello);return;}
     if(netSeatOf(NET.id)>=0){clearInterval(NET.hello);return;}
     if(++tries>6){clearInterval(NET.hello);netLeave(true);showNetMenu(code,null,'El anfitrión no responde. Revisa el código.');return;}
-    netSend({t:'hello',id:NET.id,name});
+    netSend({t:'hello',id:NET.id,name,sty:styOf(0)});
   },1500);
-  netSend({t:'hello',id:NET.id,name});
+  netSend({t:'hello',id:NET.id,name,sty:styOf(0)});
   NET.hb=setInterval(()=>{
     if(NET.role!=='guest')return;
-    netSend(NET.bye?{t:'hello',id:NET.id,name:NET.name}:{t:'ping',id:NET.id});
+    netSend(NET.bye?{t:'hello',id:NET.id,name:NET.name,sty:styOf(0)}:{t:'ping',id:NET.id});
     if(!NET.bye&&Date.now()-NET.hostSeen>NET.lostMs){NET.bye=true;netGuestModal(`<h2>Sin conexión con el anfitrión</h2><p>Se perdió la comunicación. Si el anfitrión vuelve, la partida seguirá sola.${NET.snap?' Tú tienes una copia de la partida: puedes <b>tomar el mando</b> para que el juego continúe sin esperar.':''}</p><div class="mact">${NET.snap?'<button class="btn primary" data-local="netTakeOver()">Tomar el mando</button>':''}<button class="btn${NET.snap?'':' primary'}" data-local="netLeave()">Salir de la sala</button></div>`);}
   },NET.pingMs);
 }

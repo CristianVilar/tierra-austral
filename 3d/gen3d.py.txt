@@ -210,5 +210,11 @@ rep("const s1=city?1.0:1.45;world.add(g);","const s1=city?1.0:1.45;ownMark(g,col
 rep('if(!/[?&]embed/.test(location.search))return;function r(m)','if(!/[?&]embed/.test(location.search))return;document.documentElement.classList.add("bare");function r(m)')
 rep('#hint{bottom:calc(150px + env(safe-area-inset-bottom))}','#hint{bottom:calc(150px + env(safe-area-inset-bottom))}\nhtml.bare #players,html.bare #back2d,html.bare #gear,html.bare #drawer,html.bare .hud.bot,html.bare #endp,html.bare #fps{display:none!important}html.bare .hud.top{display:flex;justify-content:flex-end;padding:8px}html.bare #hint{bottom:12px}')
 rep("const PCs=o=>(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4];","const PCs=o=>{const c=(LV&&LV.G.players[o]&&LV.G.players[o].color)||PCOL[o%4],k=new THREE.Color(c),h={};k.getHSL(h);k.setHSL(h.h,Math.min(1,h.s*1.08),h.l*.66);return '#'+k.getHexString();};")
+
+STYJS=open('/home/claude/test/sty3d.js').read()
+rep("  MK.apply=(st,first)=>{", STYJS+"\n  MK.apply=(st,first)=>{")
+rep("if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner)continue;","const _sy=((st.G.players[v.b.owner]||{}).sty)||{},_sk=v.b.type==='c'?(_sy.c||'def'):(_sy.t||'def');if(cur&&cur.type===v.b.type&&cur.owner===v.b.owner&&cur.sk===_sk)continue;")
+rep("const g=city?castle(col,p%4):house(col,p%4),top=","const g=(city?(STYB.c[_sk]?STYB.c[_sk](col):castle(col,p%4)):(STYB.t[_sk]?STYB.t[_sk](col):house(col,p%4))),top=")
+rep("LB.set(v.id,{g,type:v.b.type,owner:p,rec});","LB.set(v.id,{g,type:v.b.type,owner:p,rec,sk:_sk});")
 open('/home/claude/tierra-austral/3d/index.html','w').write(s)
 print('ok',len(s))
