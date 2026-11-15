@@ -182,6 +182,27 @@ body.landon{overflow:hidden}
   .lgear{top:10px;right:10px;width:42px;height:42px}
 }
 
+
+/* Disposición compacta */
+#cmenu{display:none}
+body.compact header.top{display:none}
+body.compact #cmenu{display:block;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top));z-index:7;min-height:40px;padding:6px 14px}
+body.compact .app{padding-top:8px}
+body.compact #msg{padding:4px 96px 6px 78px;min-height:34px;font-size:14px;display:flex;align-items:center}
+body.compact .card.clock,body.compact #sec-res{display:none}
+body.compact #sec-players h3{display:none}
+body.compact #sec-players{padding:8px}
+body.compact .players{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px}
+body.compact .pl{grid-template-columns:28px 1fr auto;padding:6px 8px}
+body.compact .pl .sub,body.compact .pl .tag{display:none}
+body.compact .pl .nm{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:920px){
+  body.compact .app{padding:6px;gap:8px}
+  body.compact .boardwrap{padding:6px;border-radius:14px}
+  body.compact #v3d{height:clamp(320px,calc(100svh - 230px),760px)}
+  body.compact .zoomc{top:6px;right:8px}
+  body.compact #msg{display:block;padding:50px 6px 4px;min-height:0}
+}
 /* Menú principal (pantalla completa) */
 .landin.hubm{display:block;max-width:1060px;padding:clamp(14px,3vh,34px) clamp(12px,4vw,40px) 40px}
 .hubpanel{background:#0c1c2bd9;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid #ffffff24;border-radius:26px;padding:clamp(16px,2.6vw,32px);box-shadow:0 24px 60px #00000080}
@@ -559,6 +580,7 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
 <div id="modal" role="dialog" aria-modal="true"></div>
 <div id="editor" role="dialog" aria-modal="true" aria-label="Creador de mapa"></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<button id="cmenu" class="btn primary" onclick="showMenu()" aria-label="Menú">Menú</button>
 <div id="mbar"></div>
 <div id="rpbar" role="region" aria-label="Repetición de la partida"></div>
 
@@ -3337,6 +3359,10 @@ Cambia cartas con el banco|Trade cards with the bank|Troque cartas com o banco
 Campaña|Campaign|Campanha
 Campaña · misión|Campaign · mission|Campanha · missão
 Campeón de la campaña|Campaign champion|Campeão da campanha
+Disposición: compacta|Layout: compact|Disposição: compacta
+Disposición: completa|Layout: full|Disposição: completa
+Tablero más grande, jugadores en una fila y sin barra superior. Toca para volver a la disposición completa.|Bigger board, players in one row and no top bar. Tap to go back to the full layout.|Tabuleiro maior, jogadores em uma linha e sem barra superior. Toque para voltar ao layout completo.
+Toca para una disposición compacta: tablero más grande, jugadores en una fila y sin barra superior.|Tap for a compact layout: bigger board, players in one row and no top bar.|Toque para um layout compacto: tabuleiro maior, jogadores em uma linha e sem barra superior.
 Catorce misiones en dos capítulos. Gana cada una para desbloquear la siguiente.|Fourteen missions in two chapters. Win each one to unlock the next.|Catorze missões em dois capítulos. Vença cada uma para desbloquear a próxima.
 Catorce misiones en dos capítulos. Completadas:|Fourteen missions in two chapters. Completed:|Catorze missões em dois capítulos. Concluídas:
 Capítulo I · Costa remota|Chapter I · Remote coast|Capítulo I · Costa remota
@@ -4403,6 +4429,10 @@ function showWelcome(){
   l.scrollTop=0;
   if(innerWidth>=900)setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},80);
 }
+
+const isCompact=()=>document.body.classList.contains('compact');
+function setCompact(on){document.body.classList.toggle('compact',!!on);try{localStorage.setItem('ta-compact',on?'1':'0');}catch(e){}try{if(G&&G.players)render();}catch(e){}showMenu();}
+try{if(localStorage.getItem('ta-compact')==='1')document.body.classList.add('compact');}catch(e){}
 let LANDM='welcome';
 function hubTile(ic,t,d,on,o){o=o||{};return `<button class="htile${o.hero?' hero':''}" onclick="${on}"${o.off?' disabled':''}><span class="hx"><i>${mi(ic)}</i></span><span class="ht"><b>${t}</b><small>${d}</small></span></button>`;}
 function inGame(){return !!(G&&G.phase&&G.phase!=='idle'&&!G.over);}
@@ -4435,6 +4465,7 @@ function showMenu(){
    <h3 class="hsec">Ajustes y ayuda</h3>
    <div class="hgrid">
     ${hubTile('palette','Vista del tablero: '+(view3d()?'3D':'2D'),view3d()?'Las partidas se abren con el tablero en 3D. Toca para volver al 2D.':'Las partidas se abren con el tablero 2D. Toca para jugar en 3D (beta).','setView(view3d()?\'2d\':\'3d\')')}
+    ${hubTile('list','Disposición: '+(isCompact()?'compacta':'completa'),isCompact()?'Tablero más grande, jugadores en una fila y sin barra superior. Toca para volver a la disposición completa.':'Toca para una disposición compacta: tablero más grande, jugadores en una fila y sin barra superior.','setCompact(!isCompact())')}
     ${hubTile('palette','Personalizar','Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.','showPersonalize()')}
     ${hubTile('list','Reglas y costos','Cómo se juega y cuánto cuesta cada construcción.','showRules()')}
    </div>
