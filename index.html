@@ -459,6 +459,11 @@ body.th-dusk #sea stop:nth-child(1){stop-color:#cf7d63}body.th-dusk #sea stop:nt
 .rules h3{margin-top:12px;font-size:16px;color:var(--accent);text-transform:none;letter-spacing:0;font-family:var(--font-display)}
 
 .menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+
+button[onclick="uiRoll()"]:not(:disabled){animation:rollpulse 1.6s ease-in-out infinite}
+@keyframes rollpulse{0%,100%{box-shadow:0 0 0 0 #f0b84a00}50%{box-shadow:0 0 0 4px #f0b84a66,0 0 18px #f0b84a80}}
+@media(prefers-reduced-motion:reduce){button[onclick="uiRoll()"]:not(:disabled){animation:none;box-shadow:0 0 0 3px #f0b84a99}}
+.chh{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 6px;font:800 13px var(--font-body);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}.chh span{color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:none}
 .mcard{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 15px;color:var(--ink);font:inherit;cursor:pointer;min-height:82px;transition:border-color .15s,transform .08s}
 .mcard b{font:800 17px var(--font-display);display:flex;align-items:center;gap:9px}
 .mi{width:22px;height:22px;flex:none;color:var(--accent);fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -2976,7 +2981,7 @@ const SAVEKEY='ta-save',LASTKEY='ta-last';
 const fmtDate=ts=>new Date(ts).toLocaleString('es-CL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 
 /* ===================== Campaña ===================== */
-const CAMP=[
+const CAMP1=[
   {n:'El primer asentamiento',d:'Mapa de principiante y dos rivales fáciles. Llega a 6 puntos.',map:'beginner',bots:2,diff:['easy','easy'],rules:{target:6}},
   {n:'Mar sin puertos',d:'Nadie tiene puertos: el banco siempre cobra 4:1. Llega a 8 puntos.',map:'balanced',bots:3,diff:['normal','normal','normal'],rules:{target:8,noPorts:true}},
   {n:'Temporada de tormentas',d:'Un evento o fenómeno climático cada ronda: heladas, crecidas y ventiscas. Llega a 8 puntos.',map:'balanced',bots:3,diff:['normal','normal','normal'],rules:{target:8,events:true,wx:true,evEvery:1}},
@@ -2984,6 +2989,18 @@ const CAMP=[
   {n:'Más allá del estrecho',d:'Islas lejanas, mejoras de ciudad y tierras salvajes. Llega a 9 puntos.',map:'balanced',bots:3,diff:['normal','normal','hard'],rules:{target:9,expansion:true,upg:true,wild:true}},
   {n:'La gran final',d:'Todas las variantes a la vez contra tres rivales difíciles con personalidad. Llega a 11 puntos.',map:'balanced',bots:3,diff:['hard','hard','hard'],rules:{target:11,expansion:true,events:true,wx:true,evEvery:2,fac:true,obj:true,auc:true,upg:true,wild:true,pers:true}}
 ];
+const CAMP2=[
+  {n:'Llegada a la pampa',d:'Casi todo es trigo y lana. Negocia, subasta y llega a 8 puntos.',map:'pampa',bots:3,diff:['normal','normal','normal'],rules:{target:8,auc:true}},
+  {n:'Sequía',d:'Tres desiertos y recursos escasos: cada cosecha cuenta. Llega a 7 puntos.',map:'drought',bots:2,diff:['normal','normal'],rules:{target:7}},
+  {n:'Cordillera del sur',d:'Una franja de minas al centro y mejoras de ciudad. Llega a 9 puntos.',map:'ridge',bots:3,diff:['normal','normal','hard'],rules:{target:9,upg:true}},
+  {n:'Islas del fin del mundo',d:'Cada isla tiene un solo recurso: comerciar o quedarse atrás. Llega a 9 puntos.',map:'archipelago',bots:3,diff:['normal','hard','normal'],rules:{target:9,expansion:true}},
+  {n:'Pacto de facciones',d:'Facciones con poderes propios y rivales con personalidad, en la costa de los fiordos. Llega a 9 puntos.',map:'fiords',bots:3,diff:['normal','hard','hard'],rules:{target:9,fac:true,pers:true}},
+  {n:'Noche del volcán',d:'Tormentas cada dos rondas junto a un volcán de minas. Llega a 9 puntos.',map:'volcano',bots:3,diff:['hard','normal','normal'],rules:{target:9,events:true,wx:true,evEvery:2}},
+  {n:'Contrarreloj austral',d:'Solo 30 turnos: gana quien tenga más puntos al final. Misiones secretas y un rival difícil.',map:'balanced',bots:3,diff:['hard','normal','normal'],rules:{target:12,turnLimit:true,maxTurns:30,obj:true}},
+  {n:'El último confín',d:'Mapa con revelación tardía y todas las variantes contra tres rivales difíciles. Llega a 12 puntos.',map:'blind',bots:3,diff:['hard','hard','hard'],rules:{target:12,expansion:true,events:true,wx:true,evEvery:2,fac:true,obj:true,auc:true,upg:true,wild:true,pers:true}}
+];
+const CAMP=CAMP1.concat(CAMP2);
+const CAMPCH=[{n:'Capítulo I · Costa remota',from:0,to:CAMP1.length},{n:'Capítulo II · Tierras del sur',from:CAMP1.length,to:CAMP.length}];
 function loadCamp(){const c=LS.get('ta-camp',{})||{};return{done:c.done||[],best:c.best||[]};}
 const campDone=()=>{const c=loadCamp();return CAMP.filter((m,i)=>c.done[i]).length;};
 function startCampaign(i){
@@ -2992,9 +3009,11 @@ function startCampaign(i){
 }
 function showCampaign(){
   const c=loadCamp();
-  openModal(`<h2>Campaña</h2><p>Seis misiones con condiciones especiales. Gana cada una para desbloquear la siguiente.</p>${CAMP.map((m,i)=>{
-    const open=i===0||c.done[i-1],done=c.done[i];
-    return `<div class="cmp ${open?'':'lock'}"><span class="num">${i+1}</span><div><b>${m.n}</b><small>${m.d}</small></div><div>${done?`<span class="tag">✓ ${c.best[i]} rondas</span>`:''}<button class="btn ${open&&!done?'primary':''}" ${open?'':'disabled'} onclick="startCampaign(${i})">${done?'Repetir':(open?'Jugar':'Bloqueada')}</button></div></div>`;}).join('')}
+  const row=(m,i)=>{const open=i===0||c.done[i-1],done=c.done[i];
+    return `<div class="cmp ${open?'':'lock'}"><span class="num">${i+1}</span><div><b>${m.n}</b><small>${m.d}</small></div><div>${done?`<span class="tag">✓ ${c.best[i]} rondas</span>`:''}<button class="btn ${open&&!done?'primary':''}" ${open?'':'disabled'} onclick="startCampaign(${i})">${done?'Repetir':(open?'Jugar':'Bloqueada')}</button></div></div>`;};
+  openModal(`<h2>Campaña</h2><p>Catorce misiones en dos capítulos. Gana cada una para desbloquear la siguiente.</p>${CAMPCH.map(ch=>{
+    const n=CAMP.slice(ch.from,ch.to).filter((m,k)=>c.done[ch.from+k]).length;
+    return `<h3 class="chh">${ch.n}<span>${n} de ${ch.to-ch.from}</span></h3>${CAMP.slice(ch.from,ch.to).map((m,k)=>row(m,ch.from+k)).join('')}`;}).join('')}
    <div class="mact"><button class="btn primary" onclick="showMenu()">Volver</button></div>`,true);
 }
 
@@ -3028,7 +3047,8 @@ const ACH=[
   {id:'road',n:'Rey del camino',d:'Termina con un Sendero de 8 o más.',chk:c=>c.lens>=8},
   {id:'auc',n:'Subastador',d:'Gana 3 subastas en una partida.',chk:c=>c.aucWins>=3},
   {id:'daily',n:'Constante',d:'Gana la partida diaria.',chk:c=>c.won&&c.daily},
-  {id:'camp',n:'Campeón de la campaña',d:'Completa las 6 misiones.',chk:()=>campDone()>=CAMP.length}
+  {id:'camp',n:'Campeón de la campaña',d:'Completa las 6 misiones del capítulo I.',chk:()=>{const c=loadCamp();return CAMP1.every((m,i)=>c.done[i]);}},
+  {id:'camp2',n:'Leyenda austral',d:'Completa las 8 misiones del capítulo II.',chk:()=>campDone()>=CAMP.length}
 ];
 function loadStats(){
   const b={games:0,wins:0,streak:0,best:0,fast:0,by:{easy:[0,0],normal:[0,0],hard:[0,0],mix:[0,0]},ach:{}},o=LS.get('ta-stats',{})||{};
@@ -3317,6 +3337,29 @@ Cambia cartas con el banco|Trade cards with the bank|Troque cartas com o banco
 Campaña|Campaign|Campanha
 Campaña · misión|Campaign · mission|Campanha · missão
 Campeón de la campaña|Campaign champion|Campeão da campanha
+Catorce misiones en dos capítulos. Gana cada una para desbloquear la siguiente.|Fourteen missions in two chapters. Win each one to unlock the next.|Catorze missões em dois capítulos. Vença cada uma para desbloquear a próxima.
+Catorce misiones en dos capítulos. Completadas:|Fourteen missions in two chapters. Completed:|Catorze missões em dois capítulos. Concluídas:
+Capítulo I · Costa remota|Chapter I · Remote coast|Capítulo I · Costa remota
+Capítulo II · Tierras del sur|Chapter II · Southern lands|Capítulo II · Terras do sul
+Completa las 6 misiones del capítulo I.|Complete the 6 missions of chapter I.|Complete as 6 missões do capítulo I.
+Leyenda austral|Austral legend|Lenda austral
+Completa las 8 misiones del capítulo II.|Complete the 8 missions of chapter II.|Complete as 8 missões do capítulo II.
+Llegada a la pampa|Arrival on the pampa|Chegada ao pampa
+Casi todo es trigo y lana. Negocia, subasta y llega a 8 puntos.|Almost everything is grain and wool. Trade, auction and reach 8 points.|Quase tudo é trigo e lã. Negocie, leiloe e chegue a 8 pontos.
+Sequía|Drought|Seca
+Tres desiertos y recursos escasos: cada cosecha cuenta. Llega a 7 puntos.|Three deserts and scarce resources: every harvest counts. Reach 7 points.|Três desertos e recursos escassos: cada colheita conta. Chegue a 7 pontos.
+Cordillera del sur|Southern range|Cordilheira do sul
+Una franja de minas al centro y mejoras de ciudad. Llega a 9 puntos.|A band of mines in the middle and city upgrades. Reach 9 points.|Uma faixa de minas no centro e melhorias de cidade. Chegue a 9 pontos.
+Islas del fin del mundo|Islands at the end of the world|Ilhas do fim do mundo
+Cada isla tiene un solo recurso: comerciar o quedarse atrás. Llega a 9 puntos.|Each island has a single resource: trade or fall behind. Reach 9 points.|Cada ilha tem um só recurso: comerciar ou ficar para trás. Chegue a 9 pontos.
+Pacto de facciones|Pact of factions|Pacto de facções
+Facciones con poderes propios y rivales con personalidad, en la costa de los fiordos. Llega a 9 puntos.|Factions with their own powers and rivals with personality, on the fjord coast. Reach 9 points.|Facções com poderes próprios e rivais com personalidade, na costa dos fiordes. Chegue a 9 pontos.
+Noche del volcán|Night of the volcano|Noite do vulcão
+Tormentas cada dos rondas junto a un volcán de minas. Llega a 9 puntos.|Storms every two rounds beside a volcano of mines. Reach 9 points.|Tempestades a cada duas rodadas junto a um vulcão de minas. Chegue a 9 pontos.
+Contrarreloj austral|Austral time trial|Contrarrelógio austral
+Solo 30 turnos: gana quien tenga más puntos al final. Misiones secretas y un rival difícil.|Only 30 turns: whoever has the most points at the end wins. Secret missions and one hard rival.|Apenas 30 turnos: vence quem tiver mais pontos no fim. Missões secretas e um rival difícil.
+El último confín|The farthest edge|O último confim
+Mapa con revelación tardía y todas las variantes contra tres rivales difíciles. Llega a 12 puntos.|Late-reveal map and every variant against three hard rivals. Reach 12 points.|Mapa com revelação tardia e todas as variantes contra três rivais difíceis. Chegue a 12 pontos.
 Cancelar|Cancel|Cancelar
 Cargar equilibrado|Load balanced|Carregar equilibrado
 Carrera relámpago|Lightning race|Corrida relâmpago
@@ -4378,7 +4421,7 @@ function showMenu(){
    <h3 class="hsec">Jugar</h3>
    <div class="hgrid">
     ${hubTile('bolt','Partida rápida','Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.','showStart()')}
-    ${hubTile('flag','Campaña',`Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.`,'showCampaign()')}
+    ${hubTile('flag','Campaña',`Catorce misiones en dos capítulos. Completadas: ${campDone()} de ${CAMP.length}.`,'showCampaign()')}
     ${hubTile('cal','Partida diaria',`El mismo mapa para todos hoy (${dk}). ${dd?(dd.won?`Ganada en ${dd.rounds} rondas.`:'Ya la jugaste, sin victoria.'):'Aún no la juegas.'}`,'startDaily()')}
     ${hubTile('users','Multijugador en línea','Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.'+(AUTH.user?'':' Requiere cuenta.'),'showNetMenu()')}
     ${hubTile('book','Tutorial guiado','Una partida corta contra rivales fáciles, acompañada paso a paso.','playTutorial()')}
