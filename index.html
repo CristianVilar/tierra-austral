@@ -4378,7 +4378,9 @@ const AUTH={
     sb.auth.onAuthStateChange((ev,s)=>{setTimeout(()=>this.onChange(ev,s),0);});
     return sb;
   },
-  bootErr:null,bootRaw:null,build:'b4',
+  bootErr:null,bootRaw:null,build:'b5',
+  keyList(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-/.test(x))k.push(x.replace(/^sb-[^-]*-/,''));}return k.length?k.join(','):'(ninguna)';}catch(e){return '(sin acceso)';}},
+  ckList(){try{return (document.cookie.match(/(?:^|; )sb-[^=]+/g)||[]).map(c=>c.trim().replace(/^sb-[^-]*-/,'')).join(',')||'(ninguna)';}catch(e){return '(sin acceso)';}},
   /* El verificador PKCE se guarda tambien en una cookie corta: en algunos navegadores
      localStorage no sobrevive al salto a Google y la sesion no se podia completar. */
   ck(k){try{const m=document.cookie.match(new RegExp('(?:^|; )'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)'));return m?decodeURIComponent(m[1]):null;}catch(e){return null;}},
@@ -4420,8 +4422,7 @@ const AUTH={
           const x=await sb.auth.exchangeCodeForSession(code);
           if(x.error){
             this.bootErr='No se pudo completar el acceso.';
-            this.bootRaw=String(x.error.message||x.error).slice(0,170)+' ['+this.build+' ver='+(tenia?'sí':'no')+' ck='+(this.ck('v')?'sí':'no')+' marca='+marca+']';
-            if(!tenia)this.dropAuthKeys();
+            this.bootRaw='['+this.build+' ver='+(tenia?'sí':'no')+' marca='+marca+' claves='+this.keyList()+' cookies='+this.ckList()+'] '+String(x.error.message||x.error).slice(0,120);
           } else ses=x.data&&x.data.session;}
         if(!ses){const r=await sb.auth.getSession();ses=r.data&&r.data.session;}
         this.setSession(ses);if(ses)this.afterIn();
