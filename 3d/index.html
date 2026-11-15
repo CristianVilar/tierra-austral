@@ -131,6 +131,7 @@ html.bare #players,html.bare #back2d,html.bare .hud.bot,html.bare #endp,html.bar
 </div>
 <div id="drawer">
   <div><h5>Hora del día</h5><div class="seg" id="tod" role="group" aria-label="Hora del día" style="display:inline-flex"><button data-t="amanecer">Alba</button><button data-t="dia" class="on">Día</button><button data-t="atardecer">Ocaso</button><button data-t="noche">Noche</button></div></div>
+  <div><h5>Entorno</h5><div class="seg" id="env" role="group" aria-label="Entorno" style="display:inline-flex"><button data-v="mar" class="on">Mar</button><button data-v="mesa">Mesa</button></div></div>
   <div><h5>Clima (eventos de partida)</h5><div id="evbar" role="group" aria-label="Eventos climáticos"><button data-e="none" class="on">Despejado</button><button data-e="sequia">☀ Sequía</button><button data-e="temporal">⛈ Temporal</button><button data-e="helada">❄ Helada</button><button data-e="crecida">🌊 Crecida</button><button data-e="ventisca">🌨 Ventisca</button><button data-e="cosecha">🌾 Cosecha</button><button data-e="festival">🎉 Festival</button></div></div>
   <div class="row"><button class="pill" id="q" aria-label="Calidad gráfica">Calidad: …</button><button class="pill" id="cam">⌖ Centrar cámara</button><button class="pill" id="isl">🏝 Ver isla aparte</button></div>
 </div>
@@ -261,6 +262,7 @@ const SKY=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,fog:fal
 SKY.toneMapped=true;
 const sky=new THREE.Mesh(new THREE.SphereGeometry(300,24,16),SKY);sky.renderOrder=-10;scene.add(sky);
 scene.fog=new THREE.Fog(0xcfe9f2,30,120);
+let MESA=false;const MESACOL=new THREE.Color('#2a180c');
 
 /* ---------- agua ---------- */
 const MASK_HALF=LV?Math.max(7.5,Math.max(...tiles.map(t=>Math.max(Math.abs(t.x),Math.abs(t.z))))+3.2):(ARCH?9.6:7.5);
@@ -1657,6 +1659,7 @@ function applyWeatherMods(){
   const n=fit*1.1*nm,f=fit*4.5*fm;scene.fog.near=n;scene.fog.far=f;WATER.uniforms.uFogN.value=n;WATER.uniforms.uFogF.value=f;
   renderer.toneMappingExposure=1.12+ex;
   water.position.y=W.crecida*.09;
+  if(MESA){scene.fog.color.copy(MESACOL);scene.fog.near=fit*2.4;scene.fog.far=fit*6;}
   WATER.uniforms.uStorm.value=Math.min(1.2,W.temporal+W.crecida*.25+W.ventisca*.3);WX.storm=W.temporal;
 }
 /* partículas calculadas en la GPU */
@@ -1795,6 +1798,69 @@ function loop(){
     if(DEBUG)$('#fps').textContent=fpsAvg.toFixed(0)+' fps · '+QN[Q]+' · '+renderer.info.render.triangles+' tri';}
 }
 
+
+/* ---------- entorno «Mesa»: tablero sobre una mesa de madera ---------- */
+let mesaGrp=null,mesaLamp=null;
+function mz_woodTex(){
+  const W=1024,H=512,planks=8,ph=H/planks,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const id=x.createImageData(W,H),d=id.data,P=[];
+  for(let p=0;p<planks;p++)P.push({b:[126+hash2(p,1,3)*22-11,82+hash2(p,2,3)*16-8,46+hash2(p,3,3)*10-5],f1:hash2(p,4,3)*6.28,f2:hash2(p,5,3)*6.28,f3:hash2(p,6,3)*6.28,fr:.2+hash2(p,7,3)*.12});
+  for(let y=0;y<H;y++){const p=Math.floor(y/ph),ly=y-p*ph,q=P[p],gap=ly<2.2||ly>ph-2.6;
+    for(let xx=0;xx<W;xx++){
+      const a=xx/W*6.2832,w=Math.sin(a*2+q.f1)*1.6+Math.sin(a*5+q.f2)*.6+Math.sin(a*11+q.f3)*.25;
+      const ring=Math.sin(ly*q.fr+w+p*13),fine=hash2(xx,y,5)-.5;
+      let k=.86+.07*ring+.05*Math.sin(a*3+q.f3+y*.02)+fine*.07;if(gap)k*=.4;
+      const i=(y*W+xx)*4;d[i]=q.b[0]*k;d[i+1]=q.b[1]*k;d[i+2]=q.b[2]*k;d[i+3]=255;}}
+  x.putImageData(id,0,0);
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=8;return t;
+}
+function mz_seaTex(){
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,256,256);g.addColorStop(0,'#3f8dbd');g.addColorStop(1,'#2f77a8');x.fillStyle=g;x.fillRect(0,0,256,256);
+  x.strokeStyle='#ffffff30';x.lineWidth=3;x.lineCap='round';
+  for(let r=0;r<8;r++)for(let k=0;k<3;k++){const y=r*32+8+(k%2)*14,o=(r*53+k*71)%256;x.beginPath();x.moveTo(o,y);x.quadraticCurveTo(o+14,y-8,o+28,y);x.quadraticCurveTo(o+42,y+8,o+56,y);x.stroke();}
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;return t;
+}
+function mz_costCardTex(){
+  const c=document.createElement('canvas');c.width=512;c.height=400;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,400);g.addColorStop(0,'#e9dcb8');g.addColorStop(1,'#d3c093');x.fillStyle=g;x.beginPath();x.roundRect(6,6,500,388,22);x.fill();
+  x.strokeStyle='#6b4a22';x.lineWidth=6;x.stroke();x.strokeStyle='#8a6a3a';x.lineWidth=2;x.beginPath();x.roundRect(20,20,472,360,14);x.stroke();
+  x.fillStyle='#3a2410';x.textAlign='center';x.textBaseline='middle';x.font='900 38px Cinzel,Georgia,serif';x.fillText('COSTOS',256,52);
+  const rows=[['Sendero',['wood','brick']],['Pueblo',['wood','brick','wool','grain']],['Castillo',['grain','grain','ore','ore','ore']],['Carta',['wool','grain','ore']]];
+  rows.forEach((r,i)=>{const y=118+i*66;x.textAlign='left';x.font='800 28px Cinzel,Georgia,serif';x.fillStyle='#3a2410';x.fillText(r[0],40,y);
+    r[1].forEach((res,j)=>glyph(x,res,236+j*50,y,.52));});
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t;
+}
+function mz_buildMesa(){
+  const g=new THREE.Group();let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const t of tiles){x0=Math.min(x0,t.x);x1=Math.max(x1,t.x);z0=Math.min(z0,t.z);z1=Math.max(z1,t.z);}
+  const cx=(x0+x1)/2,cz=(z0+z1)/2,yT=Y0-.01;
+  const wt=mz_woodTex();wt.repeat.set(5,5);
+  const table=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshStandardMaterial({map:wt,roughness:.78,metalness:0}));
+  table.rotation.x=-Math.PI/2;table.position.set(cx,yT,cz);g.add(table);
+  // mar: una corona de fichas azules alrededor de la isla
+  const key=(a,b)=>Math.round(a*40)+','+Math.round(b*40),have=new Set(tiles.map(t=>key(t.x,t.z))),seen=new Set(),sg=tileGeo(.1),st=mz_seaTex();
+  const sm=new THREE.MeshStandardMaterial({map:st,roughness:.38,metalness:.02});
+  for(const t of tiles)for(let i=0;i<6;i++){const a=i*Math.PI/3,nx=t.x+Math.cos(a)*S*SQ3,nz=t.z+Math.sin(a)*S*SQ3,k=key(nx,nz);
+    if(have.has(k)||seen.has(k))continue;seen.add(k);const m=new THREE.Mesh(sg,sm);m.position.set(nx,Y0,nz);g.add(m);}
+  // tarjeta de costos sobre la mesa
+  const card=new THREE.Mesh(new THREE.PlaneGeometry(2.5,2),new THREE.MeshStandardMaterial({map:mz_costCardTex(),roughness:.85,transparent:true}));
+  card.rotation.set(-Math.PI/2,0,.18);card.position.set(x0-2.9,yT+.012,z1+2.2);g.add(card);
+  // luz cálida de vela
+  mesaLamp=new THREE.PointLight(0xffc27a,0,60,1.4);mesaLamp.position.set(x0-4,4.2,z0-3);g.add(mesaLamp);
+  g.visible=false;scene.add(g);return g;
+}
+function mz_setMesa(on){
+  if(on&&!mesaGrp){try{mesaGrp=mz_buildMesa();}catch(e){console.error(e);on=false;}}
+  MESA=!!on;
+  water.visible=!MESA;sky.visible=!MESA;scene.background=MESA?MESACOL:null;
+  for(const b of boats)b.visible=!MESA;for(const w of wakes)w.visible=!MESA;for(const f of shoreFoam)f.visible=!MESA;
+  if(typeof moored!=='undefined')for(const m of moored)if(m&&m.visible!==undefined)m.visible=!MESA;
+  if(mesaGrp){mesaGrp.visible=MESA;if(mesaLamp)mesaLamp.intensity=MESA?55:0;}
+  document.querySelectorAll('#env button').forEach(b=>b.classList.toggle('on',b.dataset.v===(MESA?'mesa':'mar')));
+  try{localStorage.setItem('ta3d-env',MESA?'mesa':'mar');}catch(e){}
+}
+document.querySelectorAll('#env button').forEach(b=>b.onclick=()=>mz_setMesa(b.dataset.v==='mesa'));
+
 /* ---------- arranque ---------- */
 (async()=>{
   try{
@@ -1805,6 +1871,7 @@ function loop(){
     try{await Promise.all([document.fonts.load('900 100px Cinzel'),document.fonts.load('700 20px Cinzel')]);}catch(e){}
     buildChips();
     await buildIsland();if(LV){LVST=LV;MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}if(LVNUI)applyUI(LVNUI);if(EMBED){document.body.classList.add('embed');parent.postMessage({t:'ready'},location.origin);}}else{renderPlayers();$('#hint').textContent='Vista de demostración · abre una partida en otra pestaña y aparecerá aquí en 3D';$('#hint').style.opacity=1;}
+    try{if(/[?&]mesa/.test(location.search)||localStorage.getItem('ta3d-env')==='mesa')mz_setMesa(true);}catch(e){}
     setProgress(.95,'Último ajuste de luces…');await sleep(30);
     todSet('dia');
     controls.enabled=false;intro={t:0};camPlace(fit*1.55,.55,.5);
