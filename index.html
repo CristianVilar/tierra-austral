@@ -152,6 +152,8 @@ body.landon{overflow:hidden}
 .lfine{color:#93a9b7;font-size:12.5px;text-align:center;margin:12px 0 0;line-height:1.45}
 .lerr{color:#ff9f90;font-size:13.5px;text-align:center;margin:10px 0 0;min-height:18px}
 .lerr:empty{min-height:0;margin:0}
+.lraw{color:#8fa6b4;font-size:11.5px;text-align:center;margin:2px 0 0;word-break:break-word;line-height:1.35}
+.lraw:empty{margin:0}
 .llang{display:flex;justify-content:center;gap:4px;margin:16px 0 0;flex-wrap:wrap}
 .llang button{background:none;border:0;color:#b9ccd8;font:800 12.5px var(--font-body);letter-spacing:.1em;text-transform:uppercase;padding:9px 10px;cursor:pointer;border-bottom:2px solid #0000;min-height:40px}
 .llang button.on{color:var(--accent);border-bottom-color:var(--accent)}
@@ -4126,6 +4128,9 @@ Demasiados intentos. Espera unos minutos y vuelve a intentar.|Too many attempts.
 El código es incorrecto o ya venció. Pide uno nuevo.|The code is wrong or has expired. Request a new one.|O código está errado ou venceu. Peça um novo.
 Sin conexión con el servidor. Revisa tu internet.|Cannot reach the server. Check your internet.|Sem conexão com o servidor. Verifique sua internet.
 No se pudo completar. Intenta de nuevo.|Could not complete. Try again.|Não foi possível concluir. Tente de novo.
+No se pudo entrar con Google.|Could not sign in with Google.|Não foi possível entrar com o Google.
+No se pudo completar el acceso con Google.|Could not finish signing in with Google.|Não foi possível concluir o acesso com o Google.
+No se pudo completar el acceso.|Could not finish signing in.|Não foi possível concluir o acesso.
 Tu cuenta|Your account|Sua conta
 Forma de entrar|Sign-in method|Forma de entrar
 Código por correo|Email code|Código por e-mail
@@ -4280,7 +4285,7 @@ function landHTML(){
        <div class="ldiv"><span>o</span></div>`}
    <div class="field"><label for="l-name">Nombre del jugador</label><input id="l-name" type="text" maxlength="14" value="${esc(PNAME)}" placeholder="Tu nombre" autocomplete="nickname" autocapitalize="words"></div>
    <button class="btn gold" id="l-go">${u?'Entrar':'Jugar como invitado'}</button>
-   <p class="lerr" id="l-err" role="alert"></p>
+   <p class="lerr" id="l-err" role="alert"></p><p class="lraw" id="l-raw"></p>
    ${u?'':'<p class="lfine">Como invitado tu progreso queda solo en este dispositivo y no puedes jugar en línea.</p>'}
    <div class="llang" role="group" aria-label="Idioma">${Object.keys(LANGS).map(k=>`<button class="${k===LANG?'on':''}" data-l="${k}" aria-pressed="${k===LANG}">${LANGS[k]}</button>`).join('')}</div>
    <p class="lver">v${APPVER}</p>
@@ -4292,6 +4297,7 @@ function showWelcome(){
   l.classList.add('on');document.body.classList.add('landon');
   $('#landin').innerHTML=landHTML();
   const inp=$('#l-name'),er=$('#l-err');
+  if(AUTH.bootErr){er.textContent=AUTH.bootErr;const rw=$('#l-raw');if(rw&&AUTH.bootRaw)rw.textContent='Detalle: '+AUTH.bootRaw;AUTH.bootErr=AUTH.bootRaw=null;}
   const go=()=>{PNAME=(inp.value||'').replace(/[<>&"']/g,'').trim().slice(0,14)||'Jugador';try{localStorage.setItem('ta-name',PNAME);}catch(e){}landHide();showMenu();};
   $('#l-go').onclick=go;
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
@@ -4359,7 +4365,7 @@ const AUTH={
   user:null,session:null,sb:null,ctx:null,
   url:'https://uyzzgugjjboxqxtctsgc.supabase.co',key:'sb_publishable_0_Bb00Lz1QyWW4fXsFR9SQ_kT4mc0Pm',
   token(){return this.session&&this.session.access_token||null;},
-  hasStored(){try{for(let i=0;i<localStorage.length;i++){if(/^sb-.*-auth-token/.test(localStorage.key(i)))return true;}}catch(e){}return /[?&]code=/.test(location.search);},
+  hasStored(){try{if(localStorage.getItem('ta-oauth')==='1')return true;for(let i=0;i<localStorage.length;i++){if(/^sb-.*-auth-token/.test(localStorage.key(i)))return true;}}catch(e){}return /[?&]code=/.test(location.search);},
   async lib(){
     if(window.supabase&&window.supabase.createClient)return;
     await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('lib'));document.head.appendChild(sc);});
@@ -4372,9 +4378,33 @@ const AUTH={
     sb.auth.onAuthStateChange((ev,s)=>{setTimeout(()=>this.onChange(ev,s),0);});
     return sb;
   },
+  bootErr:null,bootRaw:null,
+  qp(k){try{const q=new URLSearchParams(location.search);if(q.get(k))return q.get(k);const h=new URLSearchParams((location.hash||'').replace(/^#/,''));return h.get(k);}catch(e){return null;}},
+  pend(){try{return localStorage.getItem('ta-oauth')==='1';}catch(e){return false;}},
+  clearPend(){try{localStorage.removeItem('ta-oauth');}catch(e){}},
+  cleanUrl(){
+    try{const u=new URL(location.href);let ch=false;
+      ['code','error','error_code','error_description','state'].forEach(k=>{if(u.searchParams.has(k)){u.searchParams.delete(k);ch=true;}});
+      if(/access_token=|error=/.test(u.hash||'')){u.hash='';ch=true;}
+      if(ch)history.replaceState({},'',u.pathname+(u.search||''));
+    }catch(e){}
+  },
   async boot(){
-    if(!this.hasStored())return;
-    try{await Promise.race([(async()=>{const sb=await this.client();const r=await sb.auth.getSession();this.setSession(r.data&&r.data.session);this.afterIn();})(),new Promise(r=>setTimeout(r,4000))]);}catch(e){}
+    const code=this.qp('code'),pend=this.pend(),uerr=this.qp('error_description')||this.qp('error_code')||this.qp('error');
+    if(uerr){this.bootErr='No se pudo entrar con Google.';this.bootRaw=String(uerr).replace(/\+/g,' ').slice(0,220);this.clearPend();this.cleanUrl();return;}
+    if(!this.hasStored()&&!pend)return;
+    try{
+      const sb=await this.client();
+      await Promise.race([(async()=>{
+        const r=await sb.auth.getSession();let ses=r.data&&r.data.session;
+        if(!ses&&code){const x=await sb.auth.exchangeCodeForSession(code);
+          if(x.error){this.bootErr='No se pudo completar el acceso.';this.bootRaw=String(x.error.message||x.error).slice(0,220);}
+          else ses=x.data&&x.data.session;}
+        this.setSession(ses);if(ses)this.afterIn();
+      })(),new Promise(r=>setTimeout(r,code?20000:5000))]);
+    }catch(e){this.bootErr='No se pudo completar el acceso.';this.bootRaw=String(e&&e.message||e).slice(0,220);}
+    if(pend&&!this.user&&!this.bootErr){this.bootErr='No se pudo completar el acceso con Google.';this.bootRaw='sin sesión ni error del servidor'+(code?'':'; el servidor no devolvió código');}
+    this.clearPend();this.cleanUrl();
   },
   setSession(s){this.session=s||null;this.user=s&&s.user?s.user:null;},
   pulledFor:null,
@@ -4399,7 +4429,7 @@ const AUTH={
   async sendCode(email){const sb=await this.client();const r=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});if(r.error)throw r.error;},
   async verify(email,token){const sb=await this.client();const r=await sb.auth.verifyOtp({email,token,type:'email'});if(r.error)throw r.error;if(r.data&&r.data.session){this.setSession(r.data.session);this.afterIn();}},
   async google(){
-    const sb=await this.client();let sala='';try{sala=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);}catch(e){}
+    const sb=await this.client();let sala='';try{localStorage.setItem('ta-oauth','1');}catch(e){}try{sala=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);}catch(e){}
     const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname+(sala?'?sala='+sala:'')}});
     if(r.error)throw r.error;
   },
@@ -5389,7 +5419,7 @@ updateSndUI();updateMusUI();
 render();
 setInterval(tick,250);
 if(LANG!=='es'){TR.dirty=true;trAll();}
-{const go0=()=>{if(!NETH.autoJoin())showWelcome();};if(AUTH.hasStored())AUTH.boot().then(go0,go0);else go0();}
+{const go0=()=>{if(!NETH.autoJoin())showWelcome();};AUTH.boot().then(go0,go0);}
 
 /* teclado en pantalla: el cuadro sube y el campo se queda a la vista (no se mueve ni se corta) */
 (function(){
