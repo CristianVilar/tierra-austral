@@ -183,6 +183,11 @@ body.landon{overflow:hidden}
 }
 
 
+
+/* botones de respuesta a tratos */
+.btn.ok{background:linear-gradient(#3f9d5b,#2b7a43);color:#fff;border-color:#8fe0a8}
+.btn.no{background:linear-gradient(#b8503f,#8d3526);color:#fff;border-color:#f0a99c}
+.tpl2{margin:6px 0 0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
 /* Disposición compacta */
 #cmenu{display:none}
 body.compact header.top{display:none}
@@ -1827,10 +1832,31 @@ function humanTradeModal(o){
     const ic=m=>RES.filter(r=>m[r]).map(r=>`<span class="chip" style="--rc:${RCOL[r]};display:inline-block;min-width:62px">${icon(r,24)}<b>${m[r]}</b><span>${RNAME[r]}</span></span>`).join(' ');
     openModal(`<h2>Propuesta de trato</h2><p><b>${pn(o.from)}</b> te ofrece:</p><div style="margin:6px 0">${ic(o.give)}</div><p>a cambio de:</p><div style="margin:6px 0">${ic(o.get)}</div>
       <p id="dsc-t" class="dscT"></p>
-      <div class="mact"><button class="btn" id="tr-no">Rechazar</button><button class="btn primary" id="tr-ok">Aceptar</button></div>`);
+      <div class="mact"><button class="btn no" id="tr-no">Rechazar</button><button class="btn ok" id="tr-ok">Aceptar</button></div>`);
     $('#tr-ok').onclick=()=>done(true);$('#tr-no').onclick=()=>{say(`Rechazas el trato de ${pn(o.from)}.`);done(false);};
     updateClocks();
   });});
+}
+function botCounter(pid,o){ // la IA responde un rechazo pidiendo 1 recurso más de tu mano
+  const goal=botGoal(pid),a=G.players[o.from];
+  const order=RES.slice().sort((x,y)=>((goal[y]||0)>G.players[pid].res[y]?1:0)-((goal[x]||0)>G.players[pid].res[x]?1:0));
+  for(const r of order){
+    if(o.get[r]||(o.give[r]||0)>=a.res[r]||(o.give[r]||0)>=9)continue;
+    const o2={from:o.from,to:o.to,give:{...o.give,[r]:(o.give[r]||0)+1},get:{...o.get}};
+    if(tradeValid(o2)&&botDecides(pid,o2))return o2;
+  }
+  return null;
+}
+function counterModal(c,old){
+  return new Promise(res=>{
+    const wasPaused=G.paused;setPaused(true);
+    const done=ok=>{closeModal();if(!wasPaused)setPaused(false);res(ok);};
+    const ic=m=>RES.filter(r=>m[r]).map(r=>`<span class="chip" style="--rc:${RCOL[r]};display:inline-block;min-width:62px">${icon(r,24)}<b>${m[r]}</b><span>${RNAME[r]}</span></span>`).join(' ');
+    openModal(`<h2>Contraoferta</h2><p><b>${pn(c.to)}</b> no acepta tu trato, pero propone:</p>
+      <p class="tpl2">Entregas</p><div style="margin:4px 0 8px">${ic(c.give)}</div><p class="tpl2">Recibes</p><div style="margin:4px 0">${ic(c.get)}</div>
+      <div class="mact"><button class="btn no" id="co-no">Rechazar</button><button class="btn ok" id="co-ok">Aceptar</button></div>`);
+    $('#co-ok').onclick=()=>done(true);$('#co-no').onclick=()=>done(false);
+  });
 }
 async function askTrade(o){
   if(!tradeValid(o))return false;
@@ -1888,6 +1914,12 @@ async function propose(){
         applyTrade(o);say(`${pn(pid)} acepta el trato.`);sfx('coin');G.msg=`${pn(pid)} aceptó tu trato.`;G.busy=false;render();return;
       }
       say(`${pn(pid)} rechaza el trato.`);render();
+      if(seatKind(pid)==='bot'){
+        const c=botCounter(pid,o);
+        if(c){say(`${pn(pid)} contraofrece: ${offerTxt(c)}.`);render();
+          if(await counterModal(c,o)){applyTrade(c);say(`Aceptas la contraoferta de ${pn(pid)}.`);sfx('coin');G.msg=`Trato cerrado con ${pn(pid)}.`;G.busy=false;render();return;}
+          say(`Rechazas la contraoferta de ${pn(pid)}.`);render();}
+      }
     }
     say('Nadie acepta tu propuesta.');sfx('deny');G.msg='Nadie aceptó. Prueba ofrecer más.';
   }catch(e){if(e instanceof Cancel)return;throw e;}
@@ -3359,6 +3391,10 @@ Cambia cartas con el banco|Trade cards with the bank|Troque cartas com o banco
 Campaña|Campaign|Campanha
 Campaña · misión|Campaign · mission|Campanha · missão
 Campeón de la campaña|Campaign champion|Campeão da campanha
+Contraoferta|Counteroffer|Contraoferta
+no acepta tu trato, pero propone:|doesn't accept your deal, but proposes:|não aceita seu trato, mas propõe:
+Recibes|You receive|Você recebe
+Rechazas la contraoferta de|You reject the counteroffer from|Você rejeita a contraoferta de
 Disposición: compacta|Layout: compact|Disposição: compacta
 Disposición: completa|Layout: full|Disposição: completa
 Tablero más grande, jugadores en una fila y sin barra superior. Toca para volver a la disposición completa.|Bigger board, players in one row and no top bar. Tap to go back to the full layout.|Tabuleiro maior, jogadores em uma linha e sem barra superior. Toque para voltar ao layout completo.
