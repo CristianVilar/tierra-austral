@@ -198,6 +198,10 @@ body:has(#modal.open){overflow:hidden}
   .mbox>.mact:last-child{position:sticky;bottom:0;margin:10px -16px 0;padding:22px 16px calc(14px) ;background:linear-gradient(180deg,#0000,var(--panel) 34%);justify-content:stretch;z-index:2}
   .mbox>.mact:last-child .btn{flex:1 1 0}
 }
+
+/* Mapa antiguo (solo 2D) */
+body.oldmap .boardwrap{background:linear-gradient(180deg,#5a4126,#3d2b18);border-color:#8a6a3b}
+body.oldmap #board svg{box-shadow:0 0 0 3px #2a1c0e,0 0 0 5px #b58d4e}
 /* botones de respuesta a tratos */
 .btn.ok{background:linear-gradient(#3f9d5b,#2b7a43);color:#fff;border-color:#8fe0a8}
 .btn.no{background:linear-gradient(#b8503f,#8d3526);color:#fff;border-color:#f0a99c}
@@ -2264,12 +2268,29 @@ function shipSVG(a,b,c){
 function freshEl(k,id){const f=G.fresh;if(!f||f.k!==k||f.id!==id||RM())return null;const el=Date.now()-f.at;return el<900?el/1000:null;}
 const fvA=id=>{const e=freshEl('v',id);return e===null?'':` class="bpop" style="animation-delay:-${e.toFixed(2)}s"`;};
 const fvRing=v=>{const e=freshEl('v',v.id);return e===null?'':`<circle class="bring" cx="${v.x}" cy="${v.y}" r="14" fill="none" stroke="#fff" stroke-width="3" style="animation-delay:-${e.toFixed(2)}s" pointer-events="none"/>`;};
+let MAPSKIN='';try{MAPSKIN=localStorage.getItem('ta-skin')||'';}catch(e){}
+function setSkin(v){MAPSKIN=v;try{localStorage.setItem('ta-skin',v);}catch(e){}document.body.classList.toggle('oldmap',v==='old');try{if(G&&G.players)render();}catch(e){}showMenu();}
+document.body.classList.toggle('oldmap',MAPSKIN==='old');
+function oldDecor(x0,y0,w,h){
+  const ink='#4a3320',k=(a,b)=>`${(x0+w*a).toFixed(0)},${(y0+h*b).toFixed(0)}`;
+  const rose=(cx,cy,r)=>{let t=`<g transform="translate(${cx},${cy})" fill="none" stroke="${ink}" stroke-width="1.4" opacity=".85"><circle r="${r}"/><circle r="${r*.78}" stroke-width=".8"/>`;
+    for(let i=0;i<8;i++){const a=i*Math.PI/4,l=i%2?r*.62:r*.98,w2=i%2?r*.12:r*.16,ca=Math.cos(a),sa=Math.sin(a);t+=`<polygon points="${(ca*l).toFixed(1)},${(sa*l).toFixed(1)} ${(-sa*w2).toFixed(1)},${(ca*w2).toFixed(1)} 0,0" fill="${i%2?'#e8d8a8':ink}" stroke-width=".9"/><polygon points="${(ca*l).toFixed(1)},${(sa*l).toFixed(1)} ${(sa*w2).toFixed(1)},${(-ca*w2).toFixed(1)} 0,0" fill="${i%2?ink:'#e8d8a8'}" fill-opacity=".8" stroke-width=".9"/>`;}
+    return t+`<text y="${-r-5}" text-anchor="middle" font-size="${r*.3}" font-weight="800" fill="${ink}" stroke="none" font-family="Fraunces,serif">N</text></g>`;};
+  const ship=(x,y,sc,fl)=>`<g transform="translate(${x},${y}) scale(${fl*sc},${sc})" fill="#f1e4bd" stroke="${ink}" stroke-width="1.5" stroke-linejoin="round"><path d="M-16 0H16L11 8H-11Z" fill="#8a5a2c"/><line x1="0" y1="0" x2="0" y2="-26"/><path d="M0 -25Q14 -17 12 -4H0Z"/><path d="M0 -22Q-10 -15 -9 -4H0Z"/><path d="M-20 11q5 -4 10 0t10 0t10 0t10 0" fill="none" stroke-opacity=".7"/></g>`;
+  const serp=(x,y,sc)=>`<g transform="translate(${x},${y}) scale(${sc})" fill="#cdbf8f" stroke="${ink}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M-46 8q10 -26 22 0q10 -26 22 0q8 -22 18 -6l6 -16q4 -6 10 -2l-4 8l8 4l-8 2q-6 14 -12 14q-8 -14 -18 0q-12 -16 -22 0q-10 -12 -16 0z"/><circle cx="28" cy="-12" r="1.5" fill="${ink}"/><path d="M-56 16q8 -4 14 0t14 0t14 0t14 0" fill="none" stroke-opacity=".7"/></g>`;
+  const cart=`<g transform="translate(${(x0+12).toFixed(0)},${(y0+12).toFixed(0)})"><rect width="178" height="46" rx="6" fill="#efe2b8" stroke="${ink}" stroke-width="2"/><rect x="4" y="4" width="170" height="38" rx="3" fill="none" stroke="${ink}" stroke-width=".8"/><text x="89" y="22" text-anchor="middle" font-size="17" font-weight="800" letter-spacing="2" fill="${ink}" font-family="Fraunces,serif">TIERRA AUSTRAL</text><text x="89" y="36" text-anchor="middle" font-size="9.5" font-weight="700" letter-spacing="2.5" fill="${ink}" font-family="Nunito Sans,sans-serif">CARTA DE NAVEGACIÓN</text></g>`;
+  const scale=`<g transform="translate(${(x0+w-196).toFixed(0)},${(y0+h-26).toFixed(0)})" stroke="${ink}" stroke-width="1.6" fill="none"><line x1="0" y1="0" x2="150" y2="0"/><line x1="0" y1="-5" x2="0" y2="5"/><line x1="50" y1="-4" x2="50" y2="4"/><line x1="100" y1="-4" x2="100" y2="4"/><line x1="150" y1="-5" x2="150" y2="5"/><text x="75" y="17" text-anchor="middle" font-size="10" font-weight="700" fill="${ink}" stroke="none" font-family="Nunito Sans,sans-serif" letter-spacing="1.5">LEGUAS</text></g>`;
+  return `<g pointer-events="none">${cart}${rose(x0+w-62,y0+66,38)}${ship(x0+58,y0+h-52,.9,1)}${ship(x0+w-96,y0+h*.52,.7,-1)}${serp(x0+w*.2,y0+h*.9,.8)}${scale}</g>`;
+}
 function boardSVG(){
-  const GR={wood:['#3e9250','#1f5a33'],brick:['#cf714c','#8f432c'],wool:['#aedb76','#74a948'],grain:['#f2d160','#c79f2c'],ore:['#9aa8b8','#617082'],desert:['#e2d09b','#bfa66b']};
+  const OLD=MAPSKIN==='old';
+  const GR=OLD?{wood:['#7f9a6a','#4f6e47'],brick:['#c88a68','#935a41'],wool:['#c3d28f','#8fa66a'],grain:['#e6cb7c','#c0a054'],ore:['#a9a79a','#74705f'],desert:['#ead9a8','#cdb67e']}:{wood:['#3e9250','#1f5a33'],brick:['#cf714c','#8f432c'],wool:['#aedb76','#74a948'],grain:['#f2d160','#c79f2c'],ore:['#9aa8b8','#617082'],desert:['#e2d09b','#bfa66b']};
   let s=`<svg viewBox="${viewBoxStr()}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tablero de Tierra Austral">
   <defs>
-   <radialGradient id="sea" cx="50%" cy="45%" r="78%"><stop offset="0" stop-color="#2a7893"/><stop offset=".7" stop-color="#17506a"/><stop offset="1" stop-color="#0c2c3d"/></radialGradient>
-   <pattern id="waves" width="46" height="22" patternUnits="userSpaceOnUse"><path d="M0 11q11.5-9 23 0t23 0" fill="none" stroke="#fff" stroke-opacity=".13" stroke-width="1.6"/></pattern>
+   <radialGradient id="sea" cx="50%" cy="45%" r="78%">${OLD?'<stop offset="0" stop-color="#ecdcb0"/><stop offset=".72" stop-color="#d9c18a"/><stop offset="1" stop-color="#b5935a"/>':'<stop offset="0" stop-color="#2a7893"/><stop offset=".7" stop-color="#17506a"/><stop offset="1" stop-color="#0c2c3d"/>'}</radialGradient>
+   <filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter>
+   <filter id="paper" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="9" result="t"/><feColorMatrix in="t" type="matrix" values="0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 .22 0"/></filter>
+   <pattern id="waves" width="46" height="22" patternUnits="userSpaceOnUse"><path d="M0 11q11.5-9 23 0t23 0" fill="none" stroke="${OLD?'#4a3320':'#fff'}" stroke-opacity="${OLD?'.16':'.13'}" stroke-width="${OLD?1.2:1.6}"/></pattern>
    <filter id="sh" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="1.7" flood-color="#000" flood-opacity=".6"/></filter>
    <radialGradient id="g-fog" cx="50%" cy="42%" r="70%"><stop offset="0" stop-color="#7c93a6"/><stop offset="1" stop-color="#3f5568"/></radialGradient>
    <radialGradient id="tok" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#e3d3a6"/></radialGradient>
@@ -2277,9 +2298,10 @@ function boardSVG(){
    ${H.map(h=>`<clipPath id="c${h.id}"><polygon points="${h.v.map(i=>(V[i].x-h.x).toFixed(1)+','+(V[i].y-h.y).toFixed(1)).join(' ')}"/></clipPath>`).join('')}
   </defs>
   <rect x="${VB[0]}" y="${VB[1]}" width="${VB[2]}" height="${VB[3]}" rx="26" fill="url(#sea)"/><rect x="${VB[0]}" y="${VB[1]}" width="${VB[2]}" height="${VB[3]}" rx="26" fill="url(#waves)"/>`;
+  if(OLD)s+=`<rect x="${VB[0]}" y="${VB[1]}" width="${VB[2]}" height="${VB[3]}" rx="26" filter="url(#paper)"/>`+oldDecor(VB[0],VB[1],VB[2],VB[3]);
   // aguas someras y playa
-  for(const h of H){const pts=h.v.map(i=>V[i].x+','+V[i].y).join(' ');s+=`<polygon points="${pts}" fill="#4fb0c4" stroke="#4fb0c4" stroke-opacity=".28" stroke-width="46" stroke-linejoin="round"/>`;}
-  for(const h of H){const pts=h.v.map(i=>V[i].x+','+V[i].y).join(' ');s+=`<polygon points="${pts}" fill="#ead9a8" stroke="#ead9a8" stroke-width="15" stroke-linejoin="round"/>`;}
+  for(const h of H){const pts=h.v.map(i=>V[i].x+','+V[i].y).join(' ');s+=OLD?`<polygon points="${pts}" fill="#b9cfc0" stroke="#b9cfc0" stroke-opacity=".5" stroke-width="40" stroke-linejoin="round" filter="url(#rough)"/>`:`<polygon points="${pts}" fill="#4fb0c4" stroke="#4fb0c4" stroke-opacity=".28" stroke-width="46" stroke-linejoin="round"/>`;}
+  for(const h of H){const pts=h.v.map(i=>V[i].x+','+V[i].y).join(' ');s+=OLD?`<polygon points="${pts}" fill="#f3e7c2" stroke="#4a3320" stroke-width="16" stroke-linejoin="round" filter="url(#rough)"/><polygon points="${pts}" fill="#f3e7c2" stroke="#f3e7c2" stroke-width="12" stroke-linejoin="round"/>`:`<polygon points="${pts}" fill="#ead9a8" stroke="#ead9a8" stroke-width="15" stroke-linejoin="round"/>`;}
   // puertos
   for(const pt of PORTS){
     const a=V[pt.e.a],b=V[pt.e.b],d=Math.hypot(pt.mx,pt.my)||1,px=pt.mx+pt.mx/d*41,py=pt.my+pt.my/d*41;
@@ -2310,7 +2332,7 @@ function boardSVG(){
     const fl=G.flash&&h.num===G.flash&&h.id!==G.robber?' class="flash"':'';
     if(rv)s+=`<g class="revhex" style="animation-delay:${(h.id*0.07-rvt).toFixed(2)}s">`;
     s+=`<polygon points="${pts}" fill="url(#g-${h.type})" stroke="#16262e" stroke-width="2.4" stroke-linejoin="round" data-k="h" data-id="${h.id}"/>
-    <g transform="translate(${h.x},${h.y})" clip-path="url(#c${h.id})" pointer-events="none">${h.art}</g>
+    <g transform="translate(${h.x},${h.y})" clip-path="url(#c${h.id})" pointer-events="none"${OLD?' style="filter:sepia(.5) saturate(.75) contrast(.95)"':''}>${h.art}</g>
     <polygon points="${h.v.map(i=>(h.x+(V[i].x-h.x)*.93).toFixed(1)+','+(h.y+(V[i].y-h.y)*.93).toFixed(1)).join(' ')}" fill="none" stroke="#fff" stroke-opacity=".26" stroke-width="1.4" stroke-linejoin="round" pointer-events="none"/>
     <polygon points="${pts}" fill="none"${fl} stroke="#16262e" stroke-width="2.4" stroke-linejoin="round" pointer-events="none"/>`;
     if(h.type!=='desert'){
@@ -2371,6 +2393,10 @@ function boardSVG(){
   // resaltado del puma
   if(humanTurn()&&m==='robber')for(const h of H)if(h.id!==G.robber){
     s+=`<polygon class="hl" points="${h.v.map(i=>V[i].x+','+V[i].y).join(' ')}" fill="#fff" fill-opacity=".24" stroke="#fff" stroke-width="3" stroke-linejoin="round" data-k="h" data-id="${h.id}" ${hlA('h',h.id)} style="cursor:pointer"/>`;
+  }
+  if(OLD){
+    s=s.split('stroke="#16262e"').join('stroke="#4a3320"');
+    s+=`<rect x="${VB[0]+5}" y="${VB[1]+5}" width="${VB[2]-10}" height="${VB[3]-10}" rx="22" fill="none" stroke="#4a3320" stroke-width="3" pointer-events="none"/><rect x="${VB[0]+10}" y="${VB[1]+10}" width="${VB[2]-20}" height="${VB[3]-20}" rx="18" fill="none" stroke="#4a3320" stroke-width=".9" pointer-events="none"/>`;
   }
   return s+'</svg>';
 }
@@ -3308,6 +3334,7 @@ function playTutorial(){
   launch({name:'Tú',bots:2,speed:1,spectate:false,map:'beginner',rules:{target:6},diff:['normal','easy','easy']},{tutorial:true});
 }
 const MI={
+ map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>',
  bolt:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
  play:'<polygon points="6 4 20 12 6 20 6 4"/>',
  flag:'<path d="M4 22V4"/><path d="M4 4h13l-2 4 2 4H4"/>',
@@ -3409,6 +3436,10 @@ Contraoferta|Counteroffer|Contraoferta
 no acepta tu trato, pero propone:|doesn't accept your deal, but proposes:|não aceita seu trato, mas propõe:
 Recibes|You receive|Você recebe
 Rechazas la contraoferta de|You reject the counteroffer from|Você rejeita a contraoferta de
+Mapa 2D: antiguo|2D map: antique|Mapa 2D: antigo
+Mapa 2D: clásico|2D map: classic|Mapa 2D: clássico
+Pergamino con tinta, brújula y barcos. Toca para volver al mapa clásico.|Parchment with ink, compass and ships. Tap to go back to the classic map.|Pergaminho com tinta, bússola e navios. Toque para voltar ao mapa clássico.
+Toca para ver el tablero como un mapa antiguo de navegante: pergamino, tinta, brújula y barcos.|Tap to see the board as an antique navigator's map: parchment, ink, compass and ships.|Toque para ver o tabuleiro como um mapa antigo de navegador: pergaminho, tinta, bússola e navios.
 Disposición: compacta|Layout: compact|Disposição: compacta
 Disposición: completa|Layout: full|Disposição: completa
 Tablero más grande, jugadores en una fila y sin barra superior. Toca para volver a la disposición completa.|Bigger board, players in one row and no top bar. Tap to go back to the full layout.|Tabuleiro maior, jogadores em uma linha e sem barra superior. Toque para voltar ao layout completo.
@@ -4515,6 +4546,7 @@ function showMenu(){
    <h3 class="hsec">Ajustes y ayuda</h3>
    <div class="hgrid">
     ${hubTile('palette','Vista del tablero: '+(view3d()?'3D':'2D'),view3d()?'Las partidas se abren con el tablero en 3D. Toca para volver al 2D.':'Las partidas se abren con el tablero 2D. Toca para jugar en 3D (beta).','setView(view3d()?\'2d\':\'3d\')')}
+    ${hubTile('map','Mapa 2D: '+(MAPSKIN==='old'?'antiguo':'clásico'),MAPSKIN==='old'?'Pergamino con tinta, brújula y barcos. Toca para volver al mapa clásico.':'Toca para ver el tablero como un mapa antiguo de navegante: pergamino, tinta, brújula y barcos.','setSkin(MAPSKIN===\'old\'?\'\':\'old\')')}
     ${hubTile('list','Disposición: '+(isCompact()?'compacta':'completa'),isCompact()?'Tablero más grande, jugadores en una fila y sin barra superior. Toca para volver a la disposición completa.':'Toca para una disposición compacta: tablero más grande, jugadores en una fila y sin barra superior.','setCompact(!isCompact())')}
     ${hubTile('palette','Personalizar','Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.','showPersonalize()')}
     ${hubTile('list','Reglas y costos','Cómo se juega y cuánto cuesta cada construcción.','showRules()')}
