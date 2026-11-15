@@ -4380,7 +4380,18 @@ const AUTH={
     sb.auth.onAuthStateChange((ev,s)=>{setTimeout(()=>this.onChange(ev,s),0);});
     return sb;
   },
-  bootErr:null,bootRaw:null,build:'b7',
+  bootErr:null,bootRaw:null,build:'b8',
+  /* Generamos el par PKCE nosotros: en algunos navegadores la libreria no alcanza
+     a guardar el verificador y la vuelta de Google quedaba sin poder canjearse. */
+  b64url(buf){let b='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i++)b+=String.fromCharCode(u[i]);return btoa(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');},
+  async pkce(){
+    const cs='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    const a=new Uint8Array(56);crypto.getRandomValues(a);
+    let v='';for(let i=0;i<a.length;i++)v+=cs[a[i]%cs.length];
+    const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v));
+    return {v,c:this.b64url(d)};
+  },
+  vkey(){return 'ta-auth-code-verifier';},
   keyList(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-|^ta-auth/.test(x))k.push(x.replace(/^sb-[^-]*-/,''));}return k.length?k.join(','):'(ninguna)';}catch(e){return '(sin acceso)';}},
   ckList(){try{return (document.cookie.match(/(?:^|; )(?:sb-|ta-auth)[^=]*/g)||[]).map(c=>c.trim()).join(',')||'(ninguna)';}catch(e){return '(sin acceso)';}},
   /* El verificador PKCE se guarda tambien en una cookie corta: en algunos navegadores
@@ -4404,6 +4415,7 @@ const AUTH={
   qp(k){try{const q=new URLSearchParams(location.search);if(q.get(k))return q.get(k);const h=new URLSearchParams((location.hash||'').replace(/^#/,''));return h.get(k);}catch(e){return null;}},
   pend(){try{return localStorage.getItem('ta-oauth')==='1';}catch(e){return false;}},
   clearPend(){try{localStorage.removeItem('ta-oauth');}catch(e){}this.ckSet('v','',0);},
+  dropPkce(){try{localStorage.removeItem('ta-pkce');}catch(e){}this.ckSet('ta-pkce','',0);},
   cleanUrl(){
     try{const u=new URL(location.href);let ch=false;
       ['code','error','error_code','error_description','state'].forEach(k=>{if(u.searchParams.has(k)){u.searchParams.delete(k);ch=true;}});
@@ -4420,12 +4432,16 @@ const AUTH={
       await Promise.race([(async()=>{
         let ses=null;
         if(code){
-          const tenia=this.hasVerifier(),marca=this.pend()?'sí':'no';
+          // Devolvemos a la libreria el verificador que guardamos nosotros.
+          let mio=null;try{mio=localStorage.getItem('ta-pkce');}catch(e){}
+          if(!mio)mio=this.ck('ta-pkce');
+          if(mio){try{localStorage.setItem(this.vkey(),JSON.stringify(mio));}catch(e){}}
+          const tenia=this.hasVerifier(),marca=mio?'sí':'no';
           const x=await sb.auth.exchangeCodeForSession(code);
+          this.dropPkce();
           if(x.error){
             this.bootErr='No se pudo completar el acceso.';
-            let sal='?';try{sal=localStorage.getItem('ta-diag')||'?';}catch(e){}
-            this.bootRaw='['+this.build+' salida='+sal+' ver='+(tenia?'sí':'no')+' marca='+marca+' claves='+this.keyList()+'] '+String(x.error.message||x.error).slice(0,100);
+            this.bootRaw='['+this.build+' propio='+marca+' ver='+(tenia?'sí':'no')+' claves='+this.keyList()+'] '+String(x.error.message||x.error).slice(0,110);
           } else ses=x.data&&x.data.session;}
         if(!ses){const r=await sb.auth.getSession();ses=r.data&&r.data.session;}
         this.setSession(ses);if(ses)this.afterIn();
@@ -4458,11 +4474,17 @@ const AUTH={
   async verify(email,token){const sb=await this.client();const r=await sb.auth.verifyOtp({email,token,type:'email'});if(r.error)throw r.error;if(r.data&&r.data.session){this.setSession(r.data.session);this.afterIn();}},
   async google(){
     const sb=await this.client();let sala='';try{localStorage.setItem('ta-oauth','1');}catch(e){}this.ckSet('v','1',600);try{sala=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);}catch(e){}
-    const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname+(sala?'?sala='+sala:''),skipBrowserRedirect:true}});
-    if(r.error)throw r.error;
-    const url=(r.data&&r.data.url)||'';
-    // Deja constancia (valor corto) de que habia justo antes de salir del sitio.
-    try{localStorage.setItem('ta-diag',(this.hasVerifier()?'guardado':'vacio')+'-'+(/code_challenge=/.test(url)?'conreto':'sinreto'));}catch(e){}
+    const redir=location.origin+location.pathname+(sala?'?sala='+sala:'');
+    let url='';
+    try{
+      const p=await this.pkce();
+      try{localStorage.setItem('ta-pkce',p.v);}catch(e){}
+      this.ckSet('ta-pkce',p.v,600);
+      url=this.url+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(redir)+'&code_challenge='+p.c+'&code_challenge_method=s256';
+    }catch(e){
+      const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:redir,skipBrowserRedirect:true}});
+      if(r.error)throw r.error;url=(r.data&&r.data.url)||'';
+    }
     if(!url)throw new Error('sin url de Google');
     location.href=url;
   },
