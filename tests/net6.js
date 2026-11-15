@@ -19,6 +19,7 @@ function mk(name){
     w.AudioContext=undefined;w.CompressionStream=CompressionStream;w.DecompressionStream=DecompressionStream;w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;Object.defineProperty(w,'crypto',{value:require('crypto').webcrypto,configurable:true});w.Response=Response;w.__T=transport();}});
   const w=dom.window,ev=w.eval;
   w.addEventListener('error',e=>errs.push(name+': '+e.message));w.onerror=m=>errs.push(name+': '+String(m));
+  ev("AUTH.setSession({access_token:'t',user:{id:'u-'+'"+name+"',email:'t@t.cl'}});");
   ev("NETT=__T;NET.beatMs=60;NET.pingMs=60;NET.offMs=6000;NET.staleMs=500;NET.lostMs=600;");
   return{name,dom,w,ev,$:s=>w.document.querySelector(s),$$:s=>[...w.document.querySelectorAll(s)]};
 }

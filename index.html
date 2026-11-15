@@ -129,7 +129,7 @@ img.ico,image.ico{filter:drop-shadow(0 2px 2px #0008)}
 .mbox ul{padding-left:18px;margin:8px 0}
 .field{display:flex;flex-direction:column;gap:4px;margin:10px 0}
 .field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-select,input[type=text],input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:600 14px var(--font-body)}
+select,input[type=text],input[type=email],input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:600 14px var(--font-body)}
 .stalebar,#stalebar{position:fixed;left:8px;right:8px;top:8px;z-index:60;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 #stalebar .sb{pointer-events:auto;background:var(--panel,#222);color:var(--ink,#fff);border:1px solid var(--bad,#c33);border-radius:12px;padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;box-shadow:0 4px 16px #0006}
 .rfx{position:fixed;bottom:22%;z-index:70;display:flex;flex-direction:column;align-items:center;pointer-events:none;animation:rfx 2.1s ease-out forwards}
@@ -254,7 +254,7 @@ body.th-dusk #sea stop:nth-child(1){stop-color:#cf7d63}body.th-dusk #sea stop:nt
   .btn{min-height:44px;padding:10px 14px;font-size:15px}
   .bbtn{min-height:74px}
   .chip b{font-size:23px}
-  select,input[type=text],input[type=number]{min-height:44px;font-size:16px}
+  select,input[type=text],input[type=email],input[type=number]{min-height:44px;font-size:16px}
   .chk input[type=checkbox]{width:22px;height:22px}
   .cnt button{width:42px;height:42px}
   .zoomc .btn{width:46px;height:46px}
@@ -334,6 +334,11 @@ body.th-dusk #sea stop:nth-child(1){stop-color:#cf7d63}body.th-dusk #sea stop:nt
 .welcome p{color:var(--muted);margin:0 0 16px}
 .welcome .field{max-width:320px;margin:0 auto 14px;text-align:left}
 .welcome .btn.primary{min-width:200px;min-height:48px;font-size:17px}
+.acct{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 10px}
+.acct b{display:block;font-size:14px;word-break:break-all}.acct small{color:var(--muted);font-size:12.5px}.acct.on{border-color:#3d7a5a}
+.lgfine{color:var(--muted);font-size:12.5px;margin:10px 0 0;text-align:center}
+.lgerr{color:var(--bad);font-size:13.5px;min-height:18px;margin:6px 0}
+.lgcode{font:700 26px/1.2 var(--font-body);letter-spacing:.35em;text-align:center}
 .mcard small{color:var(--muted);font-size:12.5px;line-height:1.35}
 .mcard:hover:not(:disabled){border-color:var(--accent)}
 .mcard:active:not(:disabled){transform:translateY(1px)}
@@ -2948,7 +2953,7 @@ function showProfile(){
    <div class="evchip"><b>${nt[0]}</b><small>Partidas en línea · ${nt[1]} ganadas</small></div><div class="evchip"><b>${st.streak}</b><small>Racha actual · mejor ${st.best}</small></div></div>
    <h3 class="rh">Marcador entre amigos</h3>
    ${rows.length?`<div class="players">${rows.map((r,i)=>`<div class="pl" style="grid-template-columns:26px 1fr auto"><span class="av" style="background:${PCOL[i%6]}">${netEsc(r.k[0].toUpperCase())}</span><span class="nm"><b>${netEsc(r.k)}</b><small style="display:block;color:var(--muted)">${r.g} partida${r.g===1?'':'s'} juntos</small></span><span class="vp" title="Tus victorias – las suyas">${r.w} – ${r.l}</span></div>`).join('')}</div>`:'<p style="color:var(--muted)">Aún no hay partidas en línea. Cuando juegues con amigos, aquí verás quién va ganando.</p>'}
-   <p style="color:var(--muted);font-size:13px">Se guarda solo en este dispositivo: cada amigo ve su propio marcador contra ti. No hay cuentas ni datos en ningún servidor.</p>
+   <p style="color:var(--muted);font-size:13px">${AUTH.user?'Se guarda en tu cuenta y lo recuperas en cualquier dispositivo.':'Se guarda solo en este dispositivo (inicia sesión para llevarlo a tu cuenta). Cada amigo ve su propio marcador contra ti.'}</p>
    <div class="mact"><button class="btn" onclick="resetFriends(this)">Borrar marcador</button><button class="btn primary" onclick="showMenu()">Volver</button></div>`,true);
 }
 function saveProfileName(){
@@ -3981,7 +3986,49 @@ Tu navegador no admite notificaciones|Your browser does not support notification
 Las notificaciones están bloqueadas|Notifications are blocked|As notificações estão bloqueadas
 Actívalas en los permisos del sitio|Turn them on in the site permissions|Ative-as nas permissões do site
 Reacciones|Reactions|Reações
-Reacción|Reaction|Reação`;
+Reacción|Reaction|Reação
+Modo invitado|Guest mode|Modo convidado
+Tu progreso solo está en este dispositivo y no puedes jugar en línea.|Your progress is only on this device and you cannot play online.|Seu progresso está só neste dispositivo e você não pode jogar online.
+Iniciar sesión o crear cuenta|Sign in or create an account|Entrar ou criar conta
+Iniciar sesión|Sign in|Entrar
+ para guardar tu progreso y jugar en línea.| to save your progress and play online.| para salvar seu progresso e jogar online.
+Tu progreso se guarda en tu cuenta.|Your progress is saved to your account.|Seu progresso é salvo na sua conta.
+Sin sincronizar: se reintentará solo.|Not synced: it will retry on its own.|Sem sincronizar: tentará de novo sozinho.
+Cuenta|Account|Conta
+Sesión:|Session:|Sessão:
+Requiere cuenta.|Requires an account.|Requer conta.
+El multijugador en línea es solo para jugadores con cuenta|Online multiplayer is only for players with an account|O multijogador online é só para jogadores com conta
+Así tu nombre, tus partidas y tus estadísticas son tuyos y no se duplican.|This way your name, games and stats are yours and are not duplicated.|Assim seu nome, partidas e estatísticas são seus e não se duplicam.
+Con una cuenta guardas tus partidas, estadísticas y logros, y los recuperas en cualquier dispositivo.|With an account you save your games, stats and achievements and get them back on any device.|Com uma conta você salva partidas, estatísticas e conquistas e as recupera em qualquer dispositivo.
+Correo electrónico|Email|E-mail
+Enviar código al correo|Send code by email|Enviar código por e-mail
+Te llega un código de 6 dígitos. Sin contraseñas.|You get a 6-digit code. No passwords.|Você recebe um código de 6 dígitos. Sem senhas.
+Continuar con Google|Continue with Google|Continuar com o Google
+Entras con tu cuenta de Google.|You sign in with your Google account.|Você entra com sua conta Google.
+Seguir como invitado|Continue as guest|Continuar como convidado
+Juegas solo o contra la IA. Sin guardado en la nube ni multijugador.|You play solo or against the AI. No cloud saving or multiplayer.|Você joga sozinho ou contra a IA. Sem salvar na nuvem nem multijogador.
+Sin cuenta no hay multijugador en línea.|Without an account there is no online multiplayer.|Sem conta não há multijogador online.
+Guardamos tu correo y tu progreso solo para que puedas recuperarlo. Puedes borrar tu cuenta y tus datos cuando quieras.|We store your email and progress only so you can recover them. You can delete your account and data any time.|Guardamos seu e-mail e progresso só para você recuperá-los. Você pode apagar sua conta e dados quando quiser.
+Revisa tu correo|Check your email|Confira seu e-mail
+Cambiar correo|Change email|Trocar e-mail
+Reenviar código|Resend code|Reenviar código
+Verificar|Verify|Verificar
+Código enviado|Code sent|Código enviado
+Escribe el código completo.|Enter the full code.|Digite o código completo.
+Revisa que el correo esté bien escrito.|Check that the email is spelled correctly.|Confira se o e-mail está escrito certo.
+Demasiados intentos. Espera unos minutos y vuelve a intentar.|Too many attempts. Wait a few minutes and try again.|Muitas tentativas. Espere alguns minutos e tente de novo.
+El código es incorrecto o ya venció. Pide uno nuevo.|The code is wrong or has expired. Request a new one.|O código está errado ou venceu. Peça um novo.
+Sin conexión con el servidor. Revisa tu internet.|Cannot reach the server. Check your internet.|Sem conexão com o servidor. Verifique sua internet.
+No se pudo completar. Intenta de nuevo.|Could not complete. Try again.|Não foi possível concluir. Tente de novo.
+Tu cuenta|Your account|Sua conta
+Forma de entrar|Sign-in method|Forma de entrar
+Código por correo|Email code|Código por e-mail
+Zona de riesgo|Danger zone|Zona de risco
+Borrar mi cuenta y mis datos|Delete my account and data|Apagar minha conta e meus dados
+Cerrar sesión|Sign out|Sair
+Cuenta borrada|Account deleted|Conta apagada
+Se guarda en tu cuenta y lo recuperas en cualquier dispositivo.|It is saved to your account and you can recover it on any device.|É salvo na sua conta e você o recupera em qualquer dispositivo.
+Se guarda solo en este dispositivo (inicia sesión para llevarlo a tu cuenta). Cada amigo ve su propio marcador contra ti.|It is saved only on this device (sign in to move it to your account). Each friend sees their own scoreboard against you.|É salvo só neste dispositivo (entre para levá-lo à sua conta). Cada amigo vê seu próprio placar contra você.`;
 /*I18N_END*/
 function trBuild(){
   if(TR.ready)return;TR.ready=true;
@@ -4115,7 +4162,8 @@ function showWelcome(){
    <div class="thm" role="group" aria-label="Language" style="justify-content:center">${Object.keys(LANGS).map(k=>`<button class="btn${k===LANG?' on':''}" onclick="setLang('${k}');showWelcome()">${LANGS[k]}</button>`).join('')}</div>
    <p>Coloniza una costa remota y gana quien llegue primero a los puntos de victoria. Juega solo, contra la IA o con amigos en línea.</p>
    <div class="field"><label for="w-name">¿Cómo te llamas?</label><input id="w-name" type="text" maxlength="14" value="${esc(PNAME)}" placeholder="Tu nombre" autocomplete="nickname" autocapitalize="words"></div>
-   <button class="btn primary" id="w-go">Entrar</button></div>`);
+   <button class="btn primary" id="w-go">Entrar</button>${AUTH.user?`<p class="lgfine">Sesión: ${netEsc(AUTH.user.email||'')}</p>`:`<p class="lgfine"><a href="#" id="w-login" style="color:var(--accent)">Iniciar sesión o crear cuenta</a> para guardar tu progreso y jugar en línea.</p>`}</div>`);
+  const wl=$('#w-login');if(wl)wl.onclick=e=>{e.preventDefault();showLogin();};
   const inp=$('#w-name'),go=()=>{PNAME=(inp.value||'').replace(/[<>&"']/g,'').trim().slice(0,14)||'Jugador';try{localStorage.setItem('ta-name',PNAME);}catch(e){}closeModal();showMenu();};
   $('#w-go').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
   setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},60);
@@ -4123,7 +4171,7 @@ function showWelcome(){
 function showMenu(){
   if(NET.role){if(NET.role==='host'&&NET.lobby&&!NET.started)showLobby();else showRoomMenu();return;}
   const sv=saveInfo(),last=!!LS.raw(LASTKEY),dk=todayKey(),dd=(LS.get('ta-daily',{})||{})[dk],st=loadStats();
-  openModal(`<h2 style="margin:0"><img class="mlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></h2><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false" style="color:var(--accent)">Cambiar nombre</a>`:''}</p><div class="menu">
+  openModal(`<h2 style="margin:0"><img class="mlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></h2><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false" style="color:var(--accent)">Cambiar nombre</a>`:''}</p>${acctHTML()}<div class="menu">
    ${sv?`<button class="mcard hero" onclick="resumeGame()"><b>${mi('play')}Reanudar partida</b><small>Turno ${sv.turn} · ${sv.names.join(', ')} · guardada ${fmtDate(sv.at)}</small></button>`:''}
    <button class="mcard" onclick="showStart()"><b>${mi('bolt')}Partida rápida</b><small>Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.</small></button>
    <button class="mcard" onclick="showCampaign()"><b>${mi('flag')}Campaña</b><small>Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.</small></button>
@@ -4135,7 +4183,7 @@ function showMenu(){
    <button class="mcard" onclick="setView(view3d()?'2d':'3d')"><b>${mi('palette')}Vista del tablero: ${view3d()?'3D':'2D'}</b><small>${view3d()?'Las partidas se abren con el tablero en 3D. Toca para volver al 2D.':'Las partidas se abren con el tablero 2D. Toca para jugar en 3D (beta).'}</small></button>
    <button class="mcard" onclick="showPersonalize()"><b>${mi('palette')}Personalizar</b><small>Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.</small></button>
    <button class="mcard" onclick="showRules()"><b>${mi('list')}Reglas y costos</b><small>Cómo se juega y cuánto cuesta cada construcción.</small></button>
-   <button class="mcard" onclick="showNetMenu()"><b>${mi('users')}Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.</small></button>
+   <button class="mcard" onclick="showNetMenu()"><b>${mi('users')}Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.${AUTH.user?'':' Requiere cuenta.'}</small></button>
   </div><div class="mact">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('install')}<span>Instalar app</span></button>`}<button class="btn" onclick="closeModal()">Cerrar</button></div>`,true);
 }
 
@@ -4167,10 +4215,264 @@ class NetOrd{
   stop(){clearTimeout(this.tm);this.tm=null;this.buf.clear();}
 }
 
+/* ===================== Cuenta (Supabase Auth) y guardado en la nube ===================== */
+/* Invitado = como siempre (todo en este dispositivo, sin multijugador). Con cuenta: progreso en la nube + multijugador. */
+const SYNCK={'ta-stats':'stats','ta-camp':'camp','ta-daily':'daily','ta-friends':'friends','ta-save':'save','ta-name':'prefs','ta-sty':'prefs','ta-mycol':'prefs','ta-theme':'prefs'};
+const SYNCG=['stats','camp','daily','friends','prefs','save'];
+const AUTH={
+  user:null,session:null,sb:null,ctx:null,
+  url:'https://uyzzgugjjboxqxtctsgc.supabase.co',key:'sb_publishable_0_Bb00Lz1QyWW4fXsFR9SQ_kT4mc0Pm',
+  token(){return this.session&&this.session.access_token||null;},
+  hasStored(){try{for(let i=0;i<localStorage.length;i++){if(/^sb-.*-auth-token/.test(localStorage.key(i)))return true;}}catch(e){}return /[?&]code=/.test(location.search);},
+  async lib(){
+    if(window.supabase&&window.supabase.createClient)return;
+    await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('lib'));document.head.appendChild(sc);});
+  },
+  async client(){
+    if(this.sb)return this.sb;
+    await this.lib();
+    const sb=window.supabase.createClient(this.url,this.key,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},realtime:{params:{eventsPerSecond:30}}});
+    this.sb=sb;
+    sb.auth.onAuthStateChange((ev,s)=>{setTimeout(()=>this.onChange(ev,s),0);});
+    return sb;
+  },
+  async boot(){
+    if(!this.hasStored())return;
+    try{await Promise.race([(async()=>{const sb=await this.client();const r=await sb.auth.getSession();this.setSession(r.data&&r.data.session);this.afterIn();})(),new Promise(r=>setTimeout(r,4000))]);}catch(e){}
+  },
+  setSession(s){this.session=s||null;this.user=s&&s.user?s.user:null;},
+  pulledFor:null,
+  afterIn(){
+    const id=this.user&&this.user.id;if(!id||id===this.pulledFor)return;this.pulledFor=id;
+    CLOUD.pull(true).then(()=>{
+      if(this.ctx&&this.ctx.done&&$('#modal').classList.contains('open')&&$('#lg-mail,#lg-code')){const f=this.ctx.done;this.ctx=null;f();}else this.refreshUI();
+    });
+  },
+  onChange(ev,s){
+    const had=this.user;this.setSession(s);
+    if(this.user)this.afterIn();else if(had){this.pulledFor=null;this.refreshUI();}
+  },
+  err(e){
+    const m=String(e&&(e.message||e.error_description)||e||'').toLowerCase(),st=e&&e.status;
+    if(st===429||/rate|too many|seconds/.test(m))return 'Demasiados intentos. Espera unos minutos y vuelve a intentar.';
+    if(/expired|invalid|token|otp/.test(m))return 'El código es incorrecto o ya venció. Pide uno nuevo.';
+    if(/email/.test(m)&&/invalid|valid/.test(m))return 'Revisa que el correo esté bien escrito.';
+    if(/network|fetch|lib|failed/.test(m)||!navigator.onLine)return 'Sin conexión con el servidor. Revisa tu internet.';
+    return 'No se pudo completar. Intenta de nuevo.';
+  },
+  async sendCode(email){const sb=await this.client();const r=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});if(r.error)throw r.error;},
+  async verify(email,token){const sb=await this.client();const r=await sb.auth.verifyOtp({email,token,type:'email'});if(r.error)throw r.error;if(r.data&&r.data.session){this.setSession(r.data.session);this.afterIn();}},
+  async google(){
+    const sb=await this.client();let sala='';try{sala=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);}catch(e){}
+    const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname+(sala?'?sala='+sala:'')}});
+    if(r.error)throw r.error;
+  },
+  async signOut(){
+    const ok=await CLOUD.flush(true);
+    if(!ok&&!confirm('No se pudieron guardar los últimos cambios en la nube. Si sales ahora se perderán. ¿Salir igual?'))return false;
+    try{const sb=await this.client();await sb.auth.signOut();}catch(e){}
+    this.setSession(null);this.pulledFor=null;CLOUD.wipe();this.refreshUI();return true;
+  },
+  async remove(){
+    const sb=await this.client();const r=await sb.rpc('ta_delete_me');if(r.error)throw r.error;
+    try{await sb.auth.signOut({scope:'local'});}catch(e){}
+    this.setSession(null);this.pulledFor=null;CLOUD.wipe();this.refreshUI();
+  },
+  refreshUI(){const a=$('#acct');if(a)a.outerHTML=acctHTML();},
+  /* Puerta del multijugador: sin cuenta se pide iniciar sesión (la base de datos también lo exige). */
+  need(o){if(this.user&&this.token())return true;showLogin(Object.assign({need:'net'},o||{}));return false;}
+};
+const CLOUD={
+  dirty:new Set(),tm:null,busy:false,applying:false,lastPull:0,err:false,
+  uid(){return AUTH.user&&AUTH.user.id||null;},
+  ts(){try{return JSON.parse(localStorage.getItem('ta-syncts')||'{}')||{};}catch(e){return {};}},
+  setTs(g,t){const o=this.ts();o[g]=t;try{localStorage.setItem('ta-syncts',JSON.stringify(o));}catch(e){}},
+  mark(k){
+    const g=SYNCK[k];if(!g||this.applying||!this.uid())return;
+    this.dirty.add(g);this.setTs(g,Date.now());clearTimeout(this.tm);this.tm=setTimeout(()=>this.flush(),2500);
+  },
+  read(g){
+    const L=(k,d)=>LS.get(k,d);
+    if(g==='stats')return L('ta-stats',{});if(g==='camp')return L('ta-camp',{});if(g==='daily')return L('ta-daily',{});if(g==='friends')return L('ta-friends',{});
+    if(g==='prefs'){const o={};const n=LS.raw('ta-name');if(n)o.name=n;const c=LS.raw('ta-mycol');if(c!=null)o.col=+c||0;const s=LS.raw('ta-sty');if(s)o.sty=L('ta-sty',{});const t=LS.raw('ta-theme');if(t)o.theme=t;return o;}
+    if(g==='save')return LS.raw(SAVEKEY)||null;
+    return null;
+  },
+  empty(v){return v==null||v===''||(typeof v==='object'&&!Array.isArray(v)&&!Object.keys(v).length);},
+  async pack(g){
+    const v=this.read(g);
+    if(g!=='save')return this.empty(v)&&g!=='stats'&&g!=='camp'&&g!=='daily'&&g!=='friends'?null:(v||{});
+    if(!v)return null;let at=0;try{at=JSON.parse(v).at||0;}catch(e){}
+    let z=null;try{z=await netGz(v);}catch(e){}
+    return z?{at,z:1,d:z}:{at,z:0,d:v};
+  },
+  async unpack(g,v){
+    if(g!=='save')return v;
+    if(!v||!v.d)return null;
+    if(v.z){try{return await netGunz(v.d);}catch(e){return null;}}
+    return v.d;
+  },
+  write(g,v){
+    const S=(k,x)=>{try{if(x==null)localStorage.removeItem(k);else localStorage.setItem(k,typeof x==='string'?x:JSON.stringify(x));}catch(e){}};
+    if(g==='stats')S('ta-stats',v);else if(g==='camp')S('ta-camp',v);else if(g==='daily')S('ta-daily',v);else if(g==='friends')S('ta-friends',v);
+    else if(g==='save')S(SAVEKEY,v);
+    else if(g==='prefs'){v=v||{};S('ta-name',v.name||null);S('ta-mycol',v.col==null?null:String(v.col));S('ta-sty',v.sty||null);if(v.theme)S('ta-theme',v.theme);}
+  },
+  merge(g,l,c){
+    if(this.empty(l))return c;if(this.empty(c))return l;
+    if(g==='stats'){
+      const r=Object.assign({},c);const n=(a,b)=>(+a||0)+(+b||0);
+      r.games=n(l.games,c.games);r.wins=n(l.wins,c.wins);r.best=Math.max(+l.best||0,+c.best||0);r.streak=+c.streak||0;
+      const f=[+l.fast||0,+c.fast||0].filter(x=>x>0);r.fast=f.length?Math.min(...f):0;
+      r.by=Object.assign({},c.by);for(const k in (l.by||{})){const a=l.by[k]||[0,0],b=(c.by||{})[k]||[0,0];r.by[k]=[n(a[0],b[0]),n(a[1],b[1])];}
+      r.ach=Object.assign({},l.ach,c.ach);
+      if(l.net||c.net){const a=l.net||[0,0],b=c.net||[0,0];r.net=[n(a[0],b[0]),n(a[1],b[1])];}
+      return r;
+    }
+    if(g==='camp'){
+      const d=[],b=[],len=Math.max((l.done||[]).length,(c.done||[]).length);
+      for(let i=0;i<len;i++){d[i]=!!((l.done||[])[i]||(c.done||[])[i]);const x=[+(l.best||[])[i]||0,+(c.best||[])[i]||0].filter(q=>q>0);b[i]=x.length?Math.min(...x):0;}
+      return {done:d,best:b};
+    }
+    if(g==='daily'){const r=Object.assign({},l,c);for(const k in l){if(l[k]&&l[k].won&&!(c[k]&&c[k].won))r[k]=l[k];}return r;}
+    if(g==='friends'){const r=Object.assign({},c);for(const k in l){const a=l[k]||{},b=r[k]||{};const o=Object.assign({},a,b);['g','w','l'].forEach(f=>{o[f]=(+a[f]||0)+(+b[f]||0);});r[k]=o;}return r;}
+    if(g==='prefs')return Object.assign({},l,c);
+    if(g==='save'){let a=0,b=0;try{a=JSON.parse(l).at||0;}catch(e){}try{b=JSON.parse(c).at||0;}catch(e){}return a>b?l:c;}
+    return c;
+  },
+  wipe(){
+    this.applying=true;
+    try{['ta-stats','ta-camp','ta-daily','ta-friends',SAVEKEY,LASTKEY,'ta-name','ta-mycol','ta-sty','ta-syncts','ta-uid'].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});}finally{this.applying=false;}
+    this.dirty.clear();clearTimeout(this.tm);PNAME='';MYCOL=0;STYS={};try{applySty();}catch(e){}
+  },
+  async flush(force){
+    if(!this.uid())return true;
+    if(this.busy){return force?await new Promise(r=>setTimeout(()=>r(this.flush(true)),400)):true;}
+    if(!this.dirty.size)return true;
+    this.busy=true;const keys=[...this.dirty];this.dirty.clear();clearTimeout(this.tm);
+    try{
+      const sb=await AUTH.client(),now=new Date().toISOString(),rows=[],del=[];
+      for(const g of keys){const v=await this.pack(g);if(v===null)del.push(g);else rows.push({user_id:this.uid(),k:g,v,updated_at:now});}
+      if(rows.length){const r=await sb.from('ta_user_data').upsert(rows,{onConflict:'user_id,k'});if(r.error)throw r.error;}
+      if(del.length){const r=await sb.from('ta_user_data').delete().in('k',del);if(r.error)throw r.error;}
+      const t=Date.now();keys.forEach(g=>this.setTs(g,t));this.err=false;
+      return true;
+    }catch(e){
+      keys.forEach(g=>this.dirty.add(g));this.err=true;
+      clearTimeout(this.tm);this.tm=setTimeout(()=>this.flush(),20000);
+      return false;
+    }finally{this.busy=false;}
+  },
+  async pull(force){
+    const uid=this.uid();if(!uid)return false;
+    if(!force&&Date.now()-this.lastPull<60000)return true;
+    this.lastPull=Date.now();
+    try{
+      const sb=await AUTH.client();const r=await sb.from('ta_user_data').select('k,v,updated_at');if(r.error)throw r.error;
+      const cloud={};(r.data||[]).forEach(x=>{cloud[x.k]=x;});
+      let linked=null;try{linked=localStorage.getItem('ta-uid');}catch(e){}
+      this.applying=true;
+      try{
+        if(linked&&linked!==uid){this.wipe();this.applying=true;linked=null;}
+        const first=!linked,ts=this.ts();
+        for(const g of SYNCG){
+          const cl=cloud[g]?await this.unpack(g,cloud[g].v):null,loc=this.read(g);
+          if(cl==null){if(!this.empty(loc))this.dirty.add(g);continue;}
+          if(first){const m=this.merge(g,loc,cl);this.write(g,m);if(JSON.stringify(m)!==JSON.stringify(cl))this.dirty.add(g);}
+          else{
+            const ct=Date.parse(cloud[g].updated_at)||0,lt=+ts[g]||0;
+            if(ct>lt){this.write(g,cl);this.setTs(g,ct);}else if(lt>ct&&!this.empty(loc))this.dirty.add(g);
+          }
+        }
+        try{localStorage.setItem('ta-uid',uid);}catch(e){}
+      }finally{this.applying=false;}
+      PNAME=LS.raw('ta-name')||PNAME;try{MYCOL=Math.max(0,Math.min(5,parseInt(LS.raw('ta-mycol'))||0));}catch(e){}
+      try{STYS=JSON.parse(localStorage.getItem('ta-sty')||'{}')||{};}catch(e){STYS={};}
+      try{THEME=LS.raw('ta-theme')||THEME;applyTheme();applySty();}catch(e){}
+      if(this.dirty.size)this.flush();
+      this.err=false;return true;
+    }catch(e){this.err=true;return false;}
+  }
+};
+/* Cada escritura de las claves sincronizadas avisa a la nube (sin tocar el resto del código). */
+(()=>{const S=Storage.prototype,si=S.setItem,ri=S.removeItem;
+  S.setItem=function(k){const r=si.apply(this,arguments);try{if(this===localStorage&&SYNCK[k])CLOUD.mark(k);}catch(e){}return r;};
+  S.removeItem=function(k){const r=ri.apply(this,arguments);try{if(this===localStorage&&SYNCK[k])CLOUD.mark(k);}catch(e){}return r;};
+})();
+document.addEventListener('visibilitychange',()=>{if(!CLOUD.uid())return;if(document.hidden)CLOUD.flush();else CLOUD.pull();});
+window.addEventListener('online',()=>{if(CLOUD.uid()){CLOUD.flush();CLOUD.pull(true);}});
+
+function acctHTML(){
+  const u=AUTH.user;
+  if(!u)return `<div class="acct" id="acct"><div><b>Modo invitado</b><small>Tu progreso solo está en este dispositivo y no puedes jugar en línea.</small></div><button class="btn primary" onclick="showLogin()">Iniciar sesión</button></div>`;
+  return `<div class="acct on" id="acct"><div><b>${netEsc(u.email||'Cuenta')}</b><small>${CLOUD.err?'Sin sincronizar: se reintentará solo.':'Tu progreso se guarda en tu cuenta.'}</small></div><button class="btn" onclick="showAccount()">Cuenta</button></div>`;
+}
+function showLogin(o){
+  o=o||{};AUTH.ctx=Object.assign({},o);
+  const step=o.step||'mail',email=(o.email||'').slice(0,254);
+  const logo='<h2 style="margin:0"><img class="mlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></h2>';
+  const done=()=>{if(o.need==='net')showNetMenu(o.code,o.saved);else showMenu();};
+  AUTH.ctx.done=done;
+  if(step==='code'){
+    openModal(`${logo}<h2>Revisa tu correo</h2><p>Enviamos un código de verificación a <b>${netEsc(email)}</b>. Escríbelo aquí; vence en unos minutos. Si no llega, mira en spam.</p>
+     <div class="field"><label for="lg-code">Código</label><input id="lg-code" type="text" class="lgcode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"></div>
+     <p class="lgerr" id="lg-err" role="alert"></p>
+     <div class="mact"><button class="btn" id="lg-back">Cambiar correo</button><button class="btn" id="lg-re">Reenviar código</button><button class="btn primary" id="lg-ok">Verificar</button></div>`);
+    const inp=$('#lg-code'),er=$('#lg-err'),ok=$('#lg-ok'),re=$('#lg-re');
+    let cd=45;const tick=()=>{if(!$('#lg-re'))return;if(cd>0){re.disabled=true;re.textContent='Reenviar en '+cd+' s';cd--;setTimeout(tick,1000);}else{re.disabled=false;re.textContent='Reenviar código';}};tick();
+    ok.onclick=async()=>{
+      const t=(inp.value||'').replace(/\D/g,'');if(t.length<6){er.textContent='Escribe el código completo.';return;}
+      ok.disabled=true;er.textContent='';
+      try{await AUTH.verify(email,t);}catch(e){er.textContent=AUTH.err(e);ok.disabled=false;return;}
+    };
+    inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();ok.click();}};
+    re.onclick=async()=>{re.disabled=true;er.textContent='';try{await AUTH.sendCode(email);showToast('Código enviado',email);cd=60;tick();}catch(e){er.textContent=AUTH.err(e);re.disabled=false;}};
+    $('#lg-back').onclick=()=>showLogin(Object.assign({},o,{step:'mail'}));
+    setTimeout(()=>{try{inp.focus();}catch(e){}},60);
+    return;
+  }
+  const why=o.need==='net'?`<p>El multijugador en línea es solo para jugadores con cuenta${o.code?' (sala <b>'+netEsc(o.code)+'</b>)':''}. Así tu nombre, tus partidas y tus estadísticas son tuyos y no se duplican.</p>`:'<p>Con una cuenta guardas tus partidas, estadísticas y logros, y los recuperas en cualquier dispositivo.</p>';
+  openModal(`${logo}${why}
+   <div class="field"><label for="lg-mail">Correo electrónico</label><input id="lg-mail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" value="${esc(email)}" placeholder="tucorreo@ejemplo.com"></div>
+   <p class="lgerr" id="lg-err" role="alert"></p>
+   <div class="menu">
+    <button class="mcard hero" id="lg-send"><b>Enviar código al correo</b><small>Te llega un código de 6 dígitos. Sin contraseñas.</small></button>
+    <button class="mcard" id="lg-goog"><b>Continuar con Google</b><small>Entras con tu cuenta de Google.</small></button>
+    <button class="mcard" id="lg-guest"><b>${o.need==='net'?'Volver':'Seguir como invitado'}</b><small>${o.need==='net'?'Sin cuenta no hay multijugador en línea.':'Juegas solo o contra la IA. Sin guardado en la nube ni multijugador.'}</small></button>
+   </div>
+   <p class="lgfine">Guardamos tu correo y tu progreso solo para que puedas recuperarlo. Puedes borrar tu cuenta y tus datos cuando quieras.</p>`);
+  const inp=$('#lg-mail'),er=$('#lg-err'),sd=$('#lg-send');
+  const go=async()=>{
+    const em=(inp.value||'').trim().toLowerCase();
+    if(em.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){er.textContent='Revisa que el correo esté bien escrito.';return;}
+    sd.disabled=true;er.textContent='';
+    try{await AUTH.sendCode(em);}catch(e){er.textContent=AUTH.err(e);sd.disabled=false;return;}
+    showLogin(Object.assign({},o,{step:'code',email:em}));
+  };
+  sd.onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
+  $('#lg-goog').onclick=async()=>{er.textContent='';try{await AUTH.google();}catch(e){er.textContent=AUTH.err(e);}};
+  $('#lg-guest').onclick=()=>{AUTH.ctx=null;showMenu();};
+}
+function showAccount(){
+  const u=AUTH.user;if(!u){showLogin();return;}
+  const prov=(u.app_metadata&&u.app_metadata.provider)||'email';
+  openModal(`<h2>Tu cuenta</h2>
+   <div class="two"><div class="evchip"><b style="font-size:15px;word-break:break-all">${netEsc(u.email||'—')}</b><small>Correo</small></div><div class="evchip"><b style="font-size:15px">${prov==='google'?'Google':'Código por correo'}</b><small>Forma de entrar</small></div></div>
+   <p style="color:var(--muted);font-size:13px">Tus estadísticas, campaña, partida diaria, marcador, partida guardada y preferencias se guardan en tu cuenta y se recuperan en cualquier dispositivo. ${CLOUD.err?'<b>Hay cambios sin sincronizar; se reintentará solo.</b>':''}</p>
+   <h3 class="rh">Zona de riesgo</h3>
+   <p style="color:var(--muted);font-size:13px">Borrar la cuenta elimina tu correo y todo tu progreso en la nube, y también lo guardado en este dispositivo. No se puede deshacer.</p>
+   <div class="mact"><button class="btn" id="ac-del">Borrar mi cuenta y mis datos</button><button class="btn" id="ac-out">Cerrar sesión</button><button class="btn primary" onclick="showMenu()">Volver</button></div>`);
+  $('#ac-out').onclick=async()=>{if(await AUTH.signOut())showMenu();};
+  $('#ac-del').onclick=async e=>{
+    const b=e.currentTarget;if(!b.dataset.sure){b.dataset.sure='1';b.textContent='¿Seguro? Pulsa otra vez';return;}
+    b.disabled=true;try{await AUTH.remove();showToast('Cuenta borrada','Se eliminaron tu cuenta y tus datos.');showMenu();}catch(er){b.disabled=false;b.textContent='No se pudo borrar. Reintenta';}
+  };
+}
+
 /* ---------- transporte (Supabase Realtime); los tests lo reemplazan por un bus en memoria ---------- */
 let NETT={
   url:'https://uyzzgugjjboxqxtctsgc.supabase.co',key:'sb_publishable_0_Bb00Lz1QyWW4fXsFR9SQ_kT4mc0Pm',
-  H(){return{apikey:this.key,Authorization:'Bearer '+this.key,'Content-Type':'application/json'};},
+  H(){const t=AUTH.token();if(!t)throw new Error('auth');return{apikey:this.key,Authorization:'Bearer '+t,'Content-Type':'application/json'};},
   async lib(){
     if(window.supabase&&window.supabase.createClient)return;
     await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('lib'));document.head.appendChild(sc);});
@@ -4191,9 +4493,10 @@ let NETT={
   },
   setStatus(code,status){try{fetch(this.url+'/rest/v1/ta_rooms?code=eq.'+encodeURIComponent(code),{method:'PATCH',headers:this.H(),body:JSON.stringify({status,updated_at:new Date().toISOString()})});}catch(e){}},
   async open(code,onMsg){
-    await this.lib();
-    const sb=window.supabase.createClient(this.url,this.key,{realtime:{params:{eventsPerSecond:30}}});
-    const ch=sb.channel('ta-'+code,{config:{broadcast:{self:false,ack:false}}});
+    if(!AUTH.token())throw new Error('auth');
+    const sb=await AUTH.client();
+    try{sb.realtime.setAuth(AUTH.token());}catch(e){}
+    const ch=sb.channel('ta-'+code,{config:{private:true,broadcast:{self:false,ack:false}}});
     ch.on('broadcast',{event:'m'},p=>onMsg(p.payload));
     await new Promise((ok,no)=>{const to=setTimeout(()=>no(new Error('timeout')),10000);ch.subscribe(st=>{if(st==='SUBSCRIBED'){clearTimeout(to);ok();}else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'||st==='CLOSED'){clearTimeout(to);no(new Error(st));}});});
     return{send:m=>{try{ch.send({type:'broadcast',event:'m',payload:m});}catch(e){}},close:()=>{try{sb.removeChannel(ch);}catch(e){}}};
@@ -4411,6 +4714,7 @@ function netStaleShow(list){
   }
 }
 function showPublicRooms(){
+  if(!AUTH.need())return;
   const nm=netName();
   openModal(`<h2>Salas abiertas</h2><p>Partidas en espera que sus anfitriones dejaron públicas. Entra sin necesitar el código.</p>
    <div class="field"><label for="n-name">Tu nombre</label><input id="n-name" maxlength="14" value="${esc(nm)}" placeholder="Tu nombre"></div>
@@ -4776,6 +5080,7 @@ function netLeave(silent){
 
 /* ---------- pantallas ---------- */
 function showNetMenu(code,saved,err){
+  if(!AUTH.need({code,saved}))return;
   const nm=(saved&&saved.name)||netName();
   openModal(`<h2>Multijugador en línea</h2><p>Juega con amigos a distancia: uno crea la sala y comparte el código; los demás entran con él.${'ontouchstart' in window?'':' Funciona igual en computador y teléfono.'}</p>
    ${err?`<p class="err" style="color:var(--bad)">${err}</p>`:''}
@@ -4948,7 +5253,7 @@ updateSndUI();updateMusUI();
 render();
 setInterval(tick,250);
 if(LANG!=='es'){TR.dirty=true;trAll();}
-if(!NETH.autoJoin())showWelcome();
+{const go0=()=>{if(!NETH.autoJoin())showWelcome();};if(AUTH.hasStored())AUTH.boot().then(go0,go0);else go0();}
 
 /* teclado en pantalla: el cuadro sube y el campo se queda a la vista (no se mueve ni se corta) */
 (function(){
