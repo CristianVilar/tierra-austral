@@ -4365,7 +4365,7 @@ const AUTH={
   user:null,session:null,sb:null,ctx:null,
   url:'https://uyzzgugjjboxqxtctsgc.supabase.co',key:'sb_publishable_0_Bb00Lz1QyWW4fXsFR9SQ_kT4mc0Pm',
   token(){return this.session&&this.session.access_token||null;},
-  hasStored(){try{if(localStorage.getItem('ta-oauth')==='1')return true;for(let i=0;i<localStorage.length;i++){if(/^sb-.*-auth-token/.test(localStorage.key(i)))return true;}}catch(e){}return /[?&]code=/.test(location.search);},
+  hasStored(){try{if(localStorage.getItem('ta-oauth')==='1')return true;if(localStorage.getItem('ta-auth'))return true;for(let i=0;i<localStorage.length;i++){if(/^sb-.*-auth-token/.test(localStorage.key(i)))return true;}}catch(e){}return /[?&]code=/.test(location.search);},
   async lib(){
     if(window.supabase&&window.supabase.createClient)return;
     await new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('lib'));document.head.appendChild(sc);});
@@ -4373,14 +4373,14 @@ const AUTH={
   async client(){
     if(this.sb)return this.sb;
     await this.lib();
-    const sb=window.supabase.createClient(this.url,this.key,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storage:this.store()},realtime:{params:{eventsPerSecond:30}}});
+    const sb=window.supabase.createClient(this.url,this.key,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,storageKey:'ta-auth',storage:this.store()},realtime:{params:{eventsPerSecond:30}}});
     this.sb=sb;
     sb.auth.onAuthStateChange((ev,s)=>{setTimeout(()=>this.onChange(ev,s),0);});
     return sb;
   },
-  bootErr:null,bootRaw:null,build:'b5',
-  keyList(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-/.test(x))k.push(x.replace(/^sb-[^-]*-/,''));}return k.length?k.join(','):'(ninguna)';}catch(e){return '(sin acceso)';}},
-  ckList(){try{return (document.cookie.match(/(?:^|; )sb-[^=]+/g)||[]).map(c=>c.trim().replace(/^sb-[^-]*-/,'')).join(',')||'(ninguna)';}catch(e){return '(sin acceso)';}},
+  bootErr:null,bootRaw:null,build:'b6',
+  keyList(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-|^ta-auth/.test(x))k.push(x.replace(/^sb-[^-]*-/,''));}return k.length?k.join(','):'(ninguna)';}catch(e){return '(sin acceso)';}},
+  ckList(){try{return (document.cookie.match(/(?:^|; )(?:sb-|ta-auth)[^=]*/g)||[]).map(c=>c.trim()).join(',')||'(ninguna)';}catch(e){return '(sin acceso)';}},
   /* El verificador PKCE se guarda tambien en una cookie corta: en algunos navegadores
      localStorage no sobrevive al salto a Google y la sesion no se podia completar. */
   ck(k){try{const m=document.cookie.match(new RegExp('(?:^|; )'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'=([^;]*)'));return m?decodeURIComponent(m[1]):null;}catch(e){return null;}},
@@ -4398,7 +4398,7 @@ const AUTH={
     };
   },
   hasVerifier(){try{for(let i=0;i<localStorage.length;i++){if(/-code-verifier$/.test(localStorage.key(i)))return true;}}catch(e){}return false;},
-  dropAuthKeys(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-/.test(x))k.push(x);}k.forEach(x=>localStorage.removeItem(x));}catch(e){}},
+  dropAuthKeys(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-|^ta-auth/.test(x))k.push(x);}k.forEach(x=>localStorage.removeItem(x));}catch(e){}},
   qp(k){try{const q=new URLSearchParams(location.search);if(q.get(k))return q.get(k);const h=new URLSearchParams((location.hash||'').replace(/^#/,''));return h.get(k);}catch(e){return null;}},
   pend(){try{return localStorage.getItem('ta-oauth')==='1';}catch(e){return false;}},
   clearPend(){try{localStorage.removeItem('ta-oauth');}catch(e){}this.ckSet('v','',0);},
