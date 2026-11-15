@@ -1034,6 +1034,7 @@ function newGame(cfg){
   G.teams=!!(G.rules.teams&&G.n===4);
   genBoard({mode:G.map,custom:cfg.custom,expansion:G.rules.expansion,wild:G.rules.wild,noPorts:G.rules.noPorts,big:G.big});
   G.hidden=G.map==='blind';
+  if(G.hidden&&$('#v3d')&&$('#v3d').classList.contains('on'))open3d(false);
   G.robber=H.find(h=>h.type==='desert').id;
   const names=[];
   if(!cfg.spectate){if(hn>1)cfg.humanNames.forEach(x=>names.push(esc(x)||'Jugador'));else names.push(esc(cfg.name||'Tú')||'Tú');}
@@ -1486,7 +1487,7 @@ async function revealMap(){
   G.busy=true;G.phase='setupBot';G.mode=null;G.msg='¡Todos colocaron sus pueblos y senderos! Se revela el mapa…';render();sfx('magic');
   try{
     await sl(1000);
-    G.hidden=false;G.revealAt=Date.now();say('Se revela el mapa: aparecen terrenos y números.');
+    G.hidden=false;G.revealAt=Date.now();say('Se revela el mapa: aparecen terrenos y números.');try{auto3d();}catch(e){}
     const ps=G.pendStart;G.pendStart=[];for(const [pid,vid] of ps)grantStart(pid,vid);
     G.msg='Mapa revelado. Los segundos pueblos reciben sus recursos.';render();sfx('award');
     await sl(1800);
@@ -2421,6 +2422,7 @@ function open3d(on){
   const lab=v=>{document.body.classList.toggle('m3d',v);try{localStorage.setItem('ta-view',v?'3d':'2d');}catch(e){}const a=$('#b3z'),b=$('#b3h');if(a)a.textContent=v?'2D':'3D';if(b)b.textContent=v?'Volver al tablero 2D':'Jugar en 3D (beta)';};
   if(!on){w.classList.remove('on');lab(false);render();return;}
   if(NET.role==='guest'){showToast('Vista 3D','Todavía no está disponible para invitados en línea.');return;}
+  if(G.hidden){showToast('Vista 3D','No está disponible mientras el mapa está oculto. Se abre sola al revelarse.');return;}
   lab(true);try{localStorage.setItem('ta-3d',ser());}catch(e){}
   const st=$('#v3s');
   if(R3&&f.getAttribute('src')){st.classList.add('off');clearTimeout(T3);w.classList.add('on');push3d();setTimeout(push3d,120);return;}
@@ -2432,7 +2434,7 @@ function open3d(on){
 }
 let T3=null,E3='',R3=false;
 function view3d(){try{return localStorage.getItem('ta-view')==='3d';}catch(e){return false;}}
-function auto3d(){if(view3d()&&NET.role!=='guest'&&!$('#v3d').classList.contains('on'))setTimeout(()=>open3d(true),350);}
+function auto3d(){if(view3d()&&NET.role!=='guest'&&!G.hidden&&!$('#v3d').classList.contains('on'))setTimeout(()=>open3d(true),350);}
 function setView(v){try{localStorage.setItem('ta-view',v);}catch(e){}if(v==='3d')open3d(true);else if($('#v3d').classList.contains('on'))open3d(false);showMenu();}
 const ALLOW3D=['uiRoll','uiEnd','uiBuyDev','setMode','onBoard','openBank','openTrade','openUpg','showMenu'];
 addEventListener('message',e=>{
@@ -4378,7 +4380,7 @@ const AUTH={
     sb.auth.onAuthStateChange((ev,s)=>{setTimeout(()=>this.onChange(ev,s),0);});
     return sb;
   },
-  bootErr:null,bootRaw:null,build:'b6',
+  bootErr:null,bootRaw:null,build:'b7',
   keyList(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-|^ta-auth/.test(x))k.push(x.replace(/^sb-[^-]*-/,''));}return k.length?k.join(','):'(ninguna)';}catch(e){return '(sin acceso)';}},
   ckList(){try{return (document.cookie.match(/(?:^|; )(?:sb-|ta-auth)[^=]*/g)||[]).map(c=>c.trim()).join(',')||'(ninguna)';}catch(e){return '(sin acceso)';}},
   /* El verificador PKCE se guarda tambien en una cookie corta: en algunos navegadores
@@ -4422,7 +4424,8 @@ const AUTH={
           const x=await sb.auth.exchangeCodeForSession(code);
           if(x.error){
             this.bootErr='No se pudo completar el acceso.';
-            this.bootRaw='['+this.build+' ver='+(tenia?'sí':'no')+' marca='+marca+' claves='+this.keyList()+' cookies='+this.ckList()+'] '+String(x.error.message||x.error).slice(0,120);
+            let sal='?';try{sal=localStorage.getItem('ta-diag')||'?';}catch(e){}
+            this.bootRaw='['+this.build+' salida='+sal+' ver='+(tenia?'sí':'no')+' marca='+marca+' claves='+this.keyList()+'] '+String(x.error.message||x.error).slice(0,100);
           } else ses=x.data&&x.data.session;}
         if(!ses){const r=await sb.auth.getSession();ses=r.data&&r.data.session;}
         this.setSession(ses);if(ses)this.afterIn();
@@ -4455,8 +4458,13 @@ const AUTH={
   async verify(email,token){const sb=await this.client();const r=await sb.auth.verifyOtp({email,token,type:'email'});if(r.error)throw r.error;if(r.data&&r.data.session){this.setSession(r.data.session);this.afterIn();}},
   async google(){
     const sb=await this.client();let sala='';try{localStorage.setItem('ta-oauth','1');}catch(e){}this.ckSet('v','1',600);try{sala=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);}catch(e){}
-    const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname+(sala?'?sala='+sala:'')}});
+    const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname+(sala?'?sala='+sala:''),skipBrowserRedirect:true}});
     if(r.error)throw r.error;
+    const url=(r.data&&r.data.url)||'';
+    // Deja constancia (valor corto) de que habia justo antes de salir del sitio.
+    try{localStorage.setItem('ta-diag',(this.hasVerifier()?'guardado':'vacio')+'-'+(/code_challenge=/.test(url)?'conreto':'sinreto'));}catch(e){}
+    if(!url)throw new Error('sin url de Google');
+    location.href=url;
   },
   async signOut(){
     const ok=await CLOUD.flush(true);
