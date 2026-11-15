@@ -4378,7 +4378,9 @@ const AUTH={
     sb.auth.onAuthStateChange((ev,s)=>{setTimeout(()=>this.onChange(ev,s),0);});
     return sb;
   },
-  bootErr:null,bootRaw:null,
+  bootErr:null,bootRaw:null,build:'b3',
+  hasVerifier(){try{for(let i=0;i<localStorage.length;i++){if(/-code-verifier$/.test(localStorage.key(i)))return true;}}catch(e){}return false;},
+  dropAuthKeys(){try{const k=[];for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if(/^sb-/.test(x))k.push(x);}k.forEach(x=>localStorage.removeItem(x));}catch(e){}},
   qp(k){try{const q=new URLSearchParams(location.search);if(q.get(k))return q.get(k);const h=new URLSearchParams((location.hash||'').replace(/^#/,''));return h.get(k);}catch(e){return null;}},
   pend(){try{return localStorage.getItem('ta-oauth')==='1';}catch(e){return false;}},
   clearPend(){try{localStorage.removeItem('ta-oauth');}catch(e){}},
@@ -4397,9 +4399,14 @@ const AUTH={
       const sb=await this.client();
       await Promise.race([(async()=>{
         let ses=null;
-        if(code){const x=await sb.auth.exchangeCodeForSession(code);
-          if(x.error){this.bootErr='No se pudo completar el acceso.';this.bootRaw=String(x.error.message||x.error).slice(0,220);}
-          else ses=x.data&&x.data.session;}
+        if(code){
+          const tenia=this.hasVerifier();
+          const x=await sb.auth.exchangeCodeForSession(code);
+          if(x.error){
+            this.bootErr='No se pudo completar el acceso.';
+            this.bootRaw=String(x.error.message||x.error).slice(0,180)+' ['+this.build+' verificador='+(tenia?'sí':'no')+']';
+            if(!tenia)this.dropAuthKeys();
+          } else ses=x.data&&x.data.session;}
         if(!ses){const r=await sb.auth.getSession();ses=r.data&&r.data.session;}
         this.setSession(ses);if(ses)this.afterIn();
       })(),new Promise(r=>setTimeout(r,code?20000:5000))]);
