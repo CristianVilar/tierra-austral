@@ -184,6 +184,20 @@ body.landon{overflow:hidden}
 
 
 
+
+/* Ventanas en teléfono: sin desplazamiento lateral, con margen y botones fijos abajo */
+body:has(#modal.open){overflow:hidden}
+#modal{overscroll-behavior:contain;touch-action:pan-y}
+.mbox{overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;box-shadow:0 18px 50px #000a}
+@media(max-width:700px){
+  #modal:not(.kb){padding:calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));align-items:center}
+  #modal:not(.kb) .mbox{max-height:calc(var(--vvh,100dvh) - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));max-height:calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));border-radius:22px;padding:18px 16px 0}
+  .mbox h2{font-size:22px}
+  .mbox select,.mbox input[type=text],.mbox input[type=number]{max-width:100%}
+  .mbox .trow{flex-wrap:wrap}
+  .mbox>.mact:last-child{position:sticky;bottom:0;margin:10px -16px 0;padding:22px 16px calc(14px) ;background:linear-gradient(180deg,#0000,var(--panel) 34%);justify-content:stretch;z-index:2}
+  .mbox>.mact:last-child .btn{flex:1 1 0}
+}
 /* botones de respuesta a tratos */
 .btn.ok{background:linear-gradient(#3f9d5b,#2b7a43);color:#fff;border-color:#8fe0a8}
 .btn.no{background:linear-gradient(#b8503f,#8d3526);color:#fff;border-color:#f0a99c}
@@ -322,7 +336,7 @@ select,input[type=text],input[type=email],input[type=number]{background:var(--pa
 .chk small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .chk small input[type=number]{width:70px;padding:3px 6px;font-size:13px}
 .rh{margin:16px 0 4px;font-size:18px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.two>*{min-width:0}.two select,.two input{width:100%;min-width:0}.trow>span{min-width:0}
 .inl{display:flex;align-items:center;gap:8px;font-size:14px!important;color:var(--ink)!important;text-transform:none!important;letter-spacing:0!important;padding:9px 0}
 .trow{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0;font-size:14px}
 .trow select{padding:6px 8px}
