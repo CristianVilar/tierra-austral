@@ -378,12 +378,20 @@ function glyph(x,res,cx,cy,k){
 }
 function portTex(ratio,res){
   const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
-  const col=res?RCOL[res]:'#b9a679';
-  x.shadowColor='#0007';x.shadowBlur=10;x.fillStyle='#f3e7c3';x.beginPath();x.arc(128,128,116,0,7);x.fill();x.shadowBlur=0;
-  x.strokeStyle=col;x.lineWidth=16;x.beginPath();x.arc(128,128,104,0,7);x.stroke();
-  x.strokeStyle='#3a2a18';x.lineWidth=4;x.beginPath();x.arc(128,128,114,0,7);x.stroke();x.beginPath();x.arc(128,128,94,0,7);x.stroke();
-  glyph(x,res,128,100,1.15);
-  x.fillStyle='#120c04';x.font='900 66px Cinzel,Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ratio,128,182);
+  x.shadowColor='#0007';x.shadowBlur=10;
+  if(!res){
+    x.fillStyle='#f3e7c3';x.beginPath();x.arc(128,128,116,0,7);x.fill();x.shadowBlur=0;
+    x.strokeStyle='#8a6a3a';x.lineWidth=14;x.beginPath();x.arc(128,128,104,0,7);x.stroke();
+    x.strokeStyle='#3a2a18';x.lineWidth=4;x.beginPath();x.arc(128,128,114,0,7);x.stroke();x.beginPath();x.arc(128,128,94,0,7);x.stroke();
+    x.fillStyle='#120c04';x.font='900 96px Cinzel,Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ratio,128,134);
+  }else{
+    const col=RCOL[res];
+    x.fillStyle='#16222c';x.beginPath();x.arc(128,128,116,0,7);x.fill();x.shadowBlur=0;
+    x.strokeStyle=col;x.lineWidth=16;x.beginPath();x.arc(128,128,104,0,7);x.stroke();
+    x.strokeStyle='#f3e7c3';x.lineWidth=3;x.beginPath();x.arc(128,128,114,0,7);x.stroke();x.beginPath();x.arc(128,128,94,0,7);x.stroke();
+    glyph(x,res,128,100,1.15);
+    x.fillStyle='#fbf1d2';x.font='900 66px Cinzel,Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ratio,128,184);
+  }
   const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;
 }
 function pipTex(n){
@@ -1797,7 +1805,6 @@ function loop(){
     try{await Promise.all([document.fonts.load('900 100px Cinzel'),document.fonts.load('700 20px Cinzel')]);}catch(e){}
     buildChips();
     await buildIsland();if(LV){LVST=LV;MK.apply(LV,true);liveHUD(LV);document.body.classList.add('live');READY=true;if(LVNEXT){LVST=LVNEXT;MK.apply(LVNEXT,false);liveHUD(LVNEXT);LVNEXT=null;}if(LVNUI)applyUI(LVNUI);if(EMBED){document.body.classList.add('embed');parent.postMessage({t:'ready'},location.origin);}}else{renderPlayers();$('#hint').textContent='Vista de demostración · abre una partida en otra pestaña y aparecerá aquí en 3D';$('#hint').style.opacity=1;}
-    mkBirds();
     setProgress(.95,'Último ajuste de luces…');await sleep(30);
     todSet('dia');
     controls.enabled=false;intro={t:0};camPlace(fit*1.55,.55,.5);

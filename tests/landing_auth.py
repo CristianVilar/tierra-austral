@@ -53,19 +53,19 @@ async def main():
         await pg.goto('http://localhost:8772/');await pg.wait_for_timeout(900)
         # invitado
         await pg.fill('#l-name','Cris<>');await pg.click('#l-go');await pg.wait_for_timeout(500)
-        ok(await pg.locator('#land.on').count()==0,'invitado: se cierra la portada')
-        ok(await pg.locator('#modal.open').count()==1,'invitado: se abre el menu')
+        ok(await pg.evaluate('LANDM')=='hub','invitado: pasa al menú principal')
+        ok(await pg.locator('.htile').count()>=8 and await pg.locator('#modal.open').count()==0,'invitado: el menú es una pantalla con fichas')
         ok(await pg.evaluate("PNAME")=='Cris','el nombre se limpia y se guarda')
-        ok(await pg.evaluate("getComputedStyle(document.body).overflow")!='hidden','se restaura el scroll')
+        pass
         ok('invitado' in (await pg.inner_text('#acct')).lower(),'el menu muestra modo invitado')
         # volver a la portada con "Cambiar nombre"
-        await pg.click('#modal p a');await pg.wait_for_timeout(400)
+        await pg.click('.hubhead a');await pg.wait_for_timeout(400)
         ok(await pg.locator('#land.on').count()==1,'Cambiar nombre vuelve a la portada')
         ok(await pg.input_value('#l-name')=='Cris','trae el nombre guardado')
         # entrar con cuenta por correo y confirmar que pasa al menu
         await pg.click('#l-mail');await pg.fill('#lg-mail','cris@test.cl');await pg.click('#lg-send')
         await pg.wait_for_selector('#lg-code');await pg.fill('#lg-code','123456');await pg.click('#lg-ok');await pg.wait_for_timeout(1500)
-        ok(await pg.locator('#land.on').count()==0 and await pg.locator('#modal.open').count()==1,'tras entrar pasa al menu')
+        ok(await pg.evaluate('LANDM')=='hub','tras entrar pasa al menu')
         # portada con sesion
         await pg.evaluate("showWelcome()");await pg.wait_for_timeout(400)
         ok('cris@test.cl' in await pg.inner_text('#landin'),'la portada muestra la cuenta')
@@ -85,7 +85,7 @@ async def main():
         await p2.goto('http://localhost:8772/');await p2.wait_for_timeout(1200)
         ok(await p2.evaluate("document.activeElement.id")=='l-name','en PC el foco va al nombre')
         await p2.keyboard.type('Ana');await p2.keyboard.press('Enter');await p2.wait_for_timeout(500)
-        ok(await p2.locator('#land.on').count()==0,'Enter entra al juego')
+        ok(await p2.evaluate('LANDM')=='hub','Enter entra al menú')
         print('pageerrors',errs)
         await b.close()
     srv.terminate()

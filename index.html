@@ -165,6 +165,7 @@ body.landon{overflow:hidden}
 .lacct .lnk{flex:none;padding:4px 2px;font-size:12.5px}
 .lgear{position:fixed;top:14px;right:14px;z-index:2;width:46px;height:46px;border-radius:50%;background:#0b1b27a8;border:1px solid #ffffff24;color:#dbe9f2;display:none;place-items:center;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .land.on .lgear{display:grid}
+.land:has(.hubm) .lgear{display:none}
 .lgear:hover{background:#0b1b27e6}
 .land button:focus-visible,.land input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 @media(max-width:900px){
@@ -180,6 +181,46 @@ body.landon{overflow:hidden}
   .lisle{left:12%;width:min(30vw,146px);top:calc(var(--hz) + 8%)}
   .lgear{top:10px;right:10px;width:42px;height:42px}
 }
+
+/* Menú principal (pantalla completa) */
+.landin.hubm{display:block;max-width:1060px;padding:clamp(14px,3vh,34px) clamp(12px,4vw,40px) 40px}
+.hubpanel{background:#0c1c2bd9;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid #ffffff24;border-radius:26px;padding:clamp(16px,2.6vw,32px);box-shadow:0 24px 60px #00000080}
+.hubhead{text-align:center;margin:0 0 14px}
+.hlogo{width:min(300px,64%);height:auto;margin:0 auto;display:block;filter:drop-shadow(0 8px 20px #000a)}
+.hubhead p{margin:8px 0 0;color:#c9d9e4;font-size:15px}
+.hubhead a{color:var(--accent);margin-left:6px;text-underline-offset:3px}
+.hubpanel .acct{margin:0 0 6px}
+.hsec{margin:22px 4px 10px;font:800 12.5px var(--font-body);letter-spacing:.16em;text-transform:uppercase;color:#e9b95a;display:flex;align-items:center;gap:12px}
+.hsec::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,#e9b95a66,#0000)}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.hgrid.one{grid-template-columns:1fr;margin-top:14px}
+.htile{display:flex;align-items:center;gap:15px;text-align:left;background:linear-gradient(160deg,#173247d9,#0f2231d9);border:1px solid #ffffff1f;border-radius:18px;padding:14px 16px;color:var(--ink);font:inherit;cursor:pointer;min-height:96px;transition:border-color .15s,transform .1s,box-shadow .15s,background .15s}
+.htile:hover:not(:disabled){border-color:var(--accent);transform:translateY(-2px);box-shadow:0 10px 26px #0006;background:linear-gradient(160deg,#1d3d55,#12293b)}
+.htile:active:not(:disabled){transform:translateY(0)}
+.htile:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.htile:disabled{opacity:.5;cursor:not-allowed}
+.htile.hero{background:linear-gradient(135deg,#2b6a82,#16303f);border-color:var(--accent)}
+.hx{flex:none;width:60px;height:68px;display:grid;place-items:center;background:linear-gradient(165deg,#ffd98a,#b8771f);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.hx i{width:calc(100% - 5px);height:calc(100% - 5px);display:grid;place-items:center;background:linear-gradient(165deg,#21455e,#0c1d2a);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.hx .mi{width:27px;height:27px;margin:0}
+.htile:hover:not(:disabled) .hx{background:linear-gradient(165deg,#fff0c4,#e0952c)}
+.ht{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ht b{font:800 17.5px/1.2 var(--font-display)}
+.ht small{color:#aebfcc;font-size:13px;line-height:1.4}
+.hubfoot{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:22px 0 0}
+.btn.gold2{border:2px solid var(--accent);color:var(--accent);background:#0000;font-weight:800}
+.btn.gold2:hover{background:#f0b84a1f}
+@media(max-width:640px){.hgrid{grid-template-columns:1fr}.htile{min-height:84px;padding:12px 13px;gap:12px}.hx{width:52px;height:59px}.hx .mi{width:23px;height:23px}.ht b{font-size:16px}.hubpanel{border-radius:20px}}
+
+.netm .nethead{display:flex;gap:14px;align-items:center;margin:0 0 14px}
+.netm .nethead h2{margin:0 0 4px}.netm .nethead p{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
+.hx.big{width:64px;height:73px}.hx.big .mi{width:29px;height:29px}
+.netm input{width:100%;min-height:48px;background:#0b1b27;border:1px solid #ffffff2e;border-radius:12px;color:var(--ink);font:700 16px var(--font-body);padding:10px 14px}
+.netm input:focus{border-color:var(--accent);outline:none}
+.netm .netjoin{margin-top:16px}
+.netm .netjoin .row{display:flex;gap:10px}
+.netm #n-code{flex:1;text-transform:uppercase;letter-spacing:.35em;text-align:center;font-size:20px;font-weight:800}
+.netm .netjoin .btn{min-width:120px;min-height:48px}
 @media(max-width:900px){.landbrand{align-self:auto;padding-top:0}}
 @media(max-height:700px){
   .landbrand img{width:min(190px,42vw)}
@@ -1020,6 +1061,7 @@ function say(t){G.log.unshift(t);if(G.log.length>60)G.log.pop();}
 const pn=pid=>G.players[pid].name;
 
 function newGame(cfg){
+  landHide();
   G={id:(G.id||0)+1,cfg,log:[],phase:'idle',cur:0,mode:null,msg:'',busy:false,over:false,dice:null,flash:null,
      robber:-1,lr:null,la:null,devPlayed:false,turn:0,resume:'main',lastSettle:null,setupIdx:0,
      rules:{...DEFR,...(cfg.rules||{})},limits:[],tok:0,timerOn:false,paused:false,pauseLeft:0,pend:null,t0:null,tEnd:null,winners:null,dsc:null,forcing:false,beep:null,
@@ -2178,9 +2220,11 @@ function boardSVG(){
       +[a,b].map(v=>L(v.x,v.y,v.x+ux*24,v.y+uy*24,8.5,'#6b4723',' stroke-dasharray="1.6 3.8" stroke-opacity=".6"')).join('')
       +[a,b].map(v=>`<circle cx="${(v.x+ux*24).toFixed(1)}" cy="${(v.y+uy*24).toFixed(1)}" r="3.4" fill="#4a3118" stroke="#2a1a0a" stroke-width="1"/>`).join('')
       +`</g>
-    <g filter="url(#sh)"><circle cx="${px}" cy="${py}" r="20" fill="#f3e6bf" stroke="#7a5a2f" stroke-width="3"/><circle cx="${px}" cy="${py}" r="16.5" fill="none" stroke="#7a5a2f" stroke-opacity=".35" stroke-width="1"/></g>`;
-    if(pt.type==='any')s+=`<text x="${px}" y="${py+5}" text-anchor="middle" font-size="14" font-weight="800" fill="#3a2a12" font-family="Nunito Sans,sans-serif">3:1</text>`;
-    else s+=icon(pt.type,17,`x="${px-8.5}" y="${py-16}"`)+`<text x="${px}" y="${py+13}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#3a2a12" font-family="Nunito Sans,sans-serif">2:1</text>`;
+    <g filter="url(#sh)">${pt.type==='any'
+      ?`<circle cx="${px}" cy="${py}" r="20" fill="#f3e6bf" stroke="#7a5a2f" stroke-width="3"/><circle cx="${px}" cy="${py}" r="16.5" fill="none" stroke="#7a5a2f" stroke-opacity=".35" stroke-width="1"/>`
+      :`<circle cx="${px}" cy="${py}" r="21" fill="#16222c" stroke="${RCOL[pt.type]}" stroke-width="4"/><circle cx="${px}" cy="${py}" r="18.4" fill="none" stroke="#f3e6bf" stroke-opacity=".8" stroke-width="1"/>`}</g>`;
+    if(pt.type==='any')s+=`<text x="${px}" y="${py+6}" text-anchor="middle" font-size="17" font-weight="900" fill="#2a1a08" font-family="Nunito Sans,sans-serif">3:1</text>`;
+    else s+=icon(pt.type,17,`x="${px-8.5}" y="${py-16}"`)+`<text x="${px}" y="${py+14}" text-anchor="middle" font-size="11" font-weight="900" fill="#fbf1d2" font-family="Nunito Sans,sans-serif">2:1</text>`;
   }
   // hexágonos con escena
   const rv=G.revealAt&&Date.now()-G.revealAt<2800,rvt=rv?(Date.now()-G.revealAt)/1000:0;
@@ -3094,6 +3138,7 @@ function saveInfo(){
   try{const t=localStorage.getItem(SAVEKEY);if(!t)return null;const o=JSON.parse(t);return{at:o.at,turn:o.G.turn,names:o.G.players.map(p=>p.name),n:o.G.n};}catch(e){return null;}
 }
 function loadSerial(txt){
+  landHide();
   const o=JSON.parse(txt),B=o.B;
   H=B.H.map(h=>({...h}));V=B.V;E=B.E;SEAH=B.SEAH||[];VB=B.VB;DISTISL=B.DISTISL||[];
   PORTS=B.PORTS.map(p=>({type:p.type,e:E[p.e],mx:p.mx,my:p.my}));
@@ -3602,6 +3647,10 @@ Registro|Log|Registro
 Reglas de esta partida|Rules of this game|Regras desta partida
 Reglas de la partida|Game rules|Regras da partida
 Reglas y costos|Rules and costs|Regras e custos
+Jugar|Play|Jogar
+Tu progreso|Your progress|Seu progresso
+Ajustes y ayuda|Settings and help|Ajustes e ajuda
+Volver a la partida|Back to the game|Voltar à partida
 Jugar en 3D (beta)|Play in 3D (beta)|Jogar em 3D (beta)
 Volver al tablero 2D|Back to the 2D board|Voltar ao tabuleiro 2D
 Vista del tablero: 2D|Board view: 2D|Vista do tabuleiro: 2D
@@ -4273,7 +4322,7 @@ try{PNAME=localStorage.getItem('ta-name')||'';}catch(e){}
 const APPVER='0.1';
 const landOpen=()=>{const l=document.getElementById('land');return !!l&&l.classList.contains('on');};
 function landHide(){const l=document.getElementById('land');if(l)l.classList.remove('on');document.body.classList.remove('landon');}
-function mback(){if(landOpen())closeModal();else showMenu();}
+function mback(){if(landOpen()&&LANDM==='welcome')closeModal();else showMenu();}
 const GLOGO='<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-2.8-.4-4H24v7.3h12.1c-.2 2-1.6 5-4.5 7l-.1.3 6.5 5 .5.1c4.1-3.8 6.6-9.4 6.6-15.7"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-6.9-5.4c-1.8 1.3-4.3 2.2-7.6 2.2-5.8 0-10.7-3.8-12.5-9.1l-.3 0-6.7 5.2-.1.3C7.9 41 15.4 46 24 46"/><path fill="#FBBC05" d="M11.5 28.4c-.5-1.4-.7-2.9-.7-4.4s.3-3 .7-4.4l0-.3-6.8-5.3-.2.1C2.9 17 2 20.4 2 24s.9 7 2.5 9.9z"/><path fill="#EB4335" d="M24 10.2c4.1 0 6.9 1.8 8.5 3.3l6.2-6C34.9 4 29.9 2 24 2 15.4 2 7.9 7 4.5 14.1l7 5.5c1.8-5.3 6.7-9.4 12.5-9.4"/></svg>';
 function landHTML(){
   const u=AUTH.user;
@@ -4296,8 +4345,8 @@ function landHTML(){
 function showWelcome(){
   closeModal();
   const l=document.getElementById('land');if(!l){showMenu();return;}
-  l.classList.add('on');document.body.classList.add('landon');
-  $('#landin').innerHTML=landHTML();
+  LANDM='welcome';l.classList.add('on');document.body.classList.add('landon');
+  $('#landin').className='landin';$('#landin').innerHTML=landHTML();
   const inp=$('#l-name'),er=$('#l-err');
   if(AUTH.bootErr){er.textContent=AUTH.bootErr;const rw=$('#l-raw');if(rw&&AUTH.bootRaw)rw.textContent='Detalle: '+AUTH.bootRaw;AUTH.bootErr=AUTH.bootRaw=null;}
   const go=()=>{PNAME=(inp.value||'').replace(/[<>&"']/g,'').trim().slice(0,14)||'Jugador';try{localStorage.setItem('ta-name',PNAME);}catch(e){}landHide();showMenu();};
@@ -4311,24 +4360,46 @@ function showWelcome(){
   l.scrollTop=0;
   if(innerWidth>=900)setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},80);
 }
+let LANDM='welcome';
+function hubTile(ic,t,d,on,o){o=o||{};return `<button class="htile${o.hero?' hero':''}" onclick="${on}"${o.off?' disabled':''}><span class="hx"><i>${mi(ic)}</i></span><span class="ht"><b>${t}</b><small>${d}</small></span></button>`;}
+function inGame(){return !!(G&&G.phase&&G.phase!=='idle'&&!G.over);}
 function showMenu(){
-  landHide();
-  if(NET.role){if(NET.role==='host'&&NET.lobby&&!NET.started)showLobby();else showRoomMenu();return;}
+  if(NET.role){landHide();if(NET.role==='host'&&NET.lobby&&!NET.started)showLobby();else showRoomMenu();return;}
+  closeModal();
+  const l=document.getElementById('land');if(!l){return;}
   const sv=saveInfo(),last=!!LS.raw(LASTKEY),dk=todayKey(),dd=(LS.get('ta-daily',{})||{})[dk],st=loadStats();
-  openModal(`<h2 style="margin:0"><img class="mlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></h2><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false" style="color:var(--accent)">Cambiar nombre</a>`:''}</p>${acctHTML()}<div class="menu">
-   ${sv?`<button class="mcard hero" onclick="resumeGame()"><b>${mi('play')}Reanudar partida</b><small>Turno ${sv.turn} · ${sv.names.join(', ')} · guardada ${fmtDate(sv.at)}</small></button>`:''}
-   <button class="mcard" onclick="showStart()"><b>${mi('bolt')}Partida rápida</b><small>Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.</small></button>
-   <button class="mcard" onclick="showCampaign()"><b>${mi('flag')}Campaña</b><small>Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.</small></button>
-   <button class="mcard" onclick="startDaily()"><b>${mi('cal')}Partida diaria</b><small>El mismo mapa para todos hoy (${dk}). ${dd?(dd.won?`Ganada en ${dd.rounds} rondas.`:'Ya la jugaste, sin victoria.'):'Aún no la juegas.'}</small></button>
-   <button class="mcard" onclick="showProfile()"><b>${mi('users')}Perfil y marcador</b><small>Tu nombre y cómo vas contra tus amigos en las partidas en línea.</small></button>
-   <button class="mcard" onclick="showStats()"><b>${mi('trophy')}Estadísticas y logros</b><small>${st.games} partidas, ${st.wins} victorias, ${ACH.filter(a=>st.ach[a.id]).length} de ${ACH.length} logros.</small></button>
-   <button class="mcard" onclick="replayLast()" ${last?'':'disabled'}><b>${mi('replay')}Repetición</b><small>${last?'Mira turno a turno la última partida terminada.':'Aparece al terminar tu primera partida.'}</small></button>
-   <button class="mcard" onclick="playTutorial()"><b>${mi('book')}Tutorial guiado</b><small>Una partida corta contra rivales fáciles, acompañada paso a paso.</small></button>
-   <button class="mcard" onclick="setView(view3d()?'2d':'3d')"><b>${mi('palette')}Vista del tablero: ${view3d()?'3D':'2D'}</b><small>${view3d()?'Las partidas se abren con el tablero en 3D. Toca para volver al 2D.':'Las partidas se abren con el tablero 2D. Toca para jugar en 3D (beta).'}</small></button>
-   <button class="mcard" onclick="showPersonalize()"><b>${mi('palette')}Personalizar</b><small>Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.</small></button>
-   <button class="mcard" onclick="showRules()"><b>${mi('list')}Reglas y costos</b><small>Cómo se juega y cuánto cuesta cada construcción.</small></button>
-   <button class="mcard" onclick="showNetMenu()"><b>${mi('users')}Multijugador en línea</b><small>Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.${AUTH.user?'':' Requiere cuenta.'}</small></button>
-  </div><div class="mact">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('install')}<span>Instalar app</span></button>`}<button class="btn" onclick="closeModal()">Cerrar</button></div>`,true);
+  LANDM='hub';
+  l.classList.add('on');document.body.classList.add('landon');
+  const li=$('#landin');li.className='landin hubm';
+  li.innerHTML=`<div class="hubpanel">
+   <div class="hubhead"><img class="hlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false">Cambiar nombre</a>`:''}</p></div>
+   ${acctHTML()}
+   ${sv?`<div class="hgrid one">${hubTile('play','Reanudar partida',`Turno ${sv.turn} · ${sv.names.join(', ')} · guardada ${fmtDate(sv.at)}`,'resumeGame()',{hero:1})}</div>`:''}
+   <h3 class="hsec">Jugar</h3>
+   <div class="hgrid">
+    ${hubTile('bolt','Partida rápida','Elige rivales, mapa, reglas y variantes: misiones secretas, facciones, subasta, mejoras, tierras salvajes y más.','showStart()')}
+    ${hubTile('flag','Campaña',`Seis misiones con condiciones especiales. Completadas: ${campDone()} de ${CAMP.length}.`,'showCampaign()')}
+    ${hubTile('cal','Partida diaria',`El mismo mapa para todos hoy (${dk}). ${dd?(dd.won?`Ganada en ${dd.rounds} rondas.`:'Ya la jugaste, sin victoria.'):'Aún no la juegas.'}`,'startDaily()')}
+    ${hubTile('users','Multijugador en línea','Crea una sala con código y juega a distancia con amigos, en web o en el teléfono.'+(AUTH.user?'':' Requiere cuenta.'),'showNetMenu()')}
+    ${hubTile('book','Tutorial guiado','Una partida corta contra rivales fáciles, acompañada paso a paso.','playTutorial()')}
+   </div>
+   <h3 class="hsec">Tu progreso</h3>
+   <div class="hgrid">
+    ${hubTile('users','Perfil y marcador','Tu nombre y cómo vas contra tus amigos en las partidas en línea.','showProfile()')}
+    ${hubTile('trophy','Estadísticas y logros',`${st.games} partidas, ${st.wins} victorias, ${ACH.filter(a=>st.ach[a.id]).length} de ${ACH.length} logros.`,'showStats()')}
+    ${hubTile('replay','Repetición',last?'Mira turno a turno la última partida terminada.':'Aparece al terminar tu primera partida.','replayLast()',{off:!last})}
+   </div>
+   <h3 class="hsec">Ajustes y ayuda</h3>
+   <div class="hgrid">
+    ${hubTile('palette','Vista del tablero: '+(view3d()?'3D':'2D'),view3d()?'Las partidas se abren con el tablero en 3D. Toca para volver al 2D.':'Las partidas se abren con el tablero 2D. Toca para jugar en 3D (beta).','setView(view3d()?\'2d\':\'3d\')')}
+    ${hubTile('palette','Personalizar','Tema del tablero (costa, bosque, nevado, atardecer) y tu color de jugador.','showPersonalize()')}
+    ${hubTile('list','Reglas y costos','Cómo se juega y cuánto cuesta cada construcción.','showRules()')}
+   </div>
+   <div class="hubfoot">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('install')}<span>Instalar app</span></button>`}${inGame()?'<button class="btn gold2" onclick="landHide()">Volver a la partida</button>':''}</div>
+   <div class="llang" role="group" aria-label="Idioma">${Object.keys(LANGS).map(k=>`<button class="${k===LANG?'on':''}" data-l="${k}" aria-pressed="${k===LANG}">${LANGS[k]}</button>`).join('')}</div>
+  </div>`;
+  document.querySelectorAll('#landin .llang button').forEach(b=>{b.onclick=()=>{setLang(b.dataset.l);showMenu();};});
+  l.scrollTop=0;
 }
 
 /* ===================== Multijugador en línea ===================== */
@@ -4533,7 +4604,7 @@ const AUTH={
     try{await sb.auth.signOut({scope:'local'});}catch(e){}
     this.setSession(null);this.pulledFor=null;CLOUD.wipe();this.refreshUI();
   },
-  refreshUI(){const a=$('#acct');if(a)a.outerHTML=acctHTML();if(typeof landOpen==='function'&&landOpen())showWelcome();},
+  refreshUI(){const a=$('#acct');if(a)a.outerHTML=acctHTML();if(typeof landOpen==='function'&&landOpen()){if(LANDM==='hub')showMenu();else showWelcome();}},
   /* Puerta del multijugador: sin cuenta se pide iniciar sesión (la base de datos también lo exige). */
   need(o){if(this.user&&this.token())return true;showLogin(Object.assign({need:'net'},o||{}));return false;}
 };
@@ -4706,7 +4777,7 @@ function showLogin(o){
   };
   sd.onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
   $('#lg-goog').onclick=async()=>{er.textContent='';try{await AUTH.google();}catch(e){er.textContent=AUTH.err(e);}};
-  $('#lg-guest').onclick=()=>{AUTH.ctx=null;if(landOpen())closeModal();else showMenu();};
+  $('#lg-guest').onclick=()=>{AUTH.ctx=null;if(landOpen()&&LANDM==='welcome')closeModal();else showMenu();};
 }
 function showAccount(){
   const u=AUTH.user;if(!u){showLogin();return;}
@@ -4879,7 +4950,7 @@ const NETH={
     const dfs=(cfg.diff||[]);cfg.diff=[...Array(hs.length).fill('normal'),...dfs.slice(1,1+nb)];
     cfg.limits=null;
     hs.forEach((r,i)=>{r.seat=i;});
-    NET.lobby=false;NET.started=true;NET.remote={};hs.forEach(r=>{if(r.seat>0)NET.remote[r.seat]=true;});
+    landHide();NET.lobby=false;NET.started=true;NET.remote={};hs.forEach(r=>{if(r.seat>0)NET.remote[r.seat]=true;});
     NET.roster=hs;NET.last={};
     netSend({t:'start',roster:netRoster(),hk:NET.hpub||undefined});
     NETT.setStatus(NET.code,'playing');
@@ -5300,7 +5371,7 @@ async function netGuestHandle(m){
   if(m.t==='lobby'||m.t==='start'){
     NET.roster=(Array.isArray(m.roster)?m.roster:[]).slice(0,NETMAX+8).map(r=>({tag:String(r&&r.tag||''),name:String(r&&r.name||'').slice(0,14),seat:+(r&&r.seat)||0,online:!!(r&&r.online)}));{const mine=netTag(NET.id,NET.code),f=NET.roster.find(x=>x.tag===mine);NET.seat=f?f.seat:-1;}
     if(NET.seat<0)return;
-    if(m.t==='start'||m.started){NET.started=true;NET.bye=false;closeLocalModal();}
+    if(m.t==='start'||m.started){landHide();NET.started=true;NET.bye=false;closeLocalModal();}
     else showGuestLobby();
     return;
   }
@@ -5337,13 +5408,17 @@ function netLeave(silent){
 function showNetMenu(code,saved,err){
   if(!AUTH.need({code,saved}))return;
   const nm=(saved&&saved.name)||netName();
-  openModal(`<h2>Multijugador en línea</h2><p>Juega con amigos a distancia: uno crea la sala y comparte el código; los demás entran con él.${'ontouchstart' in window?'':' Funciona igual en computador y teléfono.'}</p>
+  const si=netSaveInfo();
+  openModal(`<div class="netm"><div class="nethead"><span class="hx big"><i>${mi('users')}</i></span><div><h2>Multijugador en línea</h2><p>Juega con amigos a distancia: uno crea la sala y comparte el código; los demás entran con él.${'ontouchstart' in window?'':' Funciona igual en computador y teléfono.'}</p></div></div>
    ${err?`<p class="err" style="color:var(--bad)">${err}</p>`:''}
-   <div class="field"><label for="n-name">Tu nombre</label><input id="n-name" maxlength="14" value="${esc(nm)}" placeholder="Tu nombre"></div>
-   ${(()=>{const si=netSaveInfo();return si?`<div class="menu" style="margin-top:8px"><button class="mcard" onclick="netResume()"><b>${mi('play')}Reanudar sala ${si.code}</b><small>Turno ${si.turn} · ${si.names.map(netEsc).join(', ')}. Tus amigos entran con el mismo código.</small></button></div>`:''})()}
-   <div class="menu" style="margin-top:8px"><button class="mcard" onclick="showPublicRooms()"><b>${mi('door')}Salas abiertas</b><small>Mira las partidas públicas en espera y únete sin código.</small></button><button class="mcard hero" onclick="netCreate($('#n-name').value)"><b>${mi('plus')}Crear sala</b><small>Serás el anfitrión: eliges reglas y rivales, y recibes un código.</small></button></div>
-   <div class="field" style="margin-top:12px"><label for="n-code">Código de una sala</label><div class="row"><input id="n-code" maxlength="8" value="${esc(code||'')}" placeholder="ABCDE" style="text-transform:uppercase;flex:1"><button class="btn primary" onclick="netJoin($('#n-code').value,$('#n-name').value)">Unirse</button></div></div>
-   <div class="mact"><button class="btn" onclick="showMenu()">Volver</button></div>`,true);
+   <div class="field"><label for="n-name">Tu nombre</label><input id="n-name" maxlength="14" value="${esc(nm)}" placeholder="Tu nombre" autocomplete="nickname"></div>
+   <div class="hgrid one" style="margin-top:6px">
+    ${si?hubTile('play','Reanudar sala '+si.code,`Turno ${si.turn} · ${si.names.map(netEsc).join(', ')}. Tus amigos entran con el mismo código.`,'netResume()',{hero:1}):''}
+    ${hubTile('plus','Crear sala','Serás el anfitrión: eliges reglas y rivales, y recibes un código.',"netCreate($('#n-name').value)",{hero:!si})}
+    ${hubTile('door','Salas abiertas','Mira las partidas públicas en espera y únete sin código.','showPublicRooms()')}
+   </div>
+   <div class="field netjoin"><label for="n-code">Código de una sala</label><div class="row"><input id="n-code" maxlength="8" value="${esc(code||'')}" placeholder="ABCDE" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn gold2" onclick="netJoin($('#n-code').value,$('#n-name').value)">Unirse</button></div></div>
+   <div class="mact"><button class="btn" onclick="showMenu()">Volver</button></div></div>`,true);
   if(saved&&code&&!err){netJoin(code,nm,saved);}
 }
 const netLink=()=>{try{return location.origin+location.pathname+'?sala='+NET.code;}catch(e){return NET.code;}};

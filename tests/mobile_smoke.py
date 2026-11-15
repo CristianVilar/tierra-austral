@@ -27,7 +27,7 @@ def run(p, dev):
     pg.goto(URL); pg.wait_for_timeout(800)
     check(pg.locator('#l-name').count() == 1, 'aparece la portada con el campo de nombre')
     pg.fill('#l-name', 'Prueba'); pg.keyboard.press('Enter'); pg.wait_for_timeout(300)
-    check('Prueba' in pg.inner_text('#modal'), 'tras el nombre aparece el menú con el saludo')
+    check('Prueba' in pg.inner_text('#landin'), 'tras el nombre aparece el menú con el saludo')
     check(pg.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'el menú no desborda horizontalmente')
     # partida rápida real: pulsar «Partida rápida» y «Empezar»
     pg.get_by_text('Partida rápida').first.click(); pg.wait_for_timeout(300)
