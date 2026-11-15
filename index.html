@@ -202,6 +202,20 @@ body:has(#modal.open){overflow:hidden}
 /* Mapa antiguo (solo 2D) */
 body.oldmap .boardwrap{background:linear-gradient(180deg,#5a4126,#3d2b18);border-color:#8a6a3b}
 body.oldmap #board svg{box-shadow:0 0 0 3px #2a1c0e,0 0 0 5px #b58d4e}
+
+/* Marcador de jugadores: filas parejas, nombre recortado y puntos siempre visibles */
+.pl{min-width:0}
+.pl>div:nth-child(2){min-width:0}
+.pl .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl .vp{text-align:right;min-width:1.2ch}
+body.compact .players{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.compact .players{display:grid;gap:6px}
+body.compact .pl .nm{font-size:13px}
+body.compact .players:has(.pl:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}
+body.compact .players:has(.pl:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}
+body.compact .pl{grid-template-columns:26px minmax(0,1fr) auto;gap:6px;padding:7px 8px;min-height:46px}
+body.compact .pl .av{width:26px;height:26px;font-size:13px}
+body.compact .pl .vp{font-size:20px}
 /* botones de respuesta a tratos */
 .btn.ok{background:linear-gradient(#3f9d5b,#2b7a43);color:#fff;border-color:#8fe0a8}
 .btn.no{background:linear-gradient(#b8503f,#8d3526);color:#fff;border-color:#f0a99c}
@@ -215,10 +229,7 @@ body.compact #msg{padding:4px 96px 6px 78px;min-height:34px;font-size:14px;displ
 body.compact .card.clock,body.compact #sec-res{display:none}
 body.compact #sec-players h3{display:none}
 body.compact #sec-players{padding:8px}
-body.compact .players{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px}
-body.compact .pl{grid-template-columns:28px 1fr auto;padding:6px 8px}
 body.compact .pl .sub,body.compact .pl .tag{display:none}
-body.compact .pl .nm{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:920px){
   body.compact .app{padding:6px;gap:8px}
   body.compact .boardwrap{padding:6px;border-radius:14px}
@@ -2278,7 +2289,7 @@ function oldDecor(x0,y0,w,h){
     return t+`<text y="${-r-5}" text-anchor="middle" font-size="${r*.3}" font-weight="800" fill="${ink}" stroke="none" font-family="Fraunces,serif">N</text></g>`;};
   const ship=(x,y,sc,fl)=>`<g transform="translate(${x},${y}) scale(${fl*sc},${sc})" fill="#f1e4bd" stroke="${ink}" stroke-width="1.5" stroke-linejoin="round"><path d="M-16 0H16L11 8H-11Z" fill="#8a5a2c"/><line x1="0" y1="0" x2="0" y2="-26"/><path d="M0 -25Q14 -17 12 -4H0Z"/><path d="M0 -22Q-10 -15 -9 -4H0Z"/><path d="M-20 11q5 -4 10 0t10 0t10 0t10 0" fill="none" stroke-opacity=".7"/></g>`;
   const serp=(x,y,sc)=>`<g transform="translate(${x},${y}) scale(${sc})" fill="#cdbf8f" stroke="${ink}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M-46 8q10 -26 22 0q10 -26 22 0q8 -22 18 -6l6 -16q4 -6 10 -2l-4 8l8 4l-8 2q-6 14 -12 14q-8 -14 -18 0q-12 -16 -22 0q-10 -12 -16 0z"/><circle cx="28" cy="-12" r="1.5" fill="${ink}"/><path d="M-56 16q8 -4 14 0t14 0t14 0t14 0" fill="none" stroke-opacity=".7"/></g>`;
-  const cart=`<g transform="translate(${(x0+12).toFixed(0)},${(y0+12).toFixed(0)})"><rect width="178" height="46" rx="6" fill="#efe2b8" stroke="${ink}" stroke-width="2"/><rect x="4" y="4" width="170" height="38" rx="3" fill="none" stroke="${ink}" stroke-width=".8"/><text x="89" y="22" text-anchor="middle" font-size="17" font-weight="800" letter-spacing="2" fill="${ink}" font-family="Fraunces,serif">TIERRA AUSTRAL</text><text x="89" y="36" text-anchor="middle" font-size="9.5" font-weight="700" letter-spacing="2.5" fill="${ink}" font-family="Nunito Sans,sans-serif">CARTA DE NAVEGACIÓN</text></g>`;
+  const cart=`<g transform="translate(${(x0+12).toFixed(0)},${(y0+12).toFixed(0)})"><rect width="170" height="42" rx="6" fill="#efe2b8" stroke="${ink}" stroke-width="2"/><rect x="4" y="4" width="162" height="34" rx="3" fill="none" stroke="${ink}" stroke-width=".8"/><text x="85" y="20" text-anchor="middle" font-size="15" font-weight="800" fill="${ink}" font-family="Fraunces,serif" textLength="146" lengthAdjust="spacingAndGlyphs">TIERRA AUSTRAL</text><text x="85" y="33" text-anchor="middle" font-size="8.5" font-weight="700" fill="${ink}" font-family="Nunito Sans,sans-serif" textLength="140" lengthAdjust="spacingAndGlyphs">CARTA DE NAVEGACIÓN</text></g>`;
   const scale=`<g transform="translate(${(x0+w-196).toFixed(0)},${(y0+h-26).toFixed(0)})" stroke="${ink}" stroke-width="1.6" fill="none"><line x1="0" y1="0" x2="150" y2="0"/><line x1="0" y1="-5" x2="0" y2="5"/><line x1="50" y1="-4" x2="50" y2="4"/><line x1="100" y1="-4" x2="100" y2="4"/><line x1="150" y1="-5" x2="150" y2="5"/><text x="75" y="17" text-anchor="middle" font-size="10" font-weight="700" fill="${ink}" stroke="none" font-family="Nunito Sans,sans-serif" letter-spacing="1.5">LEGUAS</text></g>`;
   return `<g pointer-events="none">${cart}${rose(x0+w-62,y0+66,38)}${ship(x0+58,y0+h-52,.9,1)}${ship(x0+w-96,y0+h*.52,.7,-1)}${serp(x0+w*.2,y0+h*.9,.8)}${scale}</g>`;
 }
@@ -2625,7 +2636,7 @@ const TMOPT=[];for(let t=15;t<=80;t+=5)TMOPT.push(t);
 window.TMV=window.TMV||{};window.DFV=window.DFV||{};
 function drawTimeRows(){
   const box=$('#tm-rows');if(!box)return;
-  const spec=$('#c-spec').checked,nb=+$('#c-bots').value,nm=esc($('#c-name').value.trim())||'Tú';
+  const spec=$('#c-spec').checked,nb=+$('#c-bots').value,nm=esc(cleanName($('#c-name').value))||'Tú';
   const names=spec?[0,1,2,3].map(i=>BOTNAMES[i]):[nm,...Array.from({length:nb},(_,i)=>BOTNAMES[i])];
   box.innerHTML=names.map((n,i)=>`<div class="trow"><span><span class="dot" style="display:inline-block;vertical-align:-2px;background:${PCOL[i]}"></span> ${n}</span><select id="tm${i}" aria-label="Tiempo por turno de ${n}" onchange="TMV[${i}]=+this.value">${TMOPT.map(t=>`<option value="${t}" ${(TMV[i]||60)===t?'selected':''}>${t} s</option>`).join('')}</select></div>`).join('');
 }
@@ -2719,7 +2730,7 @@ function startFromForm(){
   const limits=Array.from({length:n},(_,i)=>{const e=$('#tm'+i);return e?+e.value:60;});
   const diffs=Array.from({length:n},(_,i)=>{const e=$('#df'+i);return e?e.value:'normal';});
   const tutorial=$('#r-tut').checked&&!spectate;
-  const cfg={name:$('#c-name').value.trim()||'Tú',bots:nb,speed:+$('#c-speed').value,spectate,rules,limits,map,custom:window.CUSTOM,diff:diffs,humanFac:$('#c-fac').value};
+  const cfg={name:cleanName($('#c-name').value)||'Tú',bots:nb,speed:+$('#c-speed').value,spectate,rules,limits,map,custom:window.CUSTOM,diff:diffs,humanFac:$('#c-fac').value};
   if(NETH.starting(cfg))return;
   launch(cfg,{tutorial});
 }
@@ -4457,6 +4468,7 @@ function showPersonalize(){
    <p style="color:var(--muted);font-size:13px">${CBP.on?'Con el modo daltonismo activado se usan colores especiales y esta elección no se aplica. ':''}En una sala en línea, los colores de los jugadores los define el anfitrión; el tema del tablero lo eliges cada uno.</p>
    <div class="mact"><button class="btn primary" onclick="mback()">Listo</button></div>`);
 }
+const NAMEMAX=14;const cleanName=v=>String(v==null?'':v).replace(/[<>&"']/g,'').replace(/\s+/g,' ').trim().slice(0,NAMEMAX);
 let PNAME='',DEFER_INSTALL=null;
 const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();DEFER_INSTALL=e;});
@@ -4468,7 +4480,7 @@ function installApp(){
    ${ios?'<ol style="line-height:1.7"><li>Abre esta página en <b>Safari</b>.</li><li>Toca el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba).</li><li>Elige <b>Añadir a pantalla de inicio</b> y luego <b>Añadir</b>.</li></ol>':'<ol style="line-height:1.7"><li>Abre el menú del navegador (⋮ o ⋯).</li><li>Elige <b>Instalar app</b> o <b>Añadir a pantalla de inicio</b>.</li></ol>'}
    <div class="mact"><button class="btn" onclick="mback()">Volver</button></div>`);
 }
-try{PNAME=localStorage.getItem('ta-name')||'';}catch(e){}
+try{PNAME=cleanName(localStorage.getItem('ta-name')||'');}catch(e){}
 const APPVER='0.1';
 const landOpen=()=>{const l=document.getElementById('land');return !!l&&l.classList.contains('on');};
 function landHide(){const l=document.getElementById('land');if(l)l.classList.remove('on');document.body.classList.remove('landon');}
@@ -4868,7 +4880,7 @@ const CLOUD={
         }
         try{localStorage.setItem('ta-uid',uid);}catch(e){}
       }finally{this.applying=false;}
-      PNAME=LS.raw('ta-name')||PNAME;try{MYCOL=Math.max(0,Math.min(5,parseInt(LS.raw('ta-mycol'))||0));}catch(e){}
+      PNAME=cleanName(LS.raw('ta-name'))||PNAME;try{MYCOL=Math.max(0,Math.min(5,parseInt(LS.raw('ta-mycol'))||0));}catch(e){}
       try{STYS=JSON.parse(localStorage.getItem('ta-sty')||'{}')||{};}catch(e){STYS={};}
       try{THEME=LS.raw('ta-theme')||THEME;applyTheme();applySty();}catch(e){}
       if(this.dirty.size)this.flush();
