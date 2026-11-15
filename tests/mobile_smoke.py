@@ -17,7 +17,7 @@ def run(p, dev):
     d = p.devices[dev]
     kw = {'executable_path': CHROME} if CHROME else {}
     b = p.chromium.launch(args=['--no-sandbox'], **kw)
-    ctx = b.new_context(**d)
+    ctx = b.new_context(**d, locale='es-CL')
     pg = ctx.new_page()
     errs = []
     pg.on('pageerror', lambda e: errs.append(str(e)))
@@ -25,8 +25,8 @@ def run(p, dev):
     pg.route('**/*', lambda r: r.abort() if any(x in r.request.url for x in ('fonts.g', 'jsdelivr', 'supabase.co')) else r.continue_())
     print('\n==', dev)
     pg.goto(URL); pg.wait_for_timeout(800)
-    check(pg.locator('#w-name').count() == 1, 'aparece la bienvenida con el campo de nombre')
-    pg.fill('#w-name', 'Prueba'); pg.keyboard.press('Enter'); pg.wait_for_timeout(300)
+    check(pg.locator('#l-name').count() == 1, 'aparece la portada con el campo de nombre')
+    pg.fill('#l-name', 'Prueba'); pg.keyboard.press('Enter'); pg.wait_for_timeout(300)
     check('Prueba' in pg.inner_text('#modal'), 'tras el nombre aparece el menú con el saludo')
     check(pg.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'el menú no desborda horizontalmente')
     # partida rápida real: pulsar «Partida rápida» y «Empezar»

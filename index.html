@@ -115,6 +115,98 @@ img.ico,image.ico{filter:drop-shadow(0 2px 2px #0008)}
 @keyframes flash{0%,100%{stroke-width:2.5;stroke:#0e1a22}50%{stroke-width:6;stroke:#fff}}
 @media(prefers-reduced-motion:reduce){.hl,.flash{animation:none}}
 #v3d{position:relative;display:none;background:#0b1620;border-radius:16px;overflow:hidden;height:clamp(430px,76svh,860px);box-shadow:0 0 0 3px #0b1a24,0 0 0 5px #8a6a3b}#v3d.on{display:block}@media(max-width:920px){#v3d{height:clamp(340px,calc(100svh - 262px),760px)}}body.m3d #board{display:none}@media(min-width:921px){body.m3d .zoomc{top:5px;right:16px}body.m3d #b3z{width:38px;height:38px;min-height:0;padding:0;display:grid;place-items:center;line-height:1}}body.m3d .zoomc .btn:not(:first-child){display:none}#v3f{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0b1620;touch-action:none}#v3s{position:absolute;inset:0;z-index:2;background:#0b1620;color:#e8eef2;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:600 16px/1.4 system-ui,sans-serif}#v3s.off{display:none}.v3m p{font-weight:400;font-size:13px;opacity:.75;margin:8px 0 14px;word-break:break-word}.v3b{display:flex;flex-direction:column;gap:10px;align-items:center}.v3b .btn{text-decoration:none}
+/* ---------- Pantalla de inicio ---------- */
+.land{position:fixed;inset:0;height:var(--vvh,100%);z-index:9;display:none;--hz:56%;background:#091520;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.land.on{display:block}
+body.landon{overflow:hidden}
+.landbg{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lsky{position:absolute;left:0;right:0;top:0;height:var(--hz);background:linear-gradient(180deg,#121d3c 0%,#2b2e5c 20%,#5b3f6e 40%,#a85a70 58%,#df8460 76%,#f6b071 90%,#ffd9a6 100%)}
+.lbirds{position:absolute;left:0;right:0;top:0;height:var(--hz);width:100%}
+.lglow{position:absolute;left:53.6%;top:var(--hz);width:min(140vw,1300px);height:min(70vh,560px);transform:translate(-50%,-62%);background:radial-gradient(ellipse 50% 50% at 50% 60%,#ffe2ab6b 0%,#ffb87a3d 30%,#ff8f6517 52%,#ff8f6500 74%)}
+.lmt{position:absolute;left:0;right:0;bottom:calc(100% - var(--hz));width:100%;height:auto;display:block}
+.lsea{position:absolute;left:0;right:0;top:var(--hz);bottom:0;background:linear-gradient(180deg,#f2b681 0%,#b07f80 7%,#4d7f95 24%,#2a6480 46%,#154459 72%,#0b2b3c 100%)}
+.lrefl{position:absolute;left:53.6%;top:var(--hz);transform:translateX(-50%);width:min(34vw,340px);height:min(36vh,360px);background:radial-gradient(ellipse 50% 100% at 50% 0%,#ffdca8d9 0%,#ffc68a66 34%,#ffc68a00 72%);-webkit-mask-image:repeating-linear-gradient(180deg,#000 0 2px,#0000 2px 7px);mask-image:repeating-linear-gradient(180deg,#000 0 2px,#0000 2px 7px);filter:blur(2px);opacity:.8}
+.lisle{position:absolute;left:22%;top:calc(var(--hz) + 11%);width:min(13vw,158px);height:auto;filter:drop-shadow(0 10px 14px #04121b7a)}
+.lboat{position:absolute;left:8%;top:calc(var(--hz) + 5%);width:min(5vw,56px);height:auto;opacity:.75}
+.lfg{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:auto;display:block}
+.lvig{position:absolute;inset:0;background:radial-gradient(135% 85% at 32% 42%,#0000 28%,#06111ab5 100%)}
+.landin{position:relative;min-height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);align-items:center;gap:clamp(24px,4vw,64px);padding:40px clamp(20px,5vw,76px);max-width:1500px;margin:0 auto}
+.landbrand{align-self:start;padding-top:clamp(28px,7vh,86px)}
+.landbrand img{width:min(430px,40vw);height:auto;display:block;filter:drop-shadow(0 10px 30px #000000a6)}
+.landbrand p{margin:12px 0 0 5px;font:700 clamp(13px,1.45vw,18px)/1.3 var(--font-display);letter-spacing:.15em;color:#eef6fb;text-shadow:0 2px 12px #000000a6}
+.landcard{background:#102333cc;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid #ffffff24;border-radius:24px;padding:clamp(20px,2.3vw,30px);box-shadow:0 24px 60px #00000073}
+.landcard h2{font-size:clamp(27px,3.2vw,38px);text-align:center;margin:0}
+.lsub{color:#b9ccd8;text-align:center;margin:6px 0 20px;font-size:14.5px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:54px;background:#fff;color:#1f2937;border:0;border-radius:14px;font:800 16px var(--font-body);cursor:pointer;box-shadow:0 6px 18px #00000059;transition:transform .08s,box-shadow .15s}
+.gbtn:hover{transform:translateY(-1px);box-shadow:0 10px 24px #00000073}
+.gbtn:active{transform:translateY(1px)}
+.gbtn[disabled]{opacity:.6;cursor:default;transform:none}
+.ldiv{display:flex;align-items:center;gap:12px;margin:16px 0;color:#9fb4c2;font-size:13px}
+.ldiv::before,.ldiv::after{content:'';flex:1;height:1px;background:#ffffff26}
+.landcard .field{margin:0 0 14px;gap:6px}
+.landcard .field label{color:#9fb4c2}
+.landcard input[type=text]{width:100%;min-height:50px;background:#0b1b27cc;border:1px solid #ffffff2e;border-radius:12px;font-size:16px;padding:10px 14px}
+.landcard input[type=text]:focus{border-color:var(--accent);outline:none}
+.btn.gold{display:block;width:100%;min-height:54px;background:#0000;border:2px solid var(--accent);color:var(--accent);border-radius:14px;font:800 16px/1.2 Cinzel,Georgia,serif;letter-spacing:.4px;box-shadow:none}
+.btn.gold:hover{background:#f0b84a1f}
+.lfine{color:#93a9b7;font-size:12.5px;text-align:center;margin:12px 0 0;line-height:1.45}
+.lerr{color:#ff9f90;font-size:13.5px;text-align:center;margin:10px 0 0;min-height:18px}
+.lerr:empty{min-height:0;margin:0}
+.llang{display:flex;justify-content:center;gap:4px;margin:16px 0 0;flex-wrap:wrap}
+.llang button{background:none;border:0;color:#b9ccd8;font:800 12.5px var(--font-body);letter-spacing:.1em;text-transform:uppercase;padding:9px 10px;cursor:pointer;border-bottom:2px solid #0000;min-height:40px}
+.llang button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.lver{text-align:center;color:#7d93a2;font-size:12px;margin:10px 0 0}
+.lnk{background:none;border:0;color:var(--accent);font:700 13.5px var(--font-body);cursor:pointer;padding:8px 6px;text-decoration:underline;text-underline-offset:3px;min-height:40px}
+.lnk.ctr{display:block;margin:8px auto 0}
+.lacct{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#ffffff14;border:1px solid #ffffff21;border-radius:12px;padding:10px 12px;margin:0 0 16px;font-size:13.5px;min-width:0}
+.lacct span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lacct .lnk{flex:none;padding:4px 2px;font-size:12.5px}
+.lgear{position:fixed;top:14px;right:14px;z-index:2;width:46px;height:46px;border-radius:50%;background:#0b1b27a8;border:1px solid #ffffff24;color:#dbe9f2;display:none;place-items:center;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.land.on .lgear{display:grid}
+.lgear:hover{background:#0b1b27e6}
+.land button:focus-visible,.land input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media(max-width:900px){
+  .land{--hz:40%}
+  .landin{grid-template-columns:1fr;gap:20px;padding:26px 16px 32px;align-items:start;align-content:center}
+  .landbrand{text-align:center;padding-top:10px}
+  .landbrand img{width:min(300px,70vw);margin:0 auto}
+  .landbrand p{margin:10px 0 0;font-size:12.5px;letter-spacing:.12em}
+  .landcard{padding:20px 17px;max-width:440px;margin:0 auto;width:100%}
+  .landcard h2{font-size:26px}
+  .lsub{margin:5px 0 15px;font-size:13.5px}
+  .lboat{left:6%;width:40px}
+  .lisle{left:12%;width:min(30vw,146px);top:calc(var(--hz) + 8%)}
+  .lgear{top:10px;right:10px;width:42px;height:42px}
+}
+@media(max-width:900px){.landbrand{align-self:auto;padding-top:0}}
+@media(max-height:700px){
+  .landbrand img{width:min(190px,42vw)}
+  .landbrand p{display:none}
+  .landin{gap:10px;padding:12px 16px 18px}
+  .landcard{padding:15px 16px}
+  .landcard h2{font-size:21px}
+  .lsub{font-size:12.5px;margin:4px 0 10px}
+  .gbtn{min-height:46px;font-size:15px}
+  .lnk.ctr{min-height:32px;padding:4px;margin-top:4px}
+  .ldiv{margin:10px 0}
+  .landcard .field{margin-bottom:10px}
+  .landcard input[type=text]{min-height:44px}
+  .btn.gold{min-height:46px;font-size:15px}
+  .lfine{font-size:11.5px;margin-top:8px}
+  .llang{margin-top:8px}.llang button{padding:6px 9px;min-height:34px}
+  .lver{margin-top:4px}
+}
+@media(max-height:700px) and (min-width:901px){.landbrand img{width:min(330px,32vw)}.landbrand p{display:block}}
+@media(prefers-reduced-motion:reduce){.gbtn{transition:none}}
+@media(max-width:900px) and (max-height:480px){.landbrand{display:none}.landin{padding-top:8px}}
+@media(min-width:640px) and (max-height:540px){
+  .landin{grid-template-columns:minmax(0,1fr) minmax(0,390px);align-items:center;gap:22px;padding:14px clamp(16px,3vw,40px)}
+  .landbrand{display:block;text-align:left;align-self:center;padding:0}
+  .landbrand img{width:min(270px,30vw);margin:0}
+  .landbrand p{display:block;font-size:11.5px;margin-top:8px}
+  .landcard{margin:0;max-width:390px}
+  .lisle,.lboat{display:none}
+}
 #modal{position:fixed;inset:0;background:#02080cb8;display:none;align-items:center;justify-content:center;padding:16px;z-index:10}
 #modal.open{display:flex}
 #modal.kb{align-items:flex-start;padding-top:8px}
@@ -410,6 +502,11 @@ body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
   </main>
 
   <div class="sidecol"><div id="tut" style="display:none" role="region" aria-label="Tutorial"></div><aside class="side" id="side"></aside></div>
+</div>
+<div id="land" class="land" aria-label="Inicio de Tierra Austral">
+ <div class="landbg" aria-hidden="true"><div class="lsky"></div><svg class="lbirds" viewBox="0 0 1600 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M980,118 q10,-9 20,0 q10,-9 20,0" fill="none" stroke="#2a2f52" stroke-width="3" opacity=".5"/><path d="M1056,92 q8,-7 16,0 q8,-7 16,0" fill="none" stroke="#2a2f52" stroke-width="2.6" opacity=".42"/><path d="M1022,152 q7,-6 14,0 q7,-6 14,0" fill="none" stroke="#2a2f52" stroke-width="2.4" opacity=".34"/></svg><div class="lglow"></div><svg class="lmt" viewBox="0 0 1600 300" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><defs><radialGradient id="sg"><stop offset="0" stop-color="#ffeec6" stop-opacity=".95"/><stop offset=".28" stop-color="#ffc98a" stop-opacity=".55"/><stop offset=".62" stop-color="#ff9e68" stop-opacity=".18"/><stop offset="1" stop-color="#ff9e68" stop-opacity="0"/></radialGradient><radialGradient id="sd"><stop offset=".34" stop-color="#fffdf6"/><stop offset=".74" stop-color="#ffe3a8"/><stop offset="1" stop-color="#ffc87c"/></radialGradient></defs><circle cx="858" cy="180" r="230" fill="url(#sg)"/><circle cx="858" cy="180" r="58" fill="url(#sd)"/><path d="M0,300 V186 L118,120 L196,168 L318,92 L404,152 L520,108 L628,176 L742,104 L852,166 L968,122 L1086,182 L1208,114 L1318,172 L1442,124 L1540,168 L1600,140 V300 Z" fill="#6d6da0" opacity=".42"/><path d="M0,300 V214 L150,126 L262,196 L402,88 L540,190 L700,136 L858,208 L1002,114 L1162,198 L1322,146 L1462,204 L1600,156 V300 Z" fill="#41607f"/><path d="M150,126 L180,158 L169,150 L159,156 L148,147 L139,154 L120,150 Z" fill="#eef6fb" opacity=".88"/> <path d="M402,88 L446,134 L429,123 L415,132 L400,119 L385,130 L358,123 Z" fill="#eef6fb" opacity=".88"/> <path d="M700,136 L728,165 L717,158 L708,164 L699,156 L689,163 L672,158 Z" fill="#eef6fb" opacity=".88"/> <path d="M1002,114 L1040,154 L1026,144 L1013,152 L1000,141 L988,150 L964,144 Z" fill="#eef6fb" opacity=".88"/> <path d="M1322,146 L1348,173 L1338,167 L1330,172 L1321,164 L1312,171 L1296,167 Z" fill="#eef6fb" opacity=".88"/> <path d="M1600,156 L1622,179 L1614,174 L1607,178 L1599,171 L1592,177 L1578,174 Z" fill="#eef6fb" opacity=".88"/><path d="M0,300 V252 L96,216 L210,260 L330,208 L470,264 L604,224 L742,270 L880,220 L1020,266 L1150,218 L1290,264 L1420,226 L1540,266 L1600,238 V300 Z" fill="#20384e"/></svg><div class="lsea"></div><div class="lrefl"></div><svg class="lisle" viewBox="0 0 200 104" aria-hidden="true"><path d="M20,45 L20,64 L60,99 L140,99 L180,64 L180,45 L140,80 L60,80 Z" fill="#0a2430"/><path d="M60,10 L140,10 L180,45 L140,80 L60,80 L20,45 Z" fill="#26564e"/><path d="M140,10 L180,45 L140,80 L132,76 L170,45 L134,14 Z" fill="#e8a874" opacity=".55"/><path d="M60,10 L140,10 L136,14 L64,14 Z" fill="#f0c08c" opacity=".35"/><path d="M56,20 L64,46 L48,46 Z" fill="#0b2b2a"/><path d="M74,34 L80,54 L68,54 Z" fill="#0b2b2a"/><path d="M152,30 L159,52 L145,52 Z" fill="#0b2b2a"/><path d="M98,56 L98,42 L114,42 L114,56 Z" fill="#123a3a"/><path d="M94,43 L106,32 L118,43 Z" fill="#8a4a3c"/><path d="M132,47 L137,64 L127,64 Z" fill="#0b2b2a"/></svg><svg class="lboat" viewBox="0 0 120 86" aria-hidden="true"><path d="M60,2 L60,60 L20,60 Z" fill="#0e2634"/><path d="M67,20 L67,60 L99,60 Z" fill="#0e2634"/><path d="M6,63 L114,63 L97,78 L23,78 Z" fill="#081a26"/></svg><svg class="lfg" viewBox="0 0 1600 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><path d="M0,220 V104 C72,86 124,122 196,112 C258,103 294,138 350,158 C392,173 418,198 438,220 Z" fill="#07131c"/><path d="M1600,220 V128 C1516,116 1466,148 1396,144 C1328,140 1288,170 1238,190 C1198,206 1178,213 1158,220 Z" fill="#07131c"/><path d="M64,67 L77,100 L51,100 Z M64,60 L74,84 L54,84 Z M64,55 L70,69 L58,69 Z" fill="#061018"/> <path d="M118,72 L128,98 L108,98 Z M118,67 L125,85 L111,85 Z M118,63 L123,74 L113,74 Z" fill="#061018"/> <path d="M172,73 L186,110 L158,110 Z M172,66 L182,92 L162,92 Z M172,60 L179,75 L165,75 Z" fill="#061018"/> <path d="M232,91 L243,120 L221,120 Z M232,86 L240,106 L224,106 Z M232,81 L238,93 L226,93 Z" fill="#061018"/> <path d="M286,114 L295,138 L277,138 Z M286,110 L293,127 L279,127 Z M286,106 L290,116 L282,116 Z" fill="#061018"/> <path d="M1476,97 L1488,128 L1464,128 Z M1476,91 L1485,113 L1467,113 Z M1476,86 L1482,99 L1470,99 Z" fill="#061018"/> <path d="M1420,117 L1430,142 L1410,142 Z M1420,113 L1427,130 L1413,130 Z M1420,108 L1425,119 L1415,119 Z" fill="#061018"/> <path d="M1532,102 L1541,124 L1523,124 Z M1532,98 L1539,113 L1525,113 Z M1532,94 L1536,103 L1528,103 Z" fill="#061018"/></svg><div class="lvig"></div></div>
+ <button class="lgear" id="l-gear" aria-label="Ajustes"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.63.67 1.1 1.31 1.1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+ <div class="landin" id="landin"></div>
 </div>
 <div id="modal" role="dialog" aria-modal="true"></div>
 <div id="editor" role="dialog" aria-modal="true" aria-label="Creador de mapa"></div>
@@ -3987,6 +4084,15 @@ Las notificaciones están bloqueadas|Notifications are blocked|As notificações
 Actívalas en los permisos del sitio|Turn them on in the site permissions|Ative-as nas permissões do site
 Reacciones|Reactions|Reações
 Reacción|Reaction|Reação
+Construye · Comercia · Conquista|Build · Trade · Conquer|Constrói · Comercia · Conquista
+Bienvenido|Welcome|Bem-vindo
+Guarda tu progreso y juega en línea.|Save your progress and play online.|Salve seu progresso e jogue online.
+Entrar con un código por correo|Sign in with an email code|Entrar com um código por e-mail
+Nombre del jugador|Player name|Nome do jogador
+Jugar como invitado|Play as guest|Jogar como convidado
+Como invitado tu progreso queda solo en este dispositivo y no puedes jugar en línea.|As a guest your progress stays only on this device and you cannot play online.|Como convidado seu progresso fica só neste dispositivo e você não pode jogar online.
+Tu cuenta|Your account|Sua conta
+Ajustes|Settings|Ajustes
 Modo invitado|Guest mode|Modo convidado
 Tu progreso solo está en este dispositivo y no puedes jugar en línea.|Your progress is only on this device and you cannot play online.|Seu progresso está só neste dispositivo e você não pode jogar online.
 Iniciar sesión o crear cuenta|Sign in or create an account|Entrar ou criar conta
@@ -4143,7 +4249,7 @@ function showPersonalize(){
    <label class="chk"><input type="checkbox" ${CBP.on?'checked':''} onchange="setPalette(this.checked);showPersonalize()"><span><b>Modo daltonismo</b><small>Colores y símbolos pensados para distinguirse sin depender del color.</small></span></label>
    <h3>Partidas en línea</h3><div class="optl">${[['chat','Chat y reacciones','Muestra el botón 💬 y los mensajes de la sala.'],['alert','Aviso de turno','Suena y cambia el título de la pestaña cuando te toca.'],['vib','Vibración','Vibra el teléfono al empezar tu turno (si el aviso está activo).'],['notif','Notificación del sistema','Muestra una notificación cuando te toca y la pestaña está en segundo plano.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
    <p style="color:var(--muted);font-size:13px">${CBP.on?'Con el modo daltonismo activado se usan colores especiales y esta elección no se aplica. ':''}En una sala en línea, los colores de los jugadores los define el anfitrión; el tema del tablero lo eliges cada uno.</p>
-   <div class="mact"><button class="btn primary" onclick="showMenu()">Listo</button></div>`);
+   <div class="mact"><button class="btn primary" onclick="mback()">Listo</button></div>`);
 }
 let PNAME='',DEFER_INSTALL=null;
 const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
@@ -4154,21 +4260,51 @@ function installApp(){
   const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   openModal(`<h2>Instalar Tierra Austral</h2><p>Instálalo como una app: con su propio ícono y en pantalla completa, sin la barra del navegador.</p>
    ${ios?'<ol style="line-height:1.7"><li>Abre esta página en <b>Safari</b>.</li><li>Toca el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba).</li><li>Elige <b>Añadir a pantalla de inicio</b> y luego <b>Añadir</b>.</li></ol>':'<ol style="line-height:1.7"><li>Abre el menú del navegador (⋮ o ⋯).</li><li>Elige <b>Instalar app</b> o <b>Añadir a pantalla de inicio</b>.</li></ol>'}
-   <div class="mact"><button class="btn" onclick="showMenu()">Volver</button></div>`);
+   <div class="mact"><button class="btn" onclick="mback()">Volver</button></div>`);
 }
 try{PNAME=localStorage.getItem('ta-name')||'';}catch(e){}
+const APPVER='0.1';
+const landOpen=()=>{const l=document.getElementById('land');return !!l&&l.classList.contains('on');};
+function landHide(){const l=document.getElementById('land');if(l)l.classList.remove('on');document.body.classList.remove('landon');}
+function mback(){if(landOpen())closeModal();else showMenu();}
+const GLOGO='<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-2.8-.4-4H24v7.3h12.1c-.2 2-1.6 5-4.5 7l-.1.3 6.5 5 .5.1c4.1-3.8 6.6-9.4 6.6-15.7"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-6.9-5.4c-1.8 1.3-4.3 2.2-7.6 2.2-5.8 0-10.7-3.8-12.5-9.1l-.3 0-6.7 5.2-.1.3C7.9 41 15.4 46 24 46"/><path fill="#FBBC05" d="M11.5 28.4c-.5-1.4-.7-2.9-.7-4.4s.3-3 .7-4.4l0-.3-6.8-5.3-.2.1C2.9 17 2 20.4 2 24s.9 7 2.5 9.9z"/><path fill="#EB4335" d="M24 10.2c4.1 0 6.9 1.8 8.5 3.3l6.2-6C34.9 4 29.9 2 24 2 15.4 2 7.9 7 4.5 14.1l7 5.5c1.8-5.3 6.7-9.4 12.5-9.4"/></svg>';
+function landHTML(){
+  const u=AUTH.user;
+  return `<div class="landbrand"><img src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"><p>Construye · Comercia · Conquista</p></div>
+  <div class="landcard">
+   <h2>Bienvenido</h2>
+   <p class="lsub">${u?'Tu progreso se guarda en tu cuenta.':'Guarda tu progreso y juega en línea.'}</p>
+   ${u?`<div class="lacct"><span>${netEsc(u.email||'Tu cuenta')}</span><button class="lnk" id="l-out">Cerrar sesión</button></div>`
+     :`<button class="gbtn" id="l-goog">${GLOGO}<span>Continuar con Google</span></button>
+       <button class="lnk ctr" id="l-mail">Entrar con un código por correo</button>
+       <div class="ldiv"><span>o</span></div>`}
+   <div class="field"><label for="l-name">Nombre del jugador</label><input id="l-name" type="text" maxlength="14" value="${esc(PNAME)}" placeholder="Tu nombre" autocomplete="nickname" autocapitalize="words"></div>
+   <button class="btn gold" id="l-go">${u?'Entrar':'Jugar como invitado'}</button>
+   <p class="lerr" id="l-err" role="alert"></p>
+   ${u?'':'<p class="lfine">Como invitado tu progreso queda solo en este dispositivo y no puedes jugar en línea.</p>'}
+   <div class="llang" role="group" aria-label="Idioma">${Object.keys(LANGS).map(k=>`<button class="${k===LANG?'on':''}" data-l="${k}" aria-pressed="${k===LANG}">${LANGS[k]}</button>`).join('')}</div>
+   <p class="lver">v${APPVER}</p>
+  </div>`;
+}
 function showWelcome(){
-    openModal(`<div class="welcome"><div class="wl"><img src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></div><h2>¡Bienvenido!</h2>
-   <div class="thm" role="group" aria-label="Language" style="justify-content:center">${Object.keys(LANGS).map(k=>`<button class="btn${k===LANG?' on':''}" onclick="setLang('${k}');showWelcome()">${LANGS[k]}</button>`).join('')}</div>
-   <p>Coloniza una costa remota y gana quien llegue primero a los puntos de victoria. Juega solo, contra la IA o con amigos en línea.</p>
-   <div class="field"><label for="w-name">¿Cómo te llamas?</label><input id="w-name" type="text" maxlength="14" value="${esc(PNAME)}" placeholder="Tu nombre" autocomplete="nickname" autocapitalize="words"></div>
-   <button class="btn primary" id="w-go">Entrar</button>${AUTH.user?`<p class="lgfine">Sesión: ${netEsc(AUTH.user.email||'')}</p>`:`<p class="lgfine"><a href="#" id="w-login" style="color:var(--accent)">Iniciar sesión o crear cuenta</a> para guardar tu progreso y jugar en línea.</p>`}</div>`);
-  const wl=$('#w-login');if(wl)wl.onclick=e=>{e.preventDefault();showLogin();};
-  const inp=$('#w-name'),go=()=>{PNAME=(inp.value||'').replace(/[<>&"']/g,'').trim().slice(0,14)||'Jugador';try{localStorage.setItem('ta-name',PNAME);}catch(e){}closeModal();showMenu();};
-  $('#w-go').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
-  setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},60);
+  closeModal();
+  const l=document.getElementById('land');if(!l){showMenu();return;}
+  l.classList.add('on');document.body.classList.add('landon');
+  $('#landin').innerHTML=landHTML();
+  const inp=$('#l-name'),er=$('#l-err');
+  const go=()=>{PNAME=(inp.value||'').replace(/[<>&"']/g,'').trim().slice(0,14)||'Jugador';try{localStorage.setItem('ta-name',PNAME);}catch(e){}landHide();showMenu();};
+  $('#l-go').onclick=go;
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
+  const gb=$('#l-goog');if(gb)gb.onclick=async()=>{er.textContent='';gb.disabled=true;try{await AUTH.google();}catch(e){er.textContent=AUTH.err(e);gb.disabled=false;}};
+  const mb=$('#l-mail');if(mb)mb.onclick=()=>showLogin({done:()=>{landHide();showMenu();}});
+  const ob=$('#l-out');if(ob)ob.onclick=async()=>{await AUTH.signOut();showWelcome();};
+  const gr=$('#l-gear');if(gr)gr.onclick=()=>showPersonalize();
+  document.querySelectorAll('#landin .llang button').forEach(b=>{b.onclick=()=>{setLang(b.dataset.l);showWelcome();};});
+  l.scrollTop=0;
+  if(innerWidth>=900)setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},80);
 }
 function showMenu(){
+  landHide();
   if(NET.role){if(NET.role==='host'&&NET.lobby&&!NET.started)showLobby();else showRoomMenu();return;}
   const sv=saveInfo(),last=!!LS.raw(LASTKEY),dk=todayKey(),dd=(LS.get('ta-daily',{})||{})[dk],st=loadStats();
   openModal(`<h2 style="margin:0"><img class="mlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></h2><p>${PNAME?`Hola, <b>${esc(PNAME)}</b>. `:''}Elige cómo quieres jugar.${PNAME?` <a href="#" onclick="showWelcome();return false" style="color:var(--accent)">Cambiar nombre</a>`:''}</p>${acctHTML()}<div class="menu">
@@ -4278,7 +4414,7 @@ const AUTH={
     try{await sb.auth.signOut({scope:'local'});}catch(e){}
     this.setSession(null);this.pulledFor=null;CLOUD.wipe();this.refreshUI();
   },
-  refreshUI(){const a=$('#acct');if(a)a.outerHTML=acctHTML();},
+  refreshUI(){const a=$('#acct');if(a)a.outerHTML=acctHTML();if(typeof landOpen==='function'&&landOpen())showWelcome();},
   /* Puerta del multijugador: sin cuenta se pide iniciar sesión (la base de datos también lo exige). */
   need(o){if(this.user&&this.token())return true;showLogin(Object.assign({need:'net'},o||{}));return false;}
 };
@@ -4411,7 +4547,7 @@ function showLogin(o){
   o=o||{};AUTH.ctx=Object.assign({},o);
   const step=o.step||'mail',email=(o.email||'').slice(0,254);
   const logo='<h2 style="margin:0"><img class="mlogo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral"></h2>';
-  const done=()=>{if(o.need==='net')showNetMenu(o.code,o.saved);else showMenu();};
+  const done=o.done||(()=>{if(o.need==='net')showNetMenu(o.code,o.saved);else showMenu();});
   AUTH.ctx.done=done;
   if(step==='code'){
     openModal(`${logo}<h2>Revisa tu correo</h2><p>Enviamos un código de verificación a <b>${netEsc(email)}</b>. Escríbelo aquí; vence en unos minutos. Si no llega, mira en spam.</p>
@@ -4451,7 +4587,7 @@ function showLogin(o){
   };
   sd.onclick=go;inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};
   $('#lg-goog').onclick=async()=>{er.textContent='';try{await AUTH.google();}catch(e){er.textContent=AUTH.err(e);}};
-  $('#lg-guest').onclick=()=>{AUTH.ctx=null;showMenu();};
+  $('#lg-guest').onclick=()=>{AUTH.ctx=null;if(landOpen())closeModal();else showMenu();};
 }
 function showAccount(){
   const u=AUTH.user;if(!u){showLogin();return;}
