@@ -736,7 +736,7 @@ details.adv[open]{padding-bottom:10px}
  #mbar:not(:empty){flex-wrap:nowrap}
  #mbar .mres{flex:none;gap:4px}#mbar .mr{padding:2px 7px 2px 3px}#mbar .mr svg{width:22px;height:22px}#mbar .mr b{font-size:15px}
  #mbar .macts{flex:1 1 auto;min-width:0;margin-left:0;justify-content:flex-end;gap:6px}
- #mbar .macts .btn{flex:1 1 0;min-width:0;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px}
+ #mbar .macts .btn{flex:1 1 auto;min-width:0;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 9px;font-size:12.5px;letter-spacing:.02em}
 }
 /* --- ronda 4 --- */
 .tw .twmode{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 8px;background:#0003;border:1px solid var(--line);border-radius:12px;padding:4px}
@@ -777,6 +777,21 @@ details.adv[open]{padding-bottom:10px}
 @media(min-width:921px){#mbar .mbuild{display:none}body:has(#sec-act) #sec-turn .row>.btn:nth-child(-n+2){display:none}}
 
 @media(prefers-reduced-motion:reduce){.phl circle{animation:none}}
+
+.lbad{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:var(--gold);color:var(--gold-ink);font:800 11px var(--font-body);letter-spacing:0;text-transform:none;vertical-align:middle}
+.clog div.new>span{color:var(--ink)}.clog div.new{background:#f2c14e12;border-radius:6px}
+.clog .lroll{align-items:center!important;padding:4px 6px!important;border:1px solid #7fc4e840!important;border-radius:10px;margin:2px 0}
+.clog .lroll.new{border-color:var(--gold)!important}
+.lrn{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:50%;background:#f3e8c8;color:#1b1b1b;font:800 15px var(--font-display);border:2px solid #6b5230}
+.clog .lroll .lrn{color:#1b1b1b}.clog .lroll .lrn.seven{background:#b42318;color:#fff;border-color:#7a1810}
+.lroll small{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}.pip{display:block}
+#mbar .devc{flex:none!important;position:relative;gap:6px;overflow:visible!important;max-width:none!important}
+@media(min-width:921px){#mbar .devc span{display:none}#mbar .devc{padding:0 10px!important}}
+#mbar .devc b{font:800 15px var(--font-display);color:var(--gold)}
+#mbar .devc i{position:absolute;top:-8px;right:-6px;font:800 10px var(--font-body);font-style:normal;background:var(--gold);color:var(--gold-ink);padding:1px 6px;border-radius:99px}
+#mbar .devc.nw{border-color:var(--gold);animation:devp 1.4s ease-in-out 3}
+@keyframes devp{50%{box-shadow:0 0 0 5px #f2c14e40}}
+@media(max-width:920px){#mbar .devc{flex-direction:column;gap:0;min-height:54px;font-size:11.5px;padding:2px 8px}#mbar .devc b{font-size:13px}#mbar .devc span{display:none}}
 </style>
 </head>
 <body>
@@ -1320,7 +1335,7 @@ const isBot=pid=>G.cfg.humans?!G.cfg.humans.includes(pid):pid!==G.cfg.humanSeat;
 const total=p=>RES.reduce((s,r)=>s+p.res[r],0);
 const canPay=(p,c)=>Object.keys(c).every(r=>p.res[r]>=c[r]);
 function spend(p,c){for(const r in c){p.res[r]-=c[r];G.bank[r]+=c[r];}}
-function say(t){G.log.unshift(t);if(G.log.length>60)G.log.pop();}
+function say(t){G.logN=(G.logN||0)+1;G.log.unshift(t);if(G.log.length>60)G.log.pop();}
 const pn=pid=>G.players[pid].name;
 
 function newGame(cfg){
@@ -1917,7 +1932,7 @@ async function uiRoll(){
   if(s===7){G.phase='seven';G.mode=null;render();await resolveSeven('human');}
   else{produce(s);G.phase='main';G.msg='Construye, comercia o termina tu turno.';render();}
 }
-function uiEnd(){if(!canMain())return;G.mode=null;tutEvent('end');endTurn();}
+function uiEnd(){if(!canMain())return;G.logMark=G.logN||0;G.mode=null;tutEvent('end');endTurn();}
 function setMode(m){
   if(!canMain())return;
   if(G.mode===m){G.mode=null;G.msg='';render();return;}
@@ -2661,7 +2676,7 @@ function renderBoard(){
   if(key){const [k,id]=key.split('|'),f=b.querySelector(`[data-k="${k}"][data-id="${id}"][tabindex]`)||b.querySelector('[tabindex]');if(f)try{f.focus({preventScroll:true});}catch(e){}}
   b.style.touchAction=ZOOM.s>1?'none':'pan-y';
 }
-function renderMbar(){const el=$('#mbar');if(el)el.innerHTML=mbarHTML();}
+function renderMbar(){const el=$('#mbar');if(!el)return;el.innerHTML=mbarHTML();const a=el.querySelector('.macts');if(a)a.insertAdjacentHTML('afterbegin',devChip());}
 let LASTRES=null;
 function bumpRes(){
   try{
@@ -6243,9 +6258,21 @@ function LOGIf(c){return {dice:'dice',trade:'swap',build:'hammer',card:'list',ot
 function setLogF(f){LOGF=f;const el=$('#sec-log');if(el)el.outerHTML=logHTML();}
 function logHTML(){
   if(!LOGF)LOGF='all';
-  const rows=G.log.map(l=>[l,logCat(l)]).filter(x=>LOGF==='all'||x[1]===LOGF).slice(0,30);
-  return `<section class="card" id="sec-log"><h3>Crónica</h3><div class="logf" role="group" aria-label="Filtrar crónica">${LOGCf().map(([k,n])=>`<button class="${LOGF===k?'on':''}" aria-pressed="${LOGF===k}" onclick="setLogF('${k}')">${n}</button>`).join('')}</div>
-   <div class="log clog">${rows.map(([l,c])=>`<div class="lc-${c}">${mi(LOGIf(c))}<span>${l}</span></div>`).join('')||'<div class="lc-other"><span>Nada en esta categoría todavía.</span></div>'}</div></section>`;
+  const total=G.logN||G.log.length,mark=G.logMark==null?total:G.logMark,nNew=Math.max(0,Math.min(total-mark,G.log.length));
+  const rows=G.log.map((l,i)=>[l,logCat(l),i<nNew]).filter(x=>LOGF==='all'||x[1]===LOGF).slice(0,30);
+  const row=([l,c,nw])=>{const m=String(l).match(/^(.*) tira los dados: (\d+)\+(\d+) = (\d+)\.?$/);
+    if(m)return `<div class="lc-dice lroll${nw?' new':''}"><span class="lrn${(+m[4]===7)?' seven':''}">${m[4]}</span><span><b>${m[1]}</b> saca ${m[4]}<small>${pipFace(+m[2])}${pipFace(+m[3])}</small></span></div>`;
+    return `<div class="lc-${c}${nw?' new':''}">${mi(LOGIf(c))}<span>${l}</span></div>`;};
+  return `<section class="card" id="sec-log"><h3>Crónica${nNew?` <span class="lbad" title="Eventos desde tu último turno">${nNew} ${nNew===1?'nuevo':'nuevos'}</span>`:''}</h3><div class="logf" role="group" aria-label="Filtrar crónica">${LOGCf().map(([k,n])=>`<button class="${LOGF===k?'on':''}" aria-pressed="${LOGF===k}" onclick="setLogF('${k}')">${n}</button>`).join('')}</div>
+   <div class="log clog">${rows.map(row).join('')||'<div class="lc-other"><span>Nada en esta categoría todavía.</span></div>'}</div></section>`;
+}
+function pipFace(n){const P={1:[[5,5]],2:[[3,3],[7,7]],3:[[3,3],[5,5],[7,7]],4:[[3,3],[7,3],[3,7],[7,7]],5:[[3,3],[7,3],[5,5],[3,7],[7,7]],6:[[3,3],[7,3],[3,5],[7,5],[3,7],[7,7]]}[n]||[];
+  return `<svg class="pip" viewBox="0 0 10 10" width="16" height="16" aria-label="${n}" role="img"><rect x=".5" y=".5" width="9" height="9" rx="2" fill="#f3e8c8"/>${P.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1" fill="#1b1b1b"/>`).join('')}</svg>`;}
+function devChip(){
+  if(!G||!G.players||!G.players.length||G.cfg.humanSeat<0||!G.rules.dev)return '';
+  const hu=G.players[G.cfg.humanSeat];if(!hu||!hu.dev||!hu.dev.length)return '';
+  const nw=hu.dev.some(c=>c.turn===G.turn&&G.cur===G.cfg.humanSeat);
+  return `<button class="btn devc${nw?' nw':''}" onclick="const d=document.getElementById('sec-dev');if(d)d.scrollIntoView({behavior:'smooth',block:'center'})" aria-label="Tus cartas de desarrollo: ${hu.dev.length}">${mi('list')}<span>Cartas</span><b>${hu.dev.length}</b>${nw?'<i>Nueva</i>':''}</button>`;
 }
 /* --- ayudas del tablero: lugares disponibles y puertos --- */
 var SHOWPORTS=false;
