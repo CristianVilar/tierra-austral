@@ -6236,64 +6236,6 @@ function showSettings(tab){
 }
 
 /* ===================== PRUEBA DE DISEÑO: comercio por necesidad, acción contextual, crónica y ayudas del tablero ===================== */
-function openTrade(){if(!canMain()||!G.rules.trade)return;G.tw={want:{},give:{},mode:'others',offers:null};drawWant();}
-function twAdj(w,r,d){const t=G.tw,p=G.players[G.cur],m=t[w];let n=(m[r]||0)+d;if(w==='give')n=Math.min(n,p.res[r]);n=Math.max(0,Math.min(n,9));if(n){m[r]=n;delete (w==='give'?t.want:t.give)[r];}else delete m[r];t.offers=null;drawWant();}
-function twMode(m){G.tw.mode=m;G.tw.offers=null;drawWant();}
-function twGrid(w){const p=G.players[G.cur],t=G.tw,m=t[w];
-  return `<div class="tpgrid">${RES.map(r=>{const n=m[r]||0,own=p.res[r],blocked=!!(w==='give'?t.want:t.give)[r],plus=(w==='give'&&n>=own)||n>=9||blocked;
-  return `<div class="tpc ${n?'on':''} ${blocked?'off':''}" style="--rc:${RCOL[r]}">${icon(r,30)}<span class="tpn">${n||''}</span><span class="tpl">${RNAME[r]}${w==='give'?` (${own})`:''}</span><div class="tpb"><button class="tpbtn" ${n<=0?'disabled':''} onclick="twAdj('${w}','${r}',-1)" aria-label="Menos ${RNAME[r]}">−</button><button class="tpbtn" ${plus?'disabled':''} onclick="twAdj('${w}','${r}',1)" aria-label="Más ${RNAME[r]}">+</button></div></div>`;}).join('')}</div>`;}
-var twChips=m=>RES.filter(r=>m[r]).map(r=>`<span class="rq">${icon(r,16)}<span>${RNAME[r]}</span><b>×${m[r]}</b></span>`).join('');
-function botAsk(pid,want){
-  const b=G.players[pid],me=G.players[G.cur];
-  if(RES.some(r=>(want[r]||0)>b.res[r]))return null;
-  const goal=botGoal(pid),n=RES.reduce((s,r)=>s+(want[r]||0),0);
-  const sc=r=>((goal[r]||0)>b.res[r]?3:0)+(b.res[r]===0?1:0)-.01*b.res[r];
-  const cand=RES.filter(r=>!want[r]&&me.res[r]>0).sort((x,y)=>sc(y)-sc(x));
-  for(let k=n;k<=n+2;k++){
-    const pay={};let left=k;
-    for(const r of cand){const take=Math.min(left,me.res[r],9);if(take>0){pay[r]=take;left-=take;}if(!left)break;}
-    if(left)break;
-    const o={from:G.cur,to:pid,give:pay,get:{...want}};
-    if(tradeValid(o)&&botDecides(pid,o))return o;
-  }
-  return null;
-}
-function twAsk(){
-  const t=G.tw;if(!RES.some(r=>t.want[r]))return;
-  if(t.mode==='mine'){if(!RES.some(r=>t.give[r]))return;G.tp={give:{...t.give},get:{...t.want},to:'any'};propose();return;}
-  t.offers=G.players.filter(q=>q.id!==G.cur).map(q=>{
-    if(seatKind(q.id)!=='bot')return {pid:q.id,human:true};
-    const o=botAsk(q.id,t.want);return o?{pid:q.id,o}:{pid:q.id,none:true};
-  });
-  drawWant();
-}
-function twTake(i){
-  const f=G.tw.offers&&G.tw.offers[i];if(!f||!f.o||!tradeValid(f.o))return;
-  applyTrade(f.o);say(`${pn(G.cur)} cambia con ${pn(f.pid)}: ${offerTxt(f.o)}.`);sfx('coin');G.msg=`Trato cerrado con ${pn(f.pid)}.`;closeModal();render();
-}
-function twBank(){
-  const t=G.tw,p=G.players[G.cur],get=RES.find(r=>t.want[r]);if(!get)return;
-  const give=RES.filter(r=>r!==get&&!t.want[r]&&p.res[r]>=ratio(G.cur,r)).sort((a,b)=>(p.res[b]-ratio(G.cur,b))-(p.res[a]-ratio(G.cur,a)))[0]||null;
-  G.bk={give,get};drawBank();
-}
-function drawWant(){
-  const t=G.tw,p=G.players[G.cur],hasW=RES.some(r=>t.want[r]),hasG=RES.some(r=>t.give[r]);
-  let offers='';
-  if(t.offers){
-    offers=`<div class="twoffers" aria-live="polite">${t.offers.map((f,i)=>{const q=G.players[f.pid];
-      const who=`<span class="twwho"><span class="avs" style="--pc:${q.color}">${esc((q.name||'?')[0])}</span><b>${esc(q.name)}</b></span>`;
-      if(f.human)return `<div class="twof off">${who}<span class="twtx">Es una persona: proponle un trato con «Yo elijo qué doy».</span></div>`;
-      if(f.none)return `<div class="twof off">${who}<span class="twtx">No tiene eso o no le conviene ahora.</span></div>`;
-      return `<div class="twof">${who}<span class="twtx"><small>Te pide</small><span class="rqs">${twChips(f.o.give)}</span></span><button class="btn ok" onclick="twTake(${i})">Aceptar</button></div>`;}).join('')}</div>`;
-  }
-  openModal(`<div class="tw"><h2>¿Qué necesitas?</h2>
-   <div class="field"><label>Quieres</label>${twGrid('want')}</div>
-   <div class="twmode" role="group" aria-label="Cómo comerciar"><button class="${t.mode==='others'?'on':''}" aria-pressed="${t.mode==='others'}" onclick="twMode('others')">Que me ofrezcan</button><button class="${t.mode==='mine'?'on':''}" aria-pressed="${t.mode==='mine'}" onclick="twMode('mine')">Yo elijo qué doy</button></div>
-   ${t.mode==='mine'?`<div class="field"><label>Entregas</label>${twGrid('give')}</div>`:`<p class="twhint">${hasW?'Cada rival te dirá qué pide a cambio. Aceptas la oferta que más te convenga.':'Elige qué recursos necesitas y pídelos a todos o al banco.'}</p>`}
-   ${offers}
-   <div class="twhand"><span>Tu mano</span><span class="rqs">${RES.map(r=>`<span class="rq">${icon(r,16)}<span>${RNAME[r]}</span><b>${p.res[r]}</b></span>`).join('')}</span></div>
-   <div class="mact"><button class="btn" onclick="closeModal()">Cerrar</button><button class="btn" ${hasW?'':'disabled'} onclick="twBank()">Pedir al banco</button><button class="btn primary" ${(hasW&&(t.mode==='others'||hasG))?'':'disabled'} onclick="twAsk()">${t.offers?'Preguntar de nuevo':'Pedir a todos'}</button></div></div>`,true);
-}
 /* --- acción contextual --- */
 function actHTML(){
   if(!G||!G.players||!G.players.length||G.over||G.phase==='idle'||G.cfg.humanSeat<0)return '';
