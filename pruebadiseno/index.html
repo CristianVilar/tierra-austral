@@ -583,6 +583,113 @@ body.a-hc .card,body.a-hc .mbox,body.a-hc .btn,body.a-hc #mbar,body.a-hc .mres,b
 body.a-hc .btn:focus-visible,body.a-hc button:focus-visible,body.a-hc input:focus-visible,body.a-hc select:focus-visible{outline:3px solid #fff;outline-offset:2px}
 body.a-hc #board svg polygon{stroke:#fff;stroke-width:3}
 body.a-hc small,body.a-hc .muted{color:#e3edf3!important}
+/* ===================== PRUEBA DE DISEÑO ===================== */
+:root{--r-sm:10px;--r-md:14px;--r-lg:20px;--sp1:6px;--sp2:10px;--sp3:16px;--sp4:24px;--gold:#f2c14e;--gold-ink:#1a1305;--surf:#132a38;--surf2:#193447}
+.btn{min-height:44px;border-radius:var(--r-sm)}
+.btn .mi{width:18px;height:18px;flex:none}
+.btn:has(.mi){display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.btn.big{min-height:52px;padding:0 22px;font-size:16px}
+/* --- menú --- */
+.landin.hub2m{max-width:1180px}
+.hub2{background:#0c1c2bdb;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid #ffffff24;border-radius:26px;padding:clamp(16px,2.4vw,30px);box-shadow:0 24px 60px #00000080;display:flex;flex-direction:column;gap:18px}
+.h2top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.h2logo{height:auto;width:clamp(180px,22vw,260px)}
+.h2me{display:flex;align-items:center;gap:12px}
+.avx{display:grid;place-items:center;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--pc) 60%,#fff),var(--pc));flex:none}
+.avx b{font:800 20px var(--font-display);color:#10181e}
+.h2mi{display:flex;flex-direction:column;gap:3px;min-width:110px}
+.h2mi b{font-size:16px}
+.h2lv{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
+.h2bar{display:block;height:6px;border-radius:99px;background:#ffffff1c;overflow:hidden}.h2bar i{display:block;height:100%;background:var(--gold)}
+.h2ic{width:44px;padding:0}
+.h2guest{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 8px 6px 16px;border-radius:12px;background:#2a2410;border:1px solid #f2c14e55;color:#f4e3b5;font-size:14px}
+.h2guest b{color:var(--gold)}
+.h2grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start}
+.h2hero{position:relative;overflow:hidden;border:1px solid #f2c14e66;border-radius:22px;background:linear-gradient(140deg,#1b4257,#11283a 70%);min-height:260px;display:flex;align-items:flex-end;padding:26px}
+.h2heroimg{position:absolute;right:-50px;top:-30px;width:400px;height:350px;opacity:.85;transform:rotate(-8deg)}
+.h2hero::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#11283af2 30%,#11283a99 55%,#11283a00 80%)}
+.btn.primary .mi,.btn.primary svg{stroke:currentColor;color:var(--gold-ink)}
+.h2herotx{position:relative;z-index:2;max-width:440px;display:flex;flex-direction:column;gap:10px}
+.h2chip{align-self:flex-start;font-size:12px;font-weight:700;color:var(--gold);background:#2a2410;border-radius:99px;padding:4px 12px}
+.h2herotx h2{margin:0;font:800 clamp(26px,3vw,36px)/1.1 var(--font-display);text-shadow:0 2px 12px #000a}
+.h2herotx p{margin:0;color:#c9d9e4;font-size:15px;line-height:1.5;text-shadow:0 1px 8px #000c}
+.h2cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.h2modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.hub2 .htile{min-height:84px}
+.hub2 .hsec{margin:6px 4px 10px}
+.h2prog{display:flex;flex-direction:column}
+.h2list{display:flex;flex-direction:column;gap:10px}
+.h2list .htile{min-height:68px}
+.h2stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.h2stat div{background:#ffffff0d;border:1px solid #ffffff1a;border-radius:12px;padding:10px;text-align:center}
+.h2stat b{display:block;font:800 22px var(--font-display);color:var(--gold)}.h2stat small{color:var(--muted);font-size:12px}
+.h2foot{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;flex-wrap:wrap}
+.h2tabs{display:none}
+.landin.hub2m>.h2tabs{display:none}
+@media(max-width:720px){
+ .landin.hub2m{padding:10px 10px 96px}
+ .hub2{border-radius:20px;padding:14px;gap:14px}
+ .h2top{flex-wrap:nowrap}.h2logo{width:120px}.h2mi{min-width:0}.h2mi b{font-size:14px}.h2me{gap:8px}.h2me .avx{width:38px!important;height:43px!important}
+ .h2grid{grid-template-columns:1fr}
+ .hub2[data-tab="play"] .h2prog,.hub2[data-tab="prog"] .h2play{display:none}
+ .h2hero{min-height:220px;padding:18px}.h2heroimg{width:260px;height:230px;right:-70px;opacity:.5}
+ .h2modes{grid-template-columns:1fr}
+ .h2guest{font-size:13px}
+ .landin.hub2m>.h2tabs{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;background:#0d1a23f5;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+ .h2tabs button{flex:1;min-height:58px;border:0;background:transparent;color:var(--muted);font:700 12px var(--font-body);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+ .h2tabs button .mi{width:22px;height:22px}
+ .h2tabs button[aria-current="page"]{color:var(--gold)}
+}
+/* --- ajustes --- */
+.stabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:6px 0 4px;overflow-x:auto}
+.stabs button{min-height:44px;padding:0 14px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:700 14px var(--font-body);cursor:pointer;white-space:nowrap}
+.stabs button.on{color:var(--gold);border-bottom-color:var(--gold)}
+.srow{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.srow>div:first-child{display:flex;flex-direction:column;gap:3px;flex:1 1 220px}.srow small{color:var(--muted);font-size:13px}
+.seg{display:flex;flex-direction:row;gap:6px;flex-wrap:nowrap;flex:0 0 auto}
+.seg button{width:auto!important;flex:none!important;min-width:84px}
+.seg button{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:700 14px var(--font-body);cursor:pointer}
+.seg button.on{border-color:var(--gold);background:#2a2410;color:var(--gold)}
+/* --- escenario --- */
+.scnhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.scnhead h2{margin:0}.scnk{margin:0;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.scnprev{width:120px;height:104px;flex:none}
+.scnp{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0 14px}
+.scnb{display:flex;flex-direction:column;gap:3px;text-align:left;min-height:64px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font:inherit;cursor:pointer}
+.scnb b{font-size:15px}.scnb small{color:var(--muted);font-size:12px;line-height:1.35}
+.scnb.on{border-color:var(--gold);background:#2a2410}.scnb.on b{color:var(--gold)}
+details.adv{margin:10px 0;border:1px solid var(--line);border-radius:12px;padding:0 12px}
+details.adv summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font-weight:700;color:var(--gold)}
+details.adv[open]{padding-bottom:10px}
+/* --- tratos como tarjeta lateral --- */
+.trcard{display:none}
+@media(min-width:921px){
+ #modal.open:has(.trcard){background:transparent;align-items:flex-end;justify-content:flex-end;padding:24px;pointer-events:none}
+ #modal.open:has(.trcard) .mbox{pointer-events:auto;max-width:400px;border:2px solid var(--gold);box-shadow:0 20px 50px #000c}
+}
+@media(max-width:920px){
+ #modal.open:has(.trcard){align-items:flex-end}
+ #modal.open:has(.trcard) .mbox{border-radius:20px 20px 0 0;border-top:2px solid var(--gold)}
+}
+/* --- barra de acciones en partida --- */
+#mbar .macts{display:flex;gap:8px;flex:1 0 100%}
+#mbar .macts .btn{flex:1}
+@media(max-width:920px){#mbar .macts{gap:6px}#mbar .macts .btn{flex-direction:column;gap:2px;font-size:11.5px;min-height:54px;padding:4px 2px;min-width:0;letter-spacing:0}#mbar .macts .btn .mi{width:20px;height:20px}}
+@media(min-width:921px){
+ #mbar:not(:empty){display:flex;align-items:center;gap:10px;flex-wrap:nowrap;margin-top:10px;position:sticky;bottom:10px;z-index:6;box-shadow:0 12px 30px #000b;padding:8px 10px;background:#0d1a23;border:1px solid var(--line);border-radius:14px}
+ #mbar .mbuild .ml{display:none}
+ #mbar .macts .btn{min-height:42px;padding:0 12px;font-size:13px}
+ #mbar .mres{display:flex;gap:6px}
+ #mbar .mr{display:flex;align-items:center;gap:4px;padding:3px 9px 3px 4px;border-radius:99px;background:color-mix(in srgb,var(--rc) 22%,#10222f);border:1px solid color-mix(in srgb,var(--rc) 55%,#10222f);position:relative}
+ #mbar .mr svg{width:24px;height:24px}#mbar .mr b{font:800 17px var(--font-display)}#mbar .mr.z{opacity:.5}
+ #mbar .mbuild{display:flex;align-items:center;gap:6px}#mbar .mbuild .ml{font-size:12px;color:var(--muted)}
+ #mbar .mbuild .bl{min-height:38px;border-color:#5bbf7a;box-shadow:0 0 10px #5bbf7a40}
+ #mbar .macts{flex:0 0 auto;margin-left:auto}
+ #mbar .macts .btn{flex:none;padding:0 14px}
+ body:has(#mbar:not(:empty)) #sec-res{display:none}
+}
+
 </style>
 </head>
 <body>
@@ -1870,7 +1977,7 @@ function humanTradeModal(o){
     const me=G.players[o.to],other=G.players[o.from];
     const show=()=>{
       G.dsc.end=Date.now()+20000;
-      openModal(`<h2>Propuesta de trato</h2><p><b>${pn(o.from)}</b> te ofrece:</p><div style="margin:6px 0">${ic(o.give)}</div><p>a cambio de:</p><div style="margin:6px 0">${ic(o.get)}</div>
+      openModal(`<div class="trcard"></div><h2>Propuesta de trato</h2><p><b>${pn(o.from)}</b> te ofrece:</p><div style="margin:6px 0">${ic(o.give)}</div><p>a cambio de:</p><div style="margin:6px 0">${ic(o.get)}</div>
         <p id="dsc-t" class="dscT"></p>
         <div class="mact"><button class="btn no" id="tr-no">Rechazar</button><button class="btn" id="tr-ct">Contraoferta</button><button class="btn ok" id="tr-ok">Aceptar</button></div>`);
       $('#tr-ok').onclick=()=>done(true);$('#tr-no').onclick=()=>{say(`Rechazas el trato de ${pn(o.from)}.`);done(false);};
@@ -1885,7 +1992,7 @@ function humanTradeModal(o){
         return `<div class="tpgrid">${RES.map(r=>{const n=m[r]||0,own=p.res[r],blocked=!!(w==='give'?c.get:c.give)[r];
           return `<div class="tpc ${n?'on':''} ${blocked?'off':''}" style="--rc:${RCOL[r]}">${icon(r,30)}<span class="tpn">${n||''}</span><span class="tpl">${RNAME[r]} (${own})</span><div class="tpb"><button class="tpbtn" data-w="${w}" data-r="${r}" data-d="-1" ${n<=0?'disabled':''} aria-label="Menos">−</button><button class="tpbtn" data-w="${w}" data-r="${r}" data-d="1" ${(n>=own||n>=9||blocked)?'disabled':''} aria-label="Más">+</button></div></div>`;}).join('')}</div>`;};
       const ok=RES.some(r=>c.give[r])&&RES.some(r=>c.get[r]);
-      openModal(`<h2>Contraoferta a ${esc(pn(o.from))}</h2><p>Cambia lo que entregas o lo que pides y envíalo.</p>
+      openModal(`<div class="trcard"></div><h2>Contraoferta a ${esc(pn(o.from))}</h2><p>Cambia lo que entregas o lo que pides y envíalo.</p>
         <div class="field"><label>Entregas</label>${row('give')}</div><div class="tpsw">⇅</div><div class="field"><label>Pides</label>${row('get')}</div>
         <p id="dsc-t" class="dscT"></p>
         <div class="mact"><button class="btn" id="ct-back">Volver</button><button class="btn primary" id="ct-send" ${ok?'':'disabled'}>Enviar contraoferta</button></div>`);
@@ -1907,16 +2014,22 @@ function botCounter(pid,o){ // la IA responde un rechazo pidiendo 1 recurso más
   }
   return null;
 }
-function counterModal(c,old){
-  return new Promise(res=>{
+function counterModal(c,old,seat){
+  // seat = quien decide (por defecto, quien propuso el trato original = c.from en contraofertas de la IA)
+  if(seat==null)seat=c.from;
+  const gives=c.from===seat?c.give:c.get,gets=c.from===seat?c.get:c.give,other=c.from===seat?c.to:c.from;
+  return new Promise(res=>{NETH.as(seat,()=>{
     const wasPaused=G.paused;setPaused(true);
-    const done=ok=>{closeModal();if(!wasPaused)setPaused(false);res(ok);};
+    let fin=false;const done=ok=>{if(fin)return;fin=true;G.dsc=null;closeModal();if(!wasPaused)setPaused(false);res(ok);};
+    G.dsc={end:Date.now()+30000,auto:()=>done(false)};
     const ic=m=>RES.filter(r=>m[r]).map(r=>`<span class="chip" style="--rc:${RCOL[r]};display:inline-block;min-width:62px">${icon(r,24)}<b>${m[r]}</b><span>${RNAME[r]}</span></span>`).join(' ');
-    openModal(`<h2>Contraoferta</h2><p><b>${pn(c.to)}</b> no acepta tu trato, pero propone:</p>
-      <p class="tpl2">Entregas</p><div style="margin:4px 0 8px">${ic(c.give)}</div><p class="tpl2">Recibes</p><div style="margin:4px 0">${ic(c.get)}</div>
+    openModal(`<div class="trcard"></div><h2>Contraoferta</h2><p><b>${pn(other)}</b> no acepta tu trato, pero propone:</p>
+      <p class="tpl2">Entregas</p><div style="margin:4px 0 8px">${ic(gives)}</div><p class="tpl2">Recibes</p><div style="margin:4px 0">${ic(gets)}</div>
+      <p id="dsc-t" class="dscT"></p>
       <div class="mact"><button class="btn no" id="co-no">Rechazar</button><button class="btn ok" id="co-ok">Aceptar</button></div>`);
     $('#co-ok').onclick=()=>done(true);$('#co-no').onclick=()=>done(false);
-  });
+    updateClocks();
+  });});
 }
 async function askTrade(o){
   if(!tradeValid(o))return false;
@@ -1973,6 +2086,15 @@ async function propose(){
       if(await askTrade(o)){
         applyTrade(o);say(`${pn(pid)} acepta el trato.`);sfx('coin');G.msg=`${pn(pid)} aceptó tu trato.`;G.busy=false;render();return;
       }
+      if(G.cnt&&seatKind(pid)!=='bot'){
+        const c=G.cnt;G.cnt=null;
+        if(c.from===pid&&c.to===me){
+          say(`${pn(pid)} contraofrece: ${offerTxt(c)}.`);render();
+          if(tradeValid(c)&&await counterModal(c,o,me)){applyTrade(c);say(`${mp.name} acepta la contraoferta de ${pn(pid)}.`);sfx('coin');G.msg=`Trato cerrado con ${pn(pid)}.`;G.busy=false;render();return;}
+          say(`${mp.name} rechaza la contraoferta de ${pn(pid)}.`);render();continue;
+        }
+      }
+      G.cnt=null;
       say(`${pn(pid)} rechaza el trato.`);render();
       if(seatKind(pid)==='bot'){
         const c=botCounter(pid,o);
@@ -2482,7 +2604,8 @@ function mbarHTML(){
     const dev=G.rules.dev&&G.deck.length&&canPay(hu,COST.dev);
     if(o.length||dev)mbld=`<div class="mbuild" role="group" aria-label="Puedes construir"><span class="ml">Puedes:</span>${o.map(([m,l])=>`<button class="btn bl${G.mode===m?' on':''}" onclick="setMode('${m}')">${l}</button>`).join('')}${dev?'<button class="btn bl" onclick="uiBuyDev()">Carta</button>':''}</div>`;
   }
-  return mres+mbld+`<button class="btn primary" ${humanTurn()&&G.phase==='roll'?'':'disabled'} onclick="uiRoll()">Tirar dados</button><button class="btn" onclick="document.querySelector('#sec-build').scrollIntoView({behavior:'smooth',block:'center'})">Construir</button><button class="btn" ${canMain()?'':'disabled'} onclick="uiEnd()">Terminar</button>`;
+  const trd=G.rules.trade?'openTrade()':'openBank()';
+  return mres+mbld+`<div class="macts"><button class="btn" onclick="document.querySelector('#sec-build').scrollIntoView({behavior:'smooth',block:'center'})">${mi('hammer')}<span>Construir</span></button><button class="btn" ${canMain()?'':'disabled'} onclick="${trd}">${mi('swap')}<span>Comerciar</span></button><button class="btn primary" ${humanTurn()&&G.phase==='roll'?'':'disabled'} onclick="uiRoll()">${mi('dice')}<span>Tirar dados</span></button><button class="btn gold2" ${canMain()?'':'disabled'} onclick="uiEnd()">${mi('play')}<span>Terminar</span></button></div>`;
 }
 /* ¿qué me falta para construir? */
 function needFor(kind){
@@ -2708,7 +2831,8 @@ function mapChanged(){
 }
 function showStart(){
   const num=(a,b,sel)=>{let o='';for(let i=a;i<=b;i++)o+=`<option value="${i}" ${i===sel?'selected':''}>${i}</option>`;return o;};
-  openModal(`<h2>Nueva partida</h2>
+  openModal(`<div class="scn"><div class="scnhead"><div><p class="scnk">Escenario</p><h2>Nueva partida</h2></div><div class="scnprev" aria-hidden="true">${miniBoard()}</div></div>
+   <div class="scnp" role="group" aria-label="Escenarios rápidos">${SCN.map(x=>`<button class="scnb${x[0]==='clasica'?' on':''}" data-k="${x[0]}" onclick="scnPreset('${x[0]}')"><b>${x[1]}</b><small>${x[2]}</small></button>`).join('')}</div>
    <div class="two">
     <div class="field"><label for="c-name">Tu nombre</label><input id="c-name" type="text" value="${esc(PNAME||'Tú')}" maxlength="14" oninput="drawTimeRows()"></div>
     <div class="field"><label for="c-bots">Rivales</label><select id="c-bots" onchange="rowsChanged()"><option value="2">2 rivales</option><option value="3" selected>3 rivales</option><option value="4">4 rivales (mapa grande)</option><option value="5">5 rivales (mapa grande)</option></select></div>
@@ -2727,7 +2851,7 @@ function showStart(){
    </div>
    <p id="map-desc" class="hintp"></p>
    <label class="chk"><input id="r-exp" type="checkbox"><span><b>Expansión «Islas lejanas»</b><small>Una isla extra al otro lado de un estrecho. Se llega con barcos (1 Barraca + 1 Lana) y el primero en fundar allí gana 1 punto (Explorador). Los barcos cuentan para el Sendero más largo.</small></span></label>
-   <h3 class="rh">Variantes</h3>
+   <details class="adv"><summary>Más opciones: variantes y reglas</summary><h3 class="rh">Variantes</h3>
    <label class="chk"><input id="r-obj" type="checkbox"><span><b>Misiones secretas</b><small>Cada jugador recibe una misión oculta (por ejemplo, «ten un puerto y un Sendero de 4»). Cumplirla da 2 puntos secretos.</small></span></label>
    <label class="chk"><input id="r-fac" type="checkbox"><span><b>Facciones</b><small>Cada jugador es un pueblo con una habilidad única. Tu pueblo: <select id="c-fac" aria-label="Tu facción"><option value="rand">Al azar</option>${FACK.map(k=>`<option value="${k}">${FACN[k].n}</option>`).join('')}</select></small></span></label>
    <label class="chk"><input id="r-auc" type="checkbox"><span><b>Subasta por ronda</b><small>Cada ronda sale un lote (3 cartas de un recurso, 1 de cada uno de 3 recursos o una carta de desarrollo). Ofertas a sobre cerrado con cartas de tu mano.</small></span></label>
@@ -2750,8 +2874,9 @@ function showStart(){
     <div class="trow"><span>Tiempo por jugador (15 a 80 s, de 5 en 5)</span><select id="tm-all" onchange="tmAll(this.value)" aria-label="Igualar tiempos"><option value="">Igualar a…</option>${TMOPT.map(t=>`<option value="${t}">${t} s</option>`).join('')}</select></div>
     <div id="tm-rows"></div>
    </div>
+   </details>
    <label class="chk"><input id="r-tut" type="checkbox"><span><b>Tutorial guiado (opcional)</b><small>Una tarjeta te explica paso a paso tus primeras jugadas. Puedes cerrarla cuando quieras y reabrirla con el botón «Tutorial».</small></span></label>
-   <div class="mact"><button class="btn" onclick="showMenu()">Volver</button><button class="btn primary" onclick="startFromForm()">Empezar</button></div>`);NETH.styleStart();
+   <div class="mact"><button class="btn" onclick="showMenu()">Volver</button><button class="btn primary" onclick="startFromForm()">Empezar</button></div></div>`,true);NETH.styleStart();
   rowsChanged();mapChanged();
 }
 function startFromForm(){
@@ -3392,6 +3517,11 @@ const MI={
  plus:'<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
  palette:'<circle cx="13.5" cy="6.5" r=".6"/><circle cx="17.5" cy="10.5" r=".6"/><circle cx="8.5" cy="7.5" r=".6"/><circle cx="6.5" cy="12.5" r=".6"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.5-.7 1.5-1.5 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.8.7-1.5 1.5-1.5H16c3.3 0 6-2.7 6-6 0-4.9-4.5-9-10-9z"/>',
  install:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+ gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/>',
+ hammer:'<path d="m15 12-8.4 8.4a2.1 2.1 0 0 1-3-3L12 9"/><path d="M17.6 15 22 10.6 13.4 2 9 6.4z"/>',
+ swap:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+ dice:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1"/><circle cx="15.5" cy="15.5" r="1"/><circle cx="12" cy="12" r="1"/>',
+ home:'<path d="M3 11 12 4l9 7v9H3z"/><path d="M10 20v-6h4v6"/>',
  door:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>'};
 const mi=n=>`<svg class="mi" viewBox="0 0 24 24" aria-hidden="true">${MI[n]||''}</svg>`;
 const THEMES=[['coast','Costa','linear-gradient(135deg,#2a7893,#0c2c3d)'],['forest','Bosque','linear-gradient(135deg,#3f9a78,#0d3327)'],['snow','Nevado','linear-gradient(135deg,#a6d4ee,#27536f)'],['dusk','Atardecer','linear-gradient(135deg,#cf7d63,#2e2040)']];
@@ -5799,6 +5929,113 @@ if(LANG!=='es'){TR.dirty=true;trAll();}
   document.addEventListener('focusout',e=>{const m=document.getElementById('modal');if(!m||!isF(e.target))return;setTimeout(()=>{if(isF(document.activeElement)&&m.contains(document.activeElement))return;m.classList.remove('kb');m.style.top=m.style.bottom=m.style.height='';},120);});
   if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);}
 })();
+/* ===================== PRUEBA DE DISEÑO: menú, ajustes, nivel y escenario ===================== */
+const SCN=[['clasica','Clásica','10 puntos, sin variantes'],['rapida','Rápida','6 puntos y rivales veloces'],['estrategia','Estrategia','Misiones, facciones y mejoras'],['caos','Caos','Eventos, clima, subasta y tierras salvajes']];
+function scnPreset(k){
+  const set=(id,v)=>{const e=$('#'+id);if(e){if(e.type==='checkbox')e.checked=!!v;else e.value=v;}};
+  ['r-obj','r-fac','r-auc','r-upg','r-wild','r-pers','r-teams','r-nop','r-ev','r-wx'].forEach(id=>set(id,false));
+  set('r-pts',true);set('r-tgt','10');set('c-speed','1');
+  if(k==='rapida'){set('r-tgt','6');set('c-speed','0.45');}
+  if(k==='estrategia'){set('r-obj',1);set('r-fac',1);set('r-upg',1);set('r-pers',1);}
+  if(k==='caos'){set('r-ev',1);set('r-wx',1);set('r-auc',1);set('r-wild',1);}
+  document.querySelectorAll('#modal .scnb').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  const d=$('#modal details.adv');if(d&&k!=='clasica')d.open=true;
+}
+function miniBoard(){
+  const T=['ore','wool','wood','grain','brick','wool','wood','ore','grain','desert','brick','wool','grain','wood','wool','ore','wood','grain','brick'];
+  const C=[[0,-2],[1,-2],[2,-2],[-1,-1],[0,-1],[1,-1],[2,-1],[-2,0],[-1,0],[0,0],[1,0],[2,0],[-2,1],[-1,1],[0,1],[1,1],[-2,2],[-1,2],[0,2]];
+  const z=20,hx=(cx,cy)=>Array.from({length:6},(_,k)=>{const a=Math.PI/180*(60*k-30);return (cx+z*Math.cos(a)).toFixed(1)+','+(cy+z*Math.sin(a)).toFixed(1);}).join(' ');
+  return `<svg viewBox="-110 -96 220 192" width="100%" height="100%">${C.map(([q,r],i)=>`<polygon points="${hx(z*1.732*(q+r/2),z*1.5*r)}" fill="${HEXCOL[T[i]]}" stroke="#0d1a23" stroke-width="2.5" stroke-linejoin="round"/>`).join('')}</svg>`;
+}
+function plLevel(){
+  const st=loadStats(),ach=ACH.filter(a=>st.ach[a.id]).length;
+  const xp=(st.games||0)*25+(st.wins||0)*75+ach*50+campDone()*60;
+  let lv=1;while(xp>=50*lv*lv)lv++;
+  const lo=50*(lv-1)*(lv-1),hi=50*lv*lv;
+  return {lv,xp,pct:Math.round(100*(xp-lo)/(hi-lo)),left:hi-xp};
+}
+function avatarHTML(sz){
+  const c=(MYCOLS[MYCOL]||MYCOLS[0])[1],n=(PNAME||'?').trim()[0]||'?';
+  return `<span class="avx" style="--pc:${c};width:${sz}px;height:${Math.round(sz*1.14)}px"><b>${esc(n.toUpperCase())}</b></span>`;
+}
+let HUBTAB='play',SETTAB=null;
+{const mb=document.getElementById('mbar'),bw=document.querySelector('main.boardwrap');if(mb&&bw)bw.appendChild(mb);}
+function hubTab(t){HUBTAB=t;const h=$('#landin .hub2');if(h)h.dataset.tab=t;document.querySelectorAll('#landin .h2tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.t===t?'page':'false'));const l=$('#land');if(l)l.scrollTop=0;}
+function showMenu(){
+  if(NET.role){landHide();if(NET.role==='host'&&NET.lobby&&!NET.started)showLobby();else showRoomMenu();return;}
+  closeModal();
+  const l=document.getElementById('land');if(!l){return;}
+  const sv=saveInfo(),last=!!LS.raw(LASTKEY),dk=todayKey(),dd=(LS.get('ta-daily',{})||{})[dk],st=loadStats(),L=plLevel(),u=AUTH.user;
+  LANDM='hub';
+  l.classList.add('on');document.body.classList.add('landon');
+  const li=$('#landin');li.className='landin hubm hub2m';
+  const tabB=(t,ic,lb,fn)=>`<button data-t="${t}" aria-current="${HUBTAB===t?'page':'false'}" onclick="${fn}">${mi(ic)}<span>${lb}</span></button>`;
+  li.innerHTML=`<div class="hub2" data-tab="${HUBTAB}">
+   <header class="h2top">
+    <img class="h2logo" src="/assets/logo.png?v=1" width="760" height="253" alt="Tierra Austral">
+    <div class="h2me">${avatarHTML(46)}<div class="h2mi"><b>${PNAME?esc(PNAME):'Jugador'}</b><span class="h2lv">Nivel ${L.lv}</span><span class="h2bar" title="${L.left} de experiencia para el nivel ${L.lv+1}"><i style="width:${L.pct}%"></i></span></div>
+     <button class="btn h2ic" onclick="showWelcome()" aria-label="Cambiar nombre" title="Cambiar nombre">${mi('users')}</button>
+     <button class="btn h2ic" onclick="showSettings('board')" aria-label="Ajustes" title="Ajustes">${mi('gear')}</button></div>
+   </header>
+   ${u?'':`<div class="h2guest"><span><b>Modo invitado.</b> Tu progreso queda solo en este dispositivo.</span><button class="btn" onclick="showLogin()">Iniciar sesión</button></div>`}
+   <div class="h2grid">
+    <section class="h2play">
+     <div class="h2hero">
+      <div class="h2heroimg" aria-hidden="true">${miniBoard()}</div>
+      <div class="h2herotx"><span class="h2chip">${sv?'Partida guardada':'Partida rápida'}</span>
+       <h2>${sv?'Sigue donde quedaste':'Funda tu colonia'}</h2>
+       <p>${sv?`Turno ${sv.turn} · ${esc(sv.names.join(', '))} · ${fmtDate(sv.at)}`:'Elige un escenario, tus rivales y la dificultad en una sola pantalla.'}</p>
+       <div class="h2cta">${sv?`<button class="btn primary big" onclick="resumeGame()">${mi('play')}<span>Continuar</span></button><button class="btn big" onclick="showStart()">Nueva partida</button>`:`<button class="btn primary big" onclick="showStart()">${mi('play')}<span>Jugar ahora</span></button>`}${inGame()?'<button class="btn gold2 big" onclick="landHide()">Volver a la partida</button>':''}</div>
+      </div>
+     </div>
+     <h3 class="hsec">Modos de juego</h3>
+     <div class="h2modes">
+      ${hubTile('flag','Campaña',`${campDone()} de ${CAMP.length} misiones`,'showCampaign()')}
+      ${hubTile('cal','Partida diaria',dd?(dd.won?`Ganada en ${dd.rounds} rondas`:'Jugada hoy'):'Mapa del día, el mismo para todos','startDaily()')}
+      ${hubTile('users','En línea',u?'Sala con código, hasta 6':'Requiere cuenta','showNetMenu()')}
+      ${hubTile('book','Tutorial guiado','Aprende en una partida corta','playTutorial()')}
+     </div>
+    </section>
+    <aside class="h2prog">
+     <h3 class="hsec">Tu progreso</h3>
+     <div class="h2stat"><div><b>${st.games}</b><small>Partidas</small></div><div><b>${st.wins}</b><small>Victorias</small></div><div><b>${ACH.filter(a=>st.ach[a.id]).length}/${ACH.length}</b><small>Logros</small></div></div>
+     <div class="h2list">
+      ${hubTile('users','Perfil y marcador','Contra tus amigos','showProfile()')}
+      ${hubTile('trophy','Estadísticas y logros','Récords y medallas','showStats()')}
+      ${hubTile('replay','Repetición',last?'Última partida terminada':'Al terminar una partida','replayLast()',{off:!last})}
+     </div>
+     <h3 class="hsec">Ayuda</h3>
+     <div class="h2list">${hubTile('list','Reglas y costos','Referencia rápida','showRules()')}</div>
+    </aside>
+   </div>
+   <div class="h2foot">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('install')}<span>Instalar app</span></button>`}<span>v${APPVER} · versión de prueba de diseño</span></div>
+  </div>
+  <nav class="h2tabs" aria-label="Secciones">${tabB('play','home','Jugar',"hubTab('play')")}${tabB('prog','trophy','Progreso',"hubTab('prog')")}${tabB('net','users','En línea','showNetMenu()')}${tabB('set','gear','Ajustes',"showSettings('board')")}</nav>`;
+  l.scrollTop=0;
+  if(SETTAB)showSettings(SETTAB);
+}
+function setX(tab,fn){SETTAB=tab;fn();if(!$('#land.on'))showSettings(tab);}
+function showSettings(tab){
+  SETTAB=tab=tab||'board';
+  const seg=(opts)=>`<div class="seg" role="group">${opts.map(([lb,on,fn])=>`<button class="${on?'on':''}" aria-pressed="${on}" onclick="${fn}">${lb}</button>`).join('')}</div>`;
+  const row=(t,d,c)=>`<div class="srow"><div><b>${t}</b><small>${d}</small></div>${c}</div>`;
+  const T={board:'Tablero',layout:'Disposición',sound:'Sonido',acct:'Idioma y cuenta'};
+  let body='';
+  if(tab==='board')body=row('Vista del tablero','Plano para jugar rápido o en relieve (beta).',seg([['2D',!view3d(),"setX('board',()=>setView('2d'))"],['3D',view3d(),"setX('board',()=>setView('3d'))"]]))
+    +row('Estilo del mapa 2D','Clásico o mapa antiguo de navegante.',seg([['Clásico',MAPSKIN!=='old',"setX('board',()=>setSkin(''))"],['Antiguo',MAPSKIN==='old',"setX('board',()=>setSkin('old'))"]]))
+    +row('Tema, color y accesibilidad','Costa, bosque, nevado o atardecer; tu color; letra grande y alto contraste.',`<button class="btn" onclick="SETTAB=null;showPersonalize()">Personalizar</button>`);
+  if(tab==='layout')body=row('Disposición en partida','Completa muestra encabezado y paneles; compacta agranda el tablero.',seg([['Completa',!isCompact(),"setX('layout',()=>setCompact(false))"],['Compacta',isCompact(),"setX('layout',()=>setCompact(true))"]]));
+  if(tab==='sound')body=row('Efectos de sonido','Dados, construcciones y tratos.',seg([['Sí',SND.on,"if(!SND.on)toggleSound();showSettings('sound')"],['No',!SND.on,"if(SND.on)toggleSound();showSettings('sound')"]]))
+    +row('Música','Música ambiente durante la partida.',seg([['Sí',MUS.on,"if(!MUS.on)toggleMusic();showSettings('sound')"],['No',!MUS.on,"if(MUS.on)toggleMusic();showSettings('sound')"]]));
+  if(tab==='acct')body=row('Idioma','Textos del juego.',`<div class="seg">${Object.keys(LANGS).map(k=>`<button class="${k===LANG?'on':''}" onclick="SETTAB='acct';setLang('${k}');showMenu()">${LANGS[k]}</button>`).join('')}</div>`)
+    +row('Nombre','Cómo te ven los demás (máx. 14 caracteres).',`<button class="btn" onclick="SETTAB=null;showWelcome()">Cambiar nombre</button>`)
+    +row('Cuenta',AUTH.user?esc(AUTH.user.email||'Conectado'):'Modo invitado: el progreso queda en este dispositivo.',AUTH.user?`<button class="btn" onclick="SETTAB=null;showAccount()">Cuenta</button>`:`<button class="btn primary" onclick="SETTAB=null;showLogin()">Iniciar sesión</button>`);
+  openModal(`<div class="sets"><div class="sethead"><h2>Ajustes</h2></div>
+   <div class="stabs" role="tablist">${Object.keys(T).map(k=>`<button role="tab" aria-selected="${k===tab}" class="${k===tab?'on':''}" onclick="showSettings('${k}')">${T[k]}</button>`).join('')}</div>
+   <div class="sbody">${body}</div>
+   <div class="mact"><button class="btn primary" onclick="SETTAB=null;closeModal()">Listo</button></div></div>`,true);
+}
+
 </script>
 </body>
 </html>
