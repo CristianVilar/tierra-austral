@@ -378,6 +378,7 @@ function glyph(x,res,cx,cy,k){
   else{const cs=['#4a9a57','#c86a47','#9ccf63','#e9c548','#7f93a8'];cs.forEach((c,i)=>{const a=i/5*6.283-1.57;x.fillStyle=c;x.beginPath();x.arc(Math.cos(a)*17,Math.sin(a)*17,9,0,7);x.fill();x.strokeStyle='#2a2116';x.lineWidth=1.5;x.stroke();});x.fillStyle='#2a2116';x.font='800 20px Cinzel,Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText('?',0,1);}
   x.restore();
 }
+const PORTIMG={};
 function portTex(ratio,res){
   const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
   x.shadowColor='#0007';x.shadowBlur=10;
@@ -393,8 +394,12 @@ function portTex(ratio,res){
     x.strokeStyle='#f3e7c3';x.lineWidth=3;x.beginPath();x.arc(128,128,114,0,7);x.stroke();x.beginPath();x.arc(128,128,94,0,7);x.stroke();
     glyph(x,res,128,100,1.15);
     x.fillStyle='#fbf1d2';x.font='900 66px Cinzel,Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ratio,128,184);
+    // mismo ícono que usa la interfaz (PNG) sobre el boceto, apenas cargue
+    const im=PORTIMG[res]||(PORTIMG[res]=Object.assign(new Image(),{src:'/assets/res-'+res+'.png'}));
+    const paint=()=>{x.save();x.fillStyle='#16222c';x.beginPath();x.arc(128,98,56,0,7);x.fill();x.restore();x.drawImage(im,128-52,98-52,104,104);tt.needsUpdate=true;};
+    if(im.complete&&im.naturalWidth)setTimeout(paint,0);else im.addEventListener('load',paint,{once:true});
   }
-  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t;
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;var tt=t;return t;
 }
 function pipTex(n){
   const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');

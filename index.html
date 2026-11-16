@@ -217,6 +217,11 @@ body.compact .players:has(.pl:nth-child(3):last-child){grid-template-columns:min
 body.compact .pl{grid-template-columns:26px minmax(0,1fr) auto;gap:6px;padding:7px 8px;min-height:46px}
 body.compact .pl .av{width:26px;height:26px;font-size:13px}
 body.compact .pl .vp{font-size:20px}
+
+.rqs{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px}
+.rq{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--text)}
+.rq b{color:var(--gold,#f2c14e)}
+.rq .ico{flex:none}
 /* botones de respuesta a tratos */
 .btn.ok{background:linear-gradient(#3f9d5b,#2b7a43);color:#fff;border-color:#8fe0a8}
 .btn.no{background:linear-gradient(#b8503f,#8d3526);color:#fff;border-color:#f0a99c}
@@ -1223,7 +1228,7 @@ function buyUpg(pid,k){
 function openUpg(){
   if(!canMain()||!G.rules.upg)return;
   const c=myVerts(HS(),'c').length;
-  openModal(`<h2>Mejoras de la ciudad</h2><p>Se desbloquean al tener al menos un castillo.${c?'':' Aún no tienes ninguno.'}</p>${Object.keys(UPGN).map(k=>{const u=UPGN[k],own=G.upg[HS()][k];return `<div class="dev" style="margin-top:8px"><div><b>${u.n}</b><small>${u.d}</small><small>${Object.keys(u.cost).map(r=>u.cost[r]+' '+RNAME[r]).join(' + ')}</small></div>${own?'<span class="tag">Tuya</span>':`<button class="btn" ${canUpg(HS(),k)?'':'disabled'} onclick="uiBuyUpg('${k}')">Comprar</button>`}</div>`;}).join('')}<div class="mact"><button class="btn" onclick="closeModal()">Cerrar</button></div>`);
+  openModal(`<h2>Mejoras de la ciudad</h2><p>Se desbloquean al tener al menos un castillo.${c?'':' Aún no tienes ninguno.'}</p>${Object.keys(UPGN).map(k=>{const u=UPGN[k],own=G.upg[HS()][k];return `<div class="dev" style="margin-top:8px"><div><b>${u.n}</b><small>${u.d}</small><small><span class="rqs">${Object.keys(u.cost).map(r=>`<span class="rq">${icon(r,16)}<span>${RNAME[r]}</span><b>×${u.cost[r]}</b></span>`).join('')}</span></small></div>${own?'<span class="tag">Tuya</span>':`<button class="btn" ${canUpg(HS(),k)?'':'disabled'} onclick="uiBuyUpg('${k}')">Comprar</button>`}</div>`;}).join('')}<div class="mact"><button class="btn" onclick="closeModal()">Cerrar</button></div>`);
 }
 function uiBuyUpg(k){if(!canMain()||!canUpg(HS(),k))return;buyUpg(HS(),k);openUpg();render();checkWin();}
 
@@ -1861,11 +1866,34 @@ function humanTradeModal(o){
     G.dsc={end:Date.now()+20000,auto:()=>{say(`Sin respuesta: se rechaza el trato de ${pn(o.from)}.`);done(false);}};
     G.tradeAsk=o;
     const ic=m=>RES.filter(r=>m[r]).map(r=>`<span class="chip" style="--rc:${RCOL[r]};display:inline-block;min-width:62px">${icon(r,24)}<b>${m[r]}</b><span>${RNAME[r]}</span></span>`).join(' ');
-    openModal(`<h2>Propuesta de trato</h2><p><b>${pn(o.from)}</b> te ofrece:</p><div style="margin:6px 0">${ic(o.give)}</div><p>a cambio de:</p><div style="margin:6px 0">${ic(o.get)}</div>
-      <p id="dsc-t" class="dscT"></p>
-      <div class="mact"><button class="btn no" id="tr-no">Rechazar</button><button class="btn ok" id="tr-ok">Aceptar</button></div>`);
-    $('#tr-ok').onclick=()=>done(true);$('#tr-no').onclick=()=>{say(`Rechazas el trato de ${pn(o.from)}.`);done(false);};
-    updateClocks();
+    const me=G.players[o.to],other=G.players[o.from];
+    const show=()=>{
+      G.dsc.end=Date.now()+20000;
+      openModal(`<h2>Propuesta de trato</h2><p><b>${pn(o.from)}</b> te ofrece:</p><div style="margin:6px 0">${ic(o.give)}</div><p>a cambio de:</p><div style="margin:6px 0">${ic(o.get)}</div>
+        <p id="dsc-t" class="dscT"></p>
+        <div class="mact"><button class="btn no" id="tr-no">Rechazar</button><button class="btn" id="tr-ct">Contraoferta</button><button class="btn ok" id="tr-ok">Aceptar</button></div>`);
+      $('#tr-ok').onclick=()=>done(true);$('#tr-no').onclick=()=>{say(`Rechazas el trato de ${pn(o.from)}.`);done(false);};
+      $('#tr-ct').onclick=()=>edit({give:{...o.get},get:{...o.give}});
+      updateClocks();
+    };
+    // editor de contraoferta: c.give = lo que entregas tú, c.get = lo que pides
+    const edit=c=>{
+      G.dsc.end=Date.now()+60000;
+      const adj=(w,r,d)=>{const m=c[w],o2=w==='give'?c.get:c.give;let n=(m[r]||0)+d;n=Math.max(0,Math.min(n,9,(w==='give'?me:other).res[r]));if(n){m[r]=n;delete o2[r];}else delete m[r];edit(c);};
+      const row=w=>{const p=w==='give'?me:other,m=c[w];
+        return `<div class="tpgrid">${RES.map(r=>{const n=m[r]||0,own=p.res[r],blocked=!!(w==='give'?c.get:c.give)[r];
+          return `<div class="tpc ${n?'on':''} ${blocked?'off':''}" style="--rc:${RCOL[r]}">${icon(r,30)}<span class="tpn">${n||''}</span><span class="tpl">${RNAME[r]} (${own})</span><div class="tpb"><button class="tpbtn" data-w="${w}" data-r="${r}" data-d="-1" ${n<=0?'disabled':''} aria-label="Menos">−</button><button class="tpbtn" data-w="${w}" data-r="${r}" data-d="1" ${(n>=own||n>=9||blocked)?'disabled':''} aria-label="Más">+</button></div></div>`;}).join('')}</div>`;};
+      const ok=RES.some(r=>c.give[r])&&RES.some(r=>c.get[r]);
+      openModal(`<h2>Contraoferta a ${esc(pn(o.from))}</h2><p>Cambia lo que entregas o lo que pides y envíalo.</p>
+        <div class="field"><label>Entregas</label>${row('give')}</div><div class="tpsw">⇅</div><div class="field"><label>Pides</label>${row('get')}</div>
+        <p id="dsc-t" class="dscT"></p>
+        <div class="mact"><button class="btn" id="ct-back">Volver</button><button class="btn primary" id="ct-send" ${ok?'':'disabled'}>Enviar contraoferta</button></div>`);
+      document.querySelectorAll('#modal .tpbtn').forEach(b=>b.onclick=()=>adj(b.dataset.w,b.dataset.r,+b.dataset.d));
+      $('#ct-back').onclick=show;
+      $('#ct-send').onclick=()=>{const c2={from:o.to,to:o.from,give:{...c.give},get:{...c.get}};if(!tradeValid(c2))return;G.cnt=c2;done(false);};
+      updateClocks();
+    };
+    show();
   });});
 }
 function botCounter(pid,o){ // la IA responde un rechazo pidiendo 1 recurso más de tu mano
@@ -2205,6 +2233,9 @@ async function botOffer(pid){
     G.tOff++;
     say(`${p.name} propone a ${q.name}: ${offerTxt(o)}.`);render();
     if(await askTrade(o)){applyTrade(o);say(`${q.name} acepta el trato de ${p.name}.`);sfx('coin',.7);render();return true;}
+    if(G.cnt){const c=G.cnt;G.cnt=null;say(`${q.name} contraoferta a ${p.name}: ${offerTxt(c)}.`);render();await sl(650);
+      if(tradeValid(c)&&botDecides(pid,c)){applyTrade(c);say(`${p.name} acepta la contraoferta de ${q.name}.`);sfx('coin',.7);render();return true;}
+      say(`${p.name} rechaza la contraoferta de ${q.name}.`);render();continue;}
     say(`${q.name} rechaza el trato de ${p.name}.`);if(seatKind(q.id)!=='bot')G.refused[q.id]=1;render();
   }
   return false;
@@ -3453,6 +3484,9 @@ Mapa 2D: antiguo|2D map: antique|Mapa 2D: antigo
 Mapa 2D: clásico|2D map: classic|Mapa 2D: clássico
 Pergamino con tinta, brújula y barcos. Toca para volver al mapa clásico.|Parchment with ink, compass and ships. Tap to go back to the classic map.|Pergaminho com tinta, bússola e navios. Toque para voltar ao mapa clássico.
 Toca para ver el tablero como un mapa antiguo de navegante: pergamino, tinta, brújula y barcos.|Tap to see the board as an antique navigator's map: parchment, ink, compass and ships.|Toque para ver o tabuleiro como um mapa antigo de navegador: pergaminho, tinta, bússola e navios.
+Contraoferta a|Counteroffer to|Contraoferta para
+Cambia lo que entregas o lo que pides y envíalo.|Change what you give or ask for, then send it.|Mude o que você entrega ou pede e envie.
+Enviar contraoferta|Send counteroffer|Enviar contraoferta
 Disposición: compacta|Layout: compact|Disposição: compacta
 Disposición: completa|Layout: full|Disposição: completa
 Tablero más grande, jugadores en una fila y sin barra superior. Toca para volver a la disposición completa.|Bigger board, players in one row and no top bar. Tap to go back to the full layout.|Tabuleiro maior, jogadores em uma linha e sem barra superior. Toque para voltar ao layout completo.
