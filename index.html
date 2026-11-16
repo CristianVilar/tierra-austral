@@ -211,8 +211,9 @@ body.oldmap #board svg{box-shadow:0 0 0 3px #2a1c0e,0 0 0 5px #b58d4e}
 body.compact .players{grid-template-columns:repeat(2,minmax(0,1fr))}
 body.compact .players{display:grid;gap:6px}
 body.compact .pl .nm{font-size:13px}
-body.compact .players:has(.pl:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}
-body.compact .players:has(.pl:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}
+body.compact .players:has(.pl:nth-child(3):last-child){grid-template-columns:minmax(0,1fr)}
+@media(max-width:920px){body.compact .players:has(.pl:nth-child(3):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:920px){body.compact .players:has(.pl:nth-child(6):last-child){grid-template-columns:repeat(3,minmax(0,1fr))}}
 body.compact .pl{grid-template-columns:26px minmax(0,1fr) auto;gap:6px;padding:7px 8px;min-height:46px}
 body.compact .pl .av{width:26px;height:26px;font-size:13px}
 body.compact .pl .vp{font-size:20px}
@@ -226,11 +227,12 @@ body.compact header.top{display:none}
 body.compact #cmenu{display:block;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top));z-index:7;min-height:40px;padding:6px 14px}
 body.compact .app{padding-top:8px}
 body.compact #msg{padding:4px 96px 6px 78px;min-height:34px;font-size:14px;display:flex;align-items:center}
-body.compact .card.clock,body.compact #sec-res{display:none}
+body.compact .card.clock{display:none}
 body.compact #sec-players h3{display:none}
 body.compact #sec-players{padding:8px}
 body.compact .pl .sub,body.compact .pl .tag{display:none}
 @media(max-width:920px){
+  body.compact #sec-res{display:none}
   body.compact .app{padding:6px;gap:8px}
   body.compact .boardwrap{padding:6px;border-radius:14px}
   body.compact #v3d{height:clamp(320px,calc(100svh - 230px),760px)}
