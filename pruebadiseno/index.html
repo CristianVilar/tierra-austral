@@ -690,6 +690,23 @@ details.adv[open]{padding-bottom:10px}
  body:has(#mbar:not(:empty)) #sec-res{display:none}
 }
 
+
+/* ajustes de altura fija: título y pestañas quietos, solo el contenido se desplaza */
+#modal .mbox:has(.sets){height:min(640px,calc(var(--vvh,100svh) - 32px));display:flex;flex-direction:column;overflow:hidden}
+.sets{display:flex;flex-direction:column;flex:1;min-height:0}
+.sets h2{margin:0 0 4px}
+.sets .stabs{flex:none}
+.sets .sbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:4px}
+.sets>.mact{flex:none;margin-top:10px;position:static}
+.spers h3{margin:16px 0 8px}.spers h3:first-child{margin-top:12px}
+@media(max-width:720px){#modal.open:has(.sets){align-items:flex-end;padding:0}#modal .mbox:has(.sets){height:calc(var(--vvh,100svh) - 56px);border-radius:20px 20px 0 0;max-height:none}.stabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;overflow:visible}.stabs button{padding:0 2px;font-size:12.5px;white-space:normal;line-height:1.15}}
+.two:has(#c-map){grid-template-columns:1fr}.two:has(#c-map) .field:has(#map-edit[style*="none"]){display:none}
+/* vista previa del mapa */
+.mapbox{display:grid;grid-template-columns:200px minmax(0,1fr);gap:14px;align-items:center;margin:8px 0 12px}
+.mapprev{width:200px;height:190px;background:#0f2a3a;border:1px solid var(--line);border-radius:14px;padding:6px;box-sizing:border-box;display:grid;place-items:center}
+.mapprev .mpe{margin:0;font-size:12px;color:var(--muted);text-align:center;padding:10px}
+.mapside{display:flex;flex-direction:column;gap:10px;align-items:flex-start}.mapside .hintp{margin:0}
+@media(max-width:520px){.mapbox{grid-template-columns:1fr}.mapprev{width:100%;height:220px}}
 </style>
 </head>
 <body>
@@ -2828,14 +2845,15 @@ function mapChanged(){
   $('#map-desc').textContent=MAPDESC[m]+(m==='custom'&&window.CUSTOM?' Mapa guardado: listo para usar.':'');
   $('#map-edit').style.display=m==='custom'?'':'none';
   if(m==='custom'&&!window.CUSTOM)openEditor();
+  drawMapPrev();
 }
 function showStart(){
   const num=(a,b,sel)=>{let o='';for(let i=a;i<=b;i++)o+=`<option value="${i}" ${i===sel?'selected':''}>${i}</option>`;return o;};
-  openModal(`<div class="scn"><div class="scnhead"><div><p class="scnk">Escenario</p><h2>Nueva partida</h2></div><div class="scnprev" aria-hidden="true">${miniBoard()}</div></div>
+  openModal(`<div class="scn"><div class="scnhead"><div><p class="scnk">Escenario</p><h2>Nueva partida</h2></div></div>
    <div class="scnp" role="group" aria-label="Escenarios rápidos">${SCN.map(x=>`<button class="scnb${x[0]==='clasica'?' on':''}" data-k="${x[0]}" onclick="scnPreset('${x[0]}')"><b>${x[1]}</b><small>${x[2]}</small></button>`).join('')}</div>
    <div class="two">
     <div class="field"><label for="c-name">Tu nombre</label><input id="c-name" type="text" value="${esc(PNAME||'Tú')}" maxlength="14" oninput="drawTimeRows()"></div>
-    <div class="field"><label for="c-bots">Rivales</label><select id="c-bots" onchange="rowsChanged()"><option value="2">2 rivales</option><option value="3" selected>3 rivales</option><option value="4">4 rivales (mapa grande)</option><option value="5">5 rivales (mapa grande)</option></select></div>
+    <div class="field"><label for="c-bots">Rivales</label><select id="c-bots" onchange="rowsChanged();drawMapPrev()"><option value="2">2 rivales</option><option value="3" selected>3 rivales</option><option value="4">4 rivales (mapa grande)</option><option value="5">5 rivales (mapa grande)</option></select></div>
    </div>
    <div class="two">
     <div class="field"><label for="c-speed">Ritmo de los rivales</label><select id="c-speed"><option value="1">Normal</option><option value="0.45">Rápido</option></select></div>
@@ -2849,7 +2867,7 @@ function showStart(){
     <div class="field"><label for="c-map">Tipo de mapa</label><select id="c-map" onchange="mapChanged()">${Object.keys(MAPNAMES).map(k=>`<option value="${k}">${MAPNAMES[k]}</option>`).join('')}</select></div>
     <div class="field"><label>&nbsp;</label><button class="btn" id="map-edit" style="display:none" onclick="openEditor()">Crear / editar mapa</button></div>
    </div>
-   <p id="map-desc" class="hintp"></p>
+   <div class="mapbox"><div id="map-prev" class="mapprev" aria-hidden="true"></div><div class="mapside"><p id="map-desc" class="hintp"></p><button class="btn" type="button" id="map-again" onclick="drawMapPrev()">Ver otro ejemplo</button></div></div>
    <label class="chk"><input id="r-exp" type="checkbox"><span><b>Expansión «Islas lejanas»</b><small>Una isla extra al otro lado de un estrecho. Se llega con barcos (1 Barraca + 1 Lana) y el primero en fundar allí gana 1 punto (Explorador). Los barcos cuentan para el Sendero más largo.</small></span></label>
    <details class="adv"><summary>Más opciones: variantes y reglas</summary><h3 class="rh">Variantes</h3>
    <label class="chk"><input id="r-obj" type="checkbox"><span><b>Misiones secretas</b><small>Cada jugador recibe una misión oculta (por ejemplo, «ten un puerto y un Sendero de 4»). Cumplirla da 2 puntos secretos.</small></span></label>
@@ -4623,8 +4641,9 @@ function styHTML(){
   const tabs=net?'':`<div class="thm" role="group" aria-label="Jugador">${[0,1,2,3,4,5].map(i=>`<button class="btn${i===seat?' on':''}" onclick="setStySeat(${i})" aria-pressed="${i===seat}"><span class="sw" style="background:${PCOL[i]}"></span>${i===0?'Tú':'Jugador '+(i+1)}</button>`).join('')}</div>`;
   return `<h3>Estilo de pueblo y castillo</h3><p style="color:var(--muted);font-size:13px;margin:0 0 6px">${net?'Tu estilo en la sala; los demás jugadores lo ven en la vista 3D.':'Elige cómo se ven los pueblos y castillos de cada jugador en la vista 3D. Los jugadores 2 a 6 son los rivales de la IA.'}</p>${tabs}<div class="stypv"><figure><img src="/assets/sty/t-${o.t}.jpg?v=2?v=2" alt="Pueblo ${STYN[o.t]}" width="320" height="240"><figcaption>Pueblo · ${STYN[o.t]}</figcaption></figure><figure><img src="/assets/sty/c-${o.c}.jpg?v=2?v=2" alt="Castillo ${STYN[o.c]}" width="320" height="240"><figcaption>Castillo · ${STYN[o.c]}</figcaption></figure></div>${row('t','Pueblo')}${row('c','Castillo')}`;
 }
-function showPersonalize(){
-  openModal(`<h2>Personalizar</h2><p>Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.</p>
+function showPersonalize(){if(SETTAB){showSettings('look');return;}openModal(persHTML());}
+function persHTML(){
+  return (`<h2>Personalizar</h2><p>Elige cómo se ve el tablero y tu color. Se guarda en este dispositivo.</p>
    <h3>Idioma</h3>${langChips()}
    <h3>Tema del tablero</h3><div class="thm" role="group" aria-label="Tema del tablero">${THEMES.map(t=>`<button class="btn${t[0]===THEME?' on':''}" onclick="setTheme('${t[0]}')" aria-pressed="${t[0]===THEME}"><span class="sw" style="background:${t[2]}"></span>${t[1]}</button>`).join('')}</div>
    <h3>Tu color</h3><div class="cols" role="group" aria-label="Tu color">${MYCOLS.map((c,i)=>`<button class="btn${i===MYCOL?' on':''}" style="background:${c[1]}" onclick="setMyColor(${i})" aria-label="${c[0]}" aria-pressed="${i===MYCOL}"></button>`).join('')}</div>
@@ -4634,6 +4653,11 @@ function showPersonalize(){
    <h3>Partidas en línea</h3><div class="optl">${[['chat','Chat y reacciones','Muestra el botón 💬 y los mensajes de la sala.'],['alert','Aviso de turno','Suena y cambia el título de la pestaña cuando te toca.'],['vib','Vibración','Vibra el teléfono al empezar tu turno (si el aviso está activo).'],['notif','Notificación del sistema','Muestra una notificación cuando te toca y la pestaña está en segundo plano.']].map(o=>`<label class="chk"><input type="checkbox" ${OPT[o[0]]?'checked':''} onchange="setOpt('${o[0]}',this.checked)"><span><b>${o[1]}</b><small>${o[2]}</small></span></label>`).join('')}</div>
    <p style="color:var(--muted);font-size:13px">${CBP.on?'Con el modo daltonismo activado se usan colores especiales y esta elección no se aplica. ':''}En una sala en línea, los colores de los jugadores los define el anfitrión; el tema del tablero lo eliges cada uno.</p>
    <div class="mact"><button class="btn primary" onclick="mback()">Listo</button></div>`);
+}
+function persTab(){
+  let h=persHTML();
+  h=h.replace(/^<h2>Personalizar<\/h2><p>[\s\S]*?<\/p>/,'').replace(/<h3>Idioma<\/h3>[\s\S]*?(?=<h3>Tema del tablero)/,'').replace(/<div class="mact">[\s\S]*$/,'');
+  return `<div class="spers">${h}</div>`;
 }
 const NAMEMAX=14;const cleanName=v=>String(v==null?'':v).replace(/[<>&"']/g,'').replace(/\s+/g,' ').trim().slice(0,NAMEMAX);
 let PNAME='',DEFER_INSTALL=null;
@@ -5929,6 +5953,26 @@ if(LANG!=='es'){TR.dirty=true;trAll();}
   document.addEventListener('focusout',e=>{const m=document.getElementById('modal');if(!m||!isF(e.target))return;setTimeout(()=>{if(isF(document.activeElement)&&m.contains(document.activeElement))return;m.classList.remove('kb');m.style.top=m.style.bottom=m.style.height='';},120);});
   if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit);}
 })();
+
+function drawMapPrev(){
+  const el=$('#map-prev'),sel=$('#c-map');if(!el||!sel)return;
+  const mode=sel.value,big=+(($('#c-bots')||{}).value||3)>=4&&!($('#c-spec')||{}).checked;
+  const sB=BIG,sN=NMAIN;let lay=null;
+  try{BIG=big;NMAIN=big?37:19;lay=layoutMain(mode,window.CUSTOM);}catch(e){lay=null;}finally{BIG=sB;NMAIN=sN;}
+  const again=$('#map-again');if(again)again.style.display=(mode==='beginner'||mode==='custom'||mode==='blind')?'none':'';
+  if(!lay||!lay.length||lay.some(h=>!h.type)){el.innerHTML='<p class="mpe">Crea tu mapa en el editor para verlo aquí.</p>';return;}
+  const z=20,hide=mode==='blind',R=big?3:2;
+  const pt=(q,r)=>[z*1.732*(q+r/2),z*1.5*r];
+  const poly=(cx,cy,k)=>Array.from({length:6},(_,i)=>{const a=Math.PI/180*(60*i-30);return (cx+k*Math.cos(a)).toFixed(1)+','+(cy+k*Math.sin(a)).toFixed(1);}).join(' ');
+  const W=z*1.732*(2*R+2),Hh=z*1.5*(2*R+2)+z;
+  let g=`<polygon points="${poly(0,0,z*(R+1.15)*1.732)}" fill="#1d5f7a" transform="rotate(30)"/>`;
+  for(const h of lay){const [x,y]=pt(h.q,h.r);
+    g+=`<polygon points="${poly(x,y,z)}" fill="${hide?'#4b5d6b':HEXCOL[h.type]}" stroke="#0d1a23" stroke-width="2.2" stroke-linejoin="round"/>`;
+    if(hide)g+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-size="13" font-weight="800" fill="#c9d9e4">?</text>`;
+    else if(h.num){const red=h.num===6||h.num===8;g+=`<circle cx="${x}" cy="${y}" r="8.5" fill="#f3e8c8" stroke="#6b5230" stroke-width="1"/><text x="${x}" y="${y+3.6}" text-anchor="middle" font-size="10" font-weight="800" font-family="system-ui,sans-serif" fill="${red?'#b42318':'#1b1b1b'}">${h.num}</text>`;}
+  }
+  el.innerHTML=`<svg viewBox="${-W/2} ${-Hh/2} ${W} ${Hh}" width="100%" height="100%">${g}</svg>`;
+}
 /* ===================== PRUEBA DE DISEÑO: menú, ajustes, nivel y escenario ===================== */
 const SCN=[['clasica','Clásica','10 puntos, sin variantes'],['rapida','Rápida','6 puntos y rivales veloces'],['estrategia','Estrategia','Misiones, facciones y mejoras'],['caos','Caos','Eventos, clima, subasta y tierras salvajes']];
 function scnPreset(k){
@@ -6016,14 +6060,16 @@ function showMenu(){
 }
 function setX(tab,fn){SETTAB=tab;fn();if(!$('#land.on'))showSettings(tab);}
 function showSettings(tab){
+  const keep=SETTAB===tab&&$('#sbody')?$('#sbody').scrollTop:0;
   SETTAB=tab=tab||'board';
   const seg=(opts)=>`<div class="seg" role="group">${opts.map(([lb,on,fn])=>`<button class="${on?'on':''}" aria-pressed="${on}" onclick="${fn}">${lb}</button>`).join('')}</div>`;
   const row=(t,d,c)=>`<div class="srow"><div><b>${t}</b><small>${d}</small></div>${c}</div>`;
-  const T={board:'Tablero',layout:'Disposición',sound:'Sonido',acct:'Idioma y cuenta'};
+  const T={board:'Tablero',look:'Apariencia',layout:'Disposición',sound:'Sonido',acct:'Cuenta'};
   let body='';
   if(tab==='board')body=row('Vista del tablero','Plano para jugar rápido o en relieve (beta).',seg([['2D',!view3d(),"setX('board',()=>setView('2d'))"],['3D',view3d(),"setX('board',()=>setView('3d'))"]]))
     +row('Estilo del mapa 2D','Clásico o mapa antiguo de navegante.',seg([['Clásico',MAPSKIN!=='old',"setX('board',()=>setSkin(''))"],['Antiguo',MAPSKIN==='old',"setX('board',()=>setSkin('old'))"]]))
-    +row('Tema, color y accesibilidad','Costa, bosque, nevado o atardecer; tu color; letra grande y alto contraste.',`<button class="btn" onclick="SETTAB=null;showPersonalize()">Personalizar</button>`);
+    +row('Tema, color, pueblos y castillos','Están en la pestaña Apariencia.',`<button class="btn" onclick="showSettings('look')">Ir a Apariencia</button>`);
+  if(tab==='look')body=persTab();
   if(tab==='layout')body=row('Disposición en partida','Completa muestra encabezado y paneles; compacta agranda el tablero.',seg([['Completa',!isCompact(),"setX('layout',()=>setCompact(false))"],['Compacta',isCompact(),"setX('layout',()=>setCompact(true))"]]));
   if(tab==='sound')body=row('Efectos de sonido','Dados, construcciones y tratos.',seg([['Sí',SND.on,"if(!SND.on)toggleSound();showSettings('sound')"],['No',!SND.on,"if(SND.on)toggleSound();showSettings('sound')"]]))
     +row('Música','Música ambiente durante la partida.',seg([['Sí',MUS.on,"if(!MUS.on)toggleMusic();showSettings('sound')"],['No',!MUS.on,"if(MUS.on)toggleMusic();showSettings('sound')"]]));
@@ -6032,8 +6078,9 @@ function showSettings(tab){
     +row('Cuenta',AUTH.user?esc(AUTH.user.email||'Conectado'):'Modo invitado: el progreso queda en este dispositivo.',AUTH.user?`<button class="btn" onclick="SETTAB=null;showAccount()">Cuenta</button>`:`<button class="btn primary" onclick="SETTAB=null;showLogin()">Iniciar sesión</button>`);
   openModal(`<div class="sets"><div class="sethead"><h2>Ajustes</h2></div>
    <div class="stabs" role="tablist">${Object.keys(T).map(k=>`<button role="tab" aria-selected="${k===tab}" class="${k===tab?'on':''}" onclick="showSettings('${k}')">${T[k]}</button>`).join('')}</div>
-   <div class="sbody">${body}</div>
+   <div class="sbody" id="sbody">${body}</div>
    <div class="mact"><button class="btn primary" onclick="SETTAB=null;closeModal()">Listo</button></div></div>`,true);
+  const sb=$('#sbody');if(sb)sb.scrollTop=keep;
 }
 
 </script>
