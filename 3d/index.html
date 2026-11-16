@@ -1793,7 +1793,7 @@ function loop(){
   if(diceRaft){diceRaft.position.y=Math.sin(T*1.2)*.018;diceRaft.rotation.z=Math.sin(T*.9)*.012;}
   for(const f of flags){f.rotation.y=Math.sin(T*3.2+f.position.x*9)*.35;f.scale.x=.9+Math.sin(T*4.1)*.08;}
   if(robber&&!rolling)robber.rotation.y=Math.sin(T*.7)*.25;
-  if(intro){intro.t=Math.min(1,intro.t+dt/(REDUCED||/nointro/.test(location.search)?.01:2.6));const e=ease(intro.t);camPlace(lerp(fit*1.55,fit,e),lerp(.55,.9,e),lerp(.5,0,e));if(intro.t>=1){intro=null;controls.enabled=true;$('#roll').disabled=false;camPlace(fit,.9,0);controls.update();}}
+  if(intro){intro.t=Math.min(1,intro.t+dt/(REDUCED||/nointro/.test(location.search)?.01:2.6));const e=ease(intro.t);camPlace(lerp(fit*1.55,fit,e),lerp(.55,.9,e),lerp(.5,0,e));if(intro.t>=1){intro=null;controls.enabled=true;$('#roll').disabled=false;camPlace(fit,.9,0);controls.update();if(/[?&]top=1/.test(location.search)&&!topView)setTimeout(()=>$('#top3d').click(),60);}}
   else if(!window.__free)controls.update();
   sky.position.copy(camera.position);
   renderer.render(scene,camera);

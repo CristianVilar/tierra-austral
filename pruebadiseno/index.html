@@ -707,6 +707,37 @@ details.adv[open]{padding-bottom:10px}
 .mapprev .mpe{margin:0;font-size:12px;color:var(--muted);text-align:center;padding:10px}
 .mapside{display:flex;flex-direction:column;gap:10px;align-items:flex-start}.mapside .hintp{margin:0}
 @media(max-width:520px){.mapbox{grid-template-columns:1fr}.mapprev{width:100%;height:220px}}
+
+/* --- ajustes ronda 3 --- */
+.h2grid{align-items:stretch}
+.h2play,.h2prog{display:flex;flex-direction:column;min-width:0}
+.hub2 .h2play>.hsec,.hub2 .h2prog>.hsec{margin-top:0}
+.h2modes{flex:1;grid-auto-rows:1fr;margin-top:0}
+.hub2 .h2hero+.hsec{margin-top:18px}
+@media(min-width:921px) and (max-width:1250px){#mbar:not(:empty){flex-wrap:wrap!important;position:static}#mbar .macts{flex:1 0 100%!important}#mbar .macts .btn{max-width:none}}
+.h2list{flex:1}.h2list .htile{flex:1}
+.hxst{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.hxn{display:grid;place-items:center;width:64px;height:72px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--gold);position:relative}
+.hxn::before{content:'';position:absolute;inset:3px;clip-path:inherit;background:linear-gradient(160deg,#1d4258,#10243a)}
+.hxn b{position:relative;font:800 22px var(--font-display);color:var(--gold)}
+.hxst small{color:var(--muted);font-size:12px;line-height:1.3}
+.h2stat{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.h2stat .hxst{background:#ffffff0d;border:1px solid #ffffff1a;border-radius:12px;padding:10px 6px}
+.h2stat .hxn{width:52px;height:59px}.h2stat .hxn b{font-size:18px}
+.hxs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:10px 0 6px}
+.hxs .hxn{width:84px;height:96px}.hxs .hxn b{font-size:28px}
+@media(max-width:560px){.hxs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rules .costs{grid-template-columns:auto 1fr;gap:8px 14px}
+.rules .costs .cl{font-weight:700}.rules .costs .rqs{margin:0;gap:6px 8px}
+.rules .costs .rq{background:#ffffff0d;border:1px solid var(--line);border-radius:99px;padding:3px 9px 3px 5px}
+.field .inl{display:flex!important;align-items:center;justify-content:flex-start!important;gap:10px;min-height:44px;width:auto!important;text-align:left}
+.field .inl input{width:22px!important;height:22px!important;min-height:0!important;flex:none;margin:0;padding:0}
+@media(min-width:921px){
+ #mbar:not(:empty){flex-wrap:nowrap}
+ #mbar .mres{flex:none;gap:4px}#mbar .mr{padding:2px 7px 2px 3px}#mbar .mr svg{width:22px;height:22px}#mbar .mr b{font-size:15px}
+ #mbar .macts{flex:1 1 auto;min-width:0;margin-left:0;justify-content:flex-end;gap:6px}
+ #mbar .macts .btn{flex:1 1 0;min-width:0;max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 10px}
+}
 </style>
 </head>
 <body>
@@ -2702,7 +2733,7 @@ function sideHTML(){
     <section class="card" id="sec-biz"><h3>Negocios</h3>
       <div class="row g3">${G.rules.dev?bb(`Comprar carta <small>(${G.deck.length})</small>`,'',!(main&&canPay(hu,COST.dev)&&G.deck.length),'uiBuyDev()',costIcons(COST.dev),'Lana, Trigo, Metal',needFor('dev')):''}${bb('Banco','',!main,'openBank()','<span class="ci">'+Math.min(...RES.map(r=>ratio(HS(),r)))+':1</span>','Cambia cartas con el banco',needFor('bank'))}${G.rules.trade?bb('Trato','',!main,'openTrade()','<span class="ci">jugadores</span>','Propón un trato a los rivales',needFor('trade')):''}${G.rules.auc?bb('Subasta','',!main||!G.auc,'openAuction()',`<span class="ci">${G.auc?(G.auc.bids[HS()]||0)+' carta(s)':'—'}</span>`,'Tu oferta por el lote de la ronda',null):''}${G.rules.upg?bb('Mejoras','',!main,'openUpg()','<span class="ci">castillo</span>','Murallas, Almacén y Mercado',null):''}</div></section>`;
     if(hu.dev.length){
-      h+=`<section class="card"><h3>Tus cartas de desarrollo</h3><div class="devs">${hu.dev.map((c,i)=>{
+      h+=`<section class="card" id="sec-dev"><h3>Tus cartas de desarrollo</h3><div class="devs">${hu.dev.map((c,i)=>{
         const playable=c.t!=='vp'&&c.turn!==G.turn&&!G.devPlayed&&(canMain()||(humanTurn()&&G.phase==='roll'));
         return `<div class="dev"><div><b>${DEVN[c.t]}</b><small>${c.t!=='vp'&&c.turn===G.turn?'Comprada este turno. ':''}${DEVD[c.t]}</small></div>${c.t==='vp'?'<span class="tag">+1</span>':`<button class="btn" ${playable?'':'disabled'} onclick="uiPlayDev(${i})">Jugar</button>`}</div>`;}).join('')}</div></section>`;
     }
@@ -2757,7 +2788,7 @@ function open3d(on){
   st.classList.remove('off');$('#v3t').textContent='Cargando vista 3D…';$('#v3p').textContent='';$('#v3o').style.display='none';
   clearTimeout(T3);T3=setTimeout(()=>{if(st.classList.contains('off'))return;$('#v3t').textContent='La vista 3D no responde';$('#v3p').textContent=(E3?'Error: '+E3:'El visor no terminó de cargar en este navegador.')+' Puedes abrirla en una pestaña aparte o volver al tablero.';$('#v3o').style.display='';},9000);
   f.onload=()=>{R3=false;try{push3d();}catch(e){}};
-  if(!f.getAttribute('src'))f.setAttribute('src','/3d/?embed=1');
+  if(!f.getAttribute('src'))f.setAttribute('src','/3d/?embed=1&top=1');
   w.classList.add('on');setTimeout(push3d,60);
 }
 let T3=null,E3='',R3=false;
@@ -2776,12 +2807,12 @@ addEventListener('message',e=>{
     setTimeout(push3d,30);
   }
 });
-function render(){if(NET.role==='guest')return;NETH.touch();try{sync3d();}catch(e){}musicRefresh();renderBoard();$('#side').innerHTML=sideHTML();placeDice();$('#msg').textContent=G.msg||' ';updateClocks();tutHL();renderMbar();bumpRes();}
+function render(){if(NET.role==='guest')return;NETH.touch();try{sync3d();}catch(e){}musicRefresh();renderBoard();$('#side').innerHTML=sideHTML();moveDev();placeDice();$('#msg').textContent=G.msg||' ';updateClocks();tutHL();renderMbar();bumpRes();}
 
 /* ===================== Modales ===================== */
 function openModal(html,wide){const m=$('#modal');m.innerHTML=`<div class="mbox${wide?' wide':''}">${html}</div>`;m.classList.add('open');NETH.modalOpen();}
 function closeModal(){const m=$('#modal');m.classList.remove('open','remote','kb');m.style.top=m.style.bottom=m.style.height='';m.innerHTML='';NETH.modalClose();}
-function costRow(label,c){return `<span>${label}</span><span class="c">${Object.keys(c).map(r=>`${c[r]}×${icon(r,16)}`).join(' ')}</span>`;}
+function costRow(label,c){return `<span class="cl">${label}</span><span class="rqs">${Object.keys(c).map(r=>`<span class="rq">${icon(r,16)}<span>${RNAME[r]}</span><b>×${c[r]}</b></span>`).join('')}</span>`;}
 function showRules(){
   const T=G.rules.target;
   openModal(`<div class="rules"><h2>Reglas y costos</h2>${activeRulesHTML()}
@@ -3412,8 +3443,7 @@ function showStats(){
   const st=loadStats(),pct=a=>a[0]?Math.round(a[1]*100/a[0])+' %':'—',n=ACH.filter(a=>st.ach[a.id]).length;
   const row=(k,l)=>`<div class="trow"><span>${l}</span><b>${st.by[k][1]} de ${st.by[k][0]} · ${pct(st.by[k])}</b></div>`;
   openModal(`<h2>Estadísticas y logros</h2>
-   <div class="two"><div class="evchip"><b>${st.games}</b><small>Partidas jugadas</small></div><div class="evchip"><b>${st.wins}</b><small>Victorias (${st.games?Math.round(st.wins*100/st.games):0} %)</small></div>
-   <div class="evchip"><b>${st.streak}</b><small>Racha actual · mejor ${st.best}</small></div><div class="evchip"><b>${st.fast?st.fast+' rondas':'—'}</b><small>Victoria más rápida</small></div></div>
+   <div class="hxs">${hexStat(st.games,'Partidas jugadas')}${hexStat(st.wins,`Victorias (${st.games?Math.round(st.wins*100/st.games):0} %)`)}${hexStat(st.streak,`Racha actual · mejor ${st.best}`)}${hexStat(st.fast||'—',st.fast?'Rondas en tu victoria más rápida':'Victoria más rápida')}</div>
    <h3 class="rh">Por dificultad de los rivales</h3>${row('easy','Fáciles')}${row('normal','Normales')}${row('hard','Difíciles')}${row('mix','Mezcla')}
    <h3 class="rh">Logros (${n} de ${ACH.length})</h3><div class="ach">${ACH.map(a=>`<div class="ac ${st.ach[a.id]?'on':''}"><b>${st.ach[a.id]?'★':'☆'} ${a.n}</b><small>${a.d}</small></div>`).join('')}</div>
    <div class="mact"><button class="btn" onclick="resetStats(this)">Borrar estadísticas y progreso</button><button class="btn primary" onclick="showMenu()">Volver</button></div>`,true);
@@ -5973,6 +6003,9 @@ function drawMapPrev(){
   }
   el.innerHTML=`<svg viewBox="${-W/2} ${-Hh/2} ${W} ${Hh}" width="100%" height="100%">${g}</svg>`;
 }
+
+function moveDev(){const d=document.getElementById('sec-dev'),t=document.getElementById('sec-turn');if(d&&t&&t.nextElementSibling!==d)t.after(d);}
+function hexStat(v,l){return `<div class="hxst"><span class="hxn"><b>${v}</b></span><small>${l}</small></div>`;}
 /* ===================== PRUEBA DE DISEÑO: menú, ajustes, nivel y escenario ===================== */
 const SCN=[['clasica','Clásica','10 puntos, sin variantes'],['rapida','Rápida','6 puntos y rivales veloces'],['estrategia','Estrategia','Misiones, facciones y mejoras'],['caos','Caos','Eventos, clima, subasta y tierras salvajes']];
 function scnPreset(k){
@@ -6024,32 +6057,31 @@ function showMenu(){
    ${u?'':`<div class="h2guest"><span><b>Modo invitado.</b> Tu progreso queda solo en este dispositivo.</span><button class="btn" onclick="showLogin()">Iniciar sesión</button></div>`}
    <div class="h2grid">
     <section class="h2play">
+     <h3 class="hsec">${inGame()?'Partida en curso':sv?'Partida guardada':'Jugar'}</h3>
      <div class="h2hero">
       <div class="h2heroimg" aria-hidden="true">${miniBoard()}</div>
-      <div class="h2herotx"><span class="h2chip">${sv?'Partida guardada':'Partida rápida'}</span>
-       <h2>${sv?'Sigue donde quedaste':'Funda tu colonia'}</h2>
+      <div class="h2herotx"><span class="h2chip">${inGame()?'En curso':sv?'Guardada':'Partida rápida'}</span>
+       <h2>${inGame()||sv?'Sigue donde quedaste':'Funda tu colonia'}</h2>
        <p>${sv?`Turno ${sv.turn} · ${esc(sv.names.join(', '))} · ${fmtDate(sv.at)}`:'Elige un escenario, tus rivales y la dificultad en una sola pantalla.'}</p>
-       <div class="h2cta">${sv?`<button class="btn primary big" onclick="resumeGame()">${mi('play')}<span>Continuar</span></button><button class="btn big" onclick="showStart()">Nueva partida</button>`:`<button class="btn primary big" onclick="showStart()">${mi('play')}<span>Jugar ahora</span></button>`}${inGame()?'<button class="btn gold2 big" onclick="landHide()">Volver a la partida</button>':''}</div>
+       <div class="h2cta">${inGame()?`<button class="btn primary big" onclick="landHide()">${mi('play')}<span>Continuar</span></button><button class="btn big" onclick="showStart()">Nueva partida</button>`:sv?`<button class="btn primary big" onclick="resumeGame()">${mi('play')}<span>Continuar</span></button><button class="btn big" onclick="showStart()">Nueva partida</button>`:`<button class="btn primary big" onclick="showStart()">${mi('play')}<span>Jugar ahora</span></button>`}</div>
       </div>
      </div>
      <h3 class="hsec">Modos de juego</h3>
      <div class="h2modes">
       ${hubTile('flag','Campaña',`${campDone()} de ${CAMP.length} misiones`,'showCampaign()')}
-      ${hubTile('cal','Partida diaria',dd?(dd.won?`Ganada en ${dd.rounds} rondas`:'Jugada hoy'):'Mapa del día, el mismo para todos','startDaily()')}
+      ${hubTile('cal','Partida diaria',dd?(dd.won?`Ganada en ${dd.rounds} rondas`:'Jugada hoy'):'El mapa del día','startDaily()')}
       ${hubTile('users','En línea',u?'Sala con código, hasta 6':'Requiere cuenta','showNetMenu()')}
       ${hubTile('book','Tutorial guiado','Aprende en una partida corta','playTutorial()')}
      </div>
     </section>
     <aside class="h2prog">
      <h3 class="hsec">Tu progreso</h3>
-     <div class="h2stat"><div><b>${st.games}</b><small>Partidas</small></div><div><b>${st.wins}</b><small>Victorias</small></div><div><b>${ACH.filter(a=>st.ach[a.id]).length}/${ACH.length}</b><small>Logros</small></div></div>
+     <div class="h2stat">${hexStat(st.games,'Partidas')}${hexStat(st.wins,'Victorias')}${hexStat(ACH.filter(a=>st.ach[a.id]).length+'/'+ACH.length,'Logros')}</div>
      <div class="h2list">
       ${hubTile('users','Perfil y marcador','Contra tus amigos','showProfile()')}
       ${hubTile('trophy','Estadísticas y logros','Récords y medallas','showStats()')}
-      ${hubTile('replay','Repetición',last?'Última partida terminada':'Al terminar una partida','replayLast()',{off:!last})}
+      ${hubTile('list','Reglas y costos','Referencia rápida','showRules()')}
      </div>
-     <h3 class="hsec">Ayuda</h3>
-     <div class="h2list">${hubTile('list','Reglas y costos','Referencia rápida','showRules()')}</div>
     </aside>
    </div>
    <div class="h2foot">${isStandalone()?'':`<button class="btn" onclick="installApp()">${mi('install')}<span>Instalar app</span></button>`}<span>v${APPVER} · versión de prueba de diseño</span></div>
